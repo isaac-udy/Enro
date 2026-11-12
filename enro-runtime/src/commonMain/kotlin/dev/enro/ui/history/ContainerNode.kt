@@ -12,17 +12,18 @@ import kotlinx.coroutines.yield
 import kotlinx.serialization.Serializable
 
 /**
- * One container's backstack together with the containers nested under the destination at the
- * top of it: the unit the web history plugin writes to `history.state` and restores from it.
+ * One container's backstack, with the containers of the destination at the top of the
+ * backstack. The web history plugin writes a [ContainerNode] to `history.state` and restores
+ * the containers from a [ContainerNode].
  *
- * [children] are the containers that destination hosts, each a subtree of its own, and
- * [activeChild] is the one it has active, which for a tab shell is the selected tab. Equality
- * is by instance id, ignores children with nothing in them, and includes [activeChild], so a
- * tab switch is a different state from the one before it.
+ * [children] are the containers of the top destination, and [activeChild] is the top
+ * destination's active container. Equality compares backstacks by instance id, ignores
+ * children with an empty backstack, and includes [activeChild], so two nodes that differ only
+ * in the active container are not equal.
  *
- * A node is read from whichever contexts have registered, so one read while a destination is
- * still composing can lack children the settled tree has. The plugin never treats that growth
- * as navigation — see [classifyTransition].
+ * [createNodeFor] reads only the contexts that are registered, so a node that is read while a
+ * destination is composing can lack children. [classifyTransition] does not classify the later
+ * addition of those children as a push.
  */
 @Serializable
 internal data class ContainerNode(
@@ -70,9 +71,10 @@ internal data class ContainerNode(
 }
 
 /**
- * The context of the destination at the top of this container's backstack, once it has composed
- * and registered. The top entry rather than the visible one: while a close animates out, the
- * closed destination is still visible but no longer part of the state worth recording.
+ * The context of the destination at the top of this container's backstack, or null until that
+ * destination has registered a context. The top destination is used, and not the visible
+ * destination, because a closed destination stays visible while animating out and must not be
+ * recorded.
  */
 internal fun ContainerContext.topDestination(): DestinationContext<NavigationKey>? {
     val topId = container.backstack.lastOrNull()?.id ?: return null
@@ -80,9 +82,8 @@ internal fun ContainerContext.topDestination(): DestinationContext<NavigationKey
 }
 
 /**
- * Reads the tree under [container]. With [nestedContainers] false only the container's own
- * backstack is read, which is the root-only history of releases before nested containers were
- * recorded.
+ * Returns the node for [container]. With [nestedContainers] false, the node has the
+ * container's backstack and no children.
  */
 internal fun createNodeFor(
     container: ContainerContext,
@@ -98,14 +99,14 @@ internal fun createNodeFor(
 }
 
 /**
- * Drives the tree under [container] to [node]: this container's backstack first, then, once the
- * destination that puts on top has registered its context, each of its containers in turn.
- * Containers the node does not list are emptied, since the node is the whole of what was
- * recorded, and the destination's active container is set last, after the containers it may
- * name exist.
+ * Applies [node] to [container]: sets the container's backstack, waits for the top destination
+ * to register a context, then applies each child node to the matching container of the top
+ * destination. When [node] has children, a container of the top destination that [node] does not
+ * list is emptied. Logs a warning and skips the children when the top destination registers no
+ * context within the timeout.
  *
- * Backstacks are compared by instance id, so a container already holding the recorded entries
- * is left alone rather than handed deserialized copies of instances it already has.
+ * A backstack with the same instance ids as the node's backstack is not updated, so that the
+ * container keeps the existing instances and does not receive deserialized copies.
  */
 internal suspend fun applyNodeFor(
     container: ContainerContext,
@@ -129,11 +130,10 @@ internal suspend fun applyNodeFor(
         .associateBy { it.container.key }
         .toMutableMap()
 
-    // The active container is set before the children are applied and again after. Before: an
-    // entry a child gains is an Open, and PreviouslyActiveContainerInterceptor records on it
-    // whichever container is active at that moment, to reactivate on close — with the recorded
-    // container active, nothing stale is recorded. After: every backstack change makes its own
-    // container active, so the last child applied would otherwise be the one left active.
+    // The active container is set twice on purpose. Before the children are applied:
+    // PreviouslyActiveContainerInterceptor records the active container on each instance that a
+    // child opens, and must record the node's active container. After the children are applied:
+    // each backstack update makes the updated container active.
     node.activeChild?.let { top.setActiveContainer(it.name) }
     node.children.forEach { childNode ->
         val child = containers.remove(childNode.containerKey)
@@ -148,9 +148,9 @@ internal suspend fun applyNodeFor(
 }
 
 /**
- * Waits for the tree under [container] to read as [node], which after [applyNodeFor] takes a
- * frame or two: a restored destination registers its context, and its containers theirs, on the
- * composition that follows the backstack change. False when it has not settled in time.
+ * Waits until [createNodeFor] for [container] equals [node]. After [applyNodeFor], a restored
+ * destination and the destination's containers register contexts in the compositions that
+ * follow the backstack change. Returns false when the nodes are not equal within the timeout.
  */
 internal suspend fun awaitNodeFor(
     container: ContainerContext,

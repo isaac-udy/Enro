@@ -10,40 +10,21 @@ import dev.enro.ui.LocalNavigationAnimatedVisibilityScopeOrNull
 import dev.enro.ui.LocalNavigationSharedTransitionScopeOrNull
 
 /**
- * Returns a [NavigationDestinationDecorator] that wraps each
- * destination's content in `Box(Modifier.sharedElement(...))` keyed by
- * the destination instance id.
+ * Returns a [NavigationDestinationDecorator] that wraps each destination's content in
+ * `Box(Modifier.sharedElement(...))`, keyed by the destination instance id.
  *
- * **Why this exists.** Without it, when a scene transition mounts the
- * same destination in two different scene compositions (e.g. going
- * from a single-pane scene to a two-pane scene that still contains the
- * previous entry, or swapping the top entry of a two-pane scene), the
- * AnimatedContent in `NavigationDisplay` slides whole scene
- * compositions in and out — and the shared entry rides along with the
- * incoming composition. Wrapping every entry in a `sharedElement` Box
- * lets Compose's `SharedTransitionScope` bridge the entry's bounds
- * from its old layout slot to its new one, so it visually stays put
- * (or smoothly transitions) instead of re-animating with the scene.
+ * When a scene transition composes the same destination in two scenes, the `sharedElement`
+ * Box animates the destination's bounds from the old scene to the new scene. Without the
+ * Box, the destination animates with the incoming scene.
  *
- * **Crucial detail — this decorator must sit OUTSIDE the
- * exclusion/movable-content gate.** The
- * [movableContentDecorator] short-circuits and emits nothing when the
- * destination isn't supposed to render in the current scene (because
- * another scene won it). For the `sharedElement` bridge to work,
- * Compose needs to see a layout node with the matching key in BOTH
- * scene compositions during the transition. So we always emit the
- * `Box(Modifier.sharedElement(...))`; the `movableContentDecorator`
- * inside decides whether to render the actual content or leave the
- * Box empty. An empty Box still participates in shared-element bounds
- * tracking via the scene's outer layout placement.
+ * The decorator must be the first decorator in the chain, which makes the decorator the
+ * outermost wrapper. `movableContentDecorator` emits no content for a destination that
+ * another scene renders, and the shared element transition requires the `sharedElement`
+ * Box in both scenes.
  *
- * Apply this as the **first** decorator in the chain — `foldRight`
- * makes the first decorator the outermost wrapper.
- *
- * If no `SharedTransitionScope` or `AnimatedVisibilityScope` is
- * available (e.g. a destination rendered standalone for previews or
- * snapshot tests, outside any `NavigationDisplay`), this decorator
- * gracefully degrades to just calling `destination.Content()`.
+ * When no `SharedTransitionScope` or `AnimatedVisibilityScope` is provided (for example, a
+ * destination rendered outside a `NavigationDisplay` in a preview or snapshot test), the
+ * decorator calls `destination.Content()` without the Box.
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -58,8 +39,9 @@ internal fun sharedElementDecorator(): NavigationDestinationDecorator<Navigation
     }
 
 /**
- * The [NavigationDestinationWrapper] that [dev.enro.ui.NavigationDisplay] provides; it applies
- * the same `sharedElement` Box as [rememberSharedElementDecorator].
+ * The [NavigationDestinationWrapper] that [dev.enro.ui.NavigationDisplay] provides.
+ * SharedElementDestinationWrapper applies the `sharedElement` Box described on
+ * [rememberSharedElementDecorator].
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 internal val SharedElementDestinationWrapper: NavigationDestinationWrapper =

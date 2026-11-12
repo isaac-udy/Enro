@@ -1,7 +1,8 @@
 /**
  * Enro Recipe: Animated Navigation
  *
- * Demonstrates customising navigation transition animations with NavigationAnimations.
+ * Shows how to replace a container's transitions by passing a
+ * `NavigationAnimations` to `NavigationDisplay`.
  */
 package dev.enro.recipes.animations
 

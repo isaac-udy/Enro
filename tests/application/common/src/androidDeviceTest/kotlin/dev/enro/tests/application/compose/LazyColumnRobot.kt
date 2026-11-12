@@ -23,7 +23,6 @@ class LazyColumnRobot(
     }
 
     fun scrollToItem(index: Int): LazyColumnRobot {
-        // Find the lazy column and scroll to the specified item
         composeRule
             .onNode(hasTestTag(LazyColumn.testTag))
             .performScrollToIndex(index)
@@ -31,7 +30,6 @@ class LazyColumnRobot(
     }
 
     fun verifyItemVisible(index: Int): LazyColumnRobot {
-        // Verify that the item with the specified index is visible
         composeRule.onNode(hasText("$index")).assertExists()
         return this
     }

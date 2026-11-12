@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
 import dev.enro.annotations.NavigationComponent
 import dev.enro.controller.NavigationComponentConfiguration
 import dev.enro.controller.createNavigationModule
+import dev.enro.recipes.deeplink.deepLinkModule
+import dev.enro.recipes.interceptor.auditInterceptor
 import dev.enro.recipes.plugins.OpenedTimestampPlugin
 import dev.enro.ui.contains
 import dev.enro.ui.decorators.navigationDestinationDecorator
@@ -18,11 +20,16 @@ object RecipesComponent : NavigationComponentConfiguration(
     module = createNavigationModule {
         plugin(OpenedTimestampPlugin())
 
-        // Wrap every regular destination in a Material-themed surface so that
-        // transitions (slide, fade, shared elements) animate over an opaque
-        // background instead of showing through to whatever is composed
-        // underneath. Dialogs and direct overlays are skipped — they're
-        // intentionally rendered on top of the underlying scene.
+        // deepLinkModule registers the path bindings of the Basic Deep Link recipe.
+        module(deepLinkModule)
+
+        // An interceptor registered here receives operations from every
+        // container; see the Module Interceptor recipe.
+        interceptor(auditInterceptor)
+
+        // The decorator wraps each destination in an opaque Surface, so a
+        // transition does not show the destination below. Dialogs and direct
+        // overlays are not wrapped, because the scene below must stay visible.
         decorator {
             navigationDestinationDecorator { destination ->
                 val isOverlay = destination.isDirectOverlay() ||

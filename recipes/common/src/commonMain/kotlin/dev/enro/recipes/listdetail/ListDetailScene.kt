@@ -18,31 +18,20 @@ import dev.enro.ui.NavigationSceneStrategy
 import dev.enro.ui.SceneStrategyScope
 import dev.enro.ui.get
 
-// ─────────────────────────────────────────────────────────────────────
-// Pane metadata
-// ─────────────────────────────────────────────────────────────────────
-
 internal data class ListPaneMetadata(
     val detailPlaceholder: @Composable () -> Unit,
 )
 
-/**
- * Metadata: declares the destination is the "list" side of a
- * list-detail layout, and supplies the placeholder to render in the
- * detail slot when no detail destination is on the backstack.
- */
+// A NavigationDestination.MetadataKey gives typed access to one metadata
+// value. `default` is the value for a destination that does not set the key.
 internal object ListPaneKey : NavigationDestination.MetadataKey<ListPaneMetadata?>(default = null)
 
-/**
- * Metadata flag: declares the destination is the "detail" side of a
- * list-detail layout. Default `false`.
- */
 internal object IsDetailPaneKey : NavigationDestination.MetadataKey<Boolean>(default = false)
 
 /**
- * Marks a destination as the "list" side of a list-detail layout. The
- * [detailPlaceholder] is rendered in the detail slot when no
- * detail-pane destination is on the backstack above this one.
+ * Marks a destination as the list pane. [ListDetailSceneStrategy] renders
+ * [detailPlaceholder] in the detail pane while the list destination is the
+ * top destination.
  */
 fun NavigationDestination.MetadataBuilder<*>.listPane(
     detailPlaceholder: @Composable () -> Unit = {},
@@ -51,9 +40,9 @@ fun NavigationDestination.MetadataBuilder<*>.listPane(
 }
 
 /**
- * Marks a destination as the "detail" side of a list-detail layout. It
- * will appear in the right-hand pane when an active list-pane
- * destination is below it on the backstack.
+ * Marks a destination as a detail pane. [ListDetailSceneStrategy] renders
+ * the destination in the right pane while the destination is the top
+ * destination and a [listPane] destination is below on the backstack.
  */
 fun NavigationDestination.MetadataBuilder<*>.detailPane() {
     add(IsDetailPaneKey, true)
@@ -65,19 +54,16 @@ internal fun NavigationDestination<*>.listPaneMetadata(): ListPaneMetadata? =
 internal fun NavigationDestination<*>.isDetailPane(): Boolean =
     metadata[IsDetailPaneKey]
 
-// ─────────────────────────────────────────────────────────────────────
-// The scene strategy
-// ─────────────────────────────────────────────────────────────────────
-
 /**
- * A scene strategy that renders a list pane on the left and a detail
- * pane (or its placeholder) on the right, when:
- *   - the window is at least [widthBreakpointDp] wide, AND
- *   - the backstack contains a destination tagged with [listPane].
+ * Renders a [listPane] destination on the left and a [detailPane]
+ * destination or the placeholder on the right, when:
+ *   - the window is at least [widthBreakpointDp] wide, and
+ *   - the backstack contains a [listPane] destination, and
+ *   - the top destination is that [listPane] destination or a
+ *     [detailPane] destination.
  *
- * Returns `null` otherwise; the surrounding scene-strategy chain falls
- * through to the single-pane strategy, which renders the top entry
- * full-screen.
+ * `calculateScene` returns `null` in every other case, and
+ * `NavigationSceneStrategy.from` calls the next strategy in the list.
  */
 class ListDetailSceneStrategy(
     private val widthBreakpointDp: Int = 600,

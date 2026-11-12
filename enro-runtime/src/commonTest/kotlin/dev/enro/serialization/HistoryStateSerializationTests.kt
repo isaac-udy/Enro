@@ -32,28 +32,25 @@ internal data class HistoryTestKey(
 ) : NavigationKey
 
 /**
- * Pins the serialization of persisted navigation state (browser history,
- * deep-link tooling) under the controller's json configuration, which uses
- * the default (POLYMORPHIC) class-discriminator mode.
+ * Tests the serialization of persisted navigation state (browser history, deep-link tooling)
+ * with the controller's Json configuration, which uses the default POLYMORPHIC
+ * class-discriminator mode.
  *
- * `ClassDiscriminatorMode.ALL_JSON_OBJECTS` cannot be used: with kotlinx
- * 1.11, realistic NavigationKey shapes break BOTH encoders under polymorphic
- * dispatch —
+ * `ClassDiscriminatorMode.ALL_JSON_OBJECTS` cannot be used. With kotlinx.serialization 1.11,
+ * both encoders fail for a polymorphic NavigationKey:
  *
- *  * STREAMING: a value-class field's discriminator write is deferred until
- *    the next `beginStructure`, which an inline field never opens, so the
- *    pending discriminator leaks into the next-opened object
- *    (`Instance.metadata` in practice) and the output fails to decode with
- *    "Expected JsonObject, but had JsonLiteral". Collection fields produce
- *    outright INVALID JSON (a `"type"` key:value pair inside an array).
- *  * TREE (`encodeToJsonElement`): collection fields crash the encoder with
- *    `NumberFormatException: For input string: "type"` (the deferred
- *    discriminator is applied inside a list context, where the tag is parsed
- *    as an array index).
+ *  * Streaming: the encoder defers the discriminator of a value-class field until the next
+ *    `beginStructure`. An inline field opens no structure, so the encoder writes the
+ *    discriminator into the next object (`Instance.metadata`), and decoding fails with
+ *    "Expected JsonObject, but had JsonLiteral". A collection field produces invalid JSON
+ *    (a `"type"` key-value pair inside an array).
+ *  * Tree (`encodeToJsonElement`): a collection field throws
+ *    `NumberFormatException: For input string: "type"`. The encoder applies the deferred
+ *    discriminator inside a list, where the tag is parsed as an array index.
  *
- * The documenting tests below assert those failures still exist: when one
- * starts failing, kotlinx has fixed the corresponding bug and the
- * POLYMORPHIC-mode constraint can be revisited. Upstream issue:
+ * The two `allJsonObjects` tests assert that each failure exists. When one of those tests
+ * fails, kotlinx.serialization has fixed the failure and ALL_JSON_OBJECTS can be
+ * reconsidered. Upstream issue:
  * https://github.com/Kotlin/kotlinx.serialization/issues/3022
  */
 class HistoryStateSerializationTests {
@@ -97,12 +94,7 @@ class HistoryStateSerializationTests {
         classDiscriminatorMode = ClassDiscriminatorMode.ALL_JSON_OBJECTS
     }
 
-    /**
-     * Documents the upstream kotlinx streaming-encoder bug. If this test
-     * FAILS, kotlinx has fixed the deferred-discriminator leak for inline
-     * fields and ALL_JSON_OBJECTS may be viable again (check the other
-     * documenting tests too).
-     */
+    // Asserts the upstream streaming-encoder failure. See the class KDoc.
     @Test
     fun allJsonObjectsStreamingEncoderLeaksValueClassDiscriminator() {
         val json = allJsonObjectsJson()
@@ -117,12 +109,7 @@ class HistoryStateSerializationTests {
         )
     }
 
-    /**
-     * Documents the upstream kotlinx tree-encoder bug. If this test FAILS,
-     * kotlinx has fixed the collection-field discriminator crash and
-     * ALL_JSON_OBJECTS may be viable again (check the other documenting
-     * tests too).
-     */
+    // Asserts the upstream tree-encoder failure. See the class KDoc.
     @Test
     fun allJsonObjectsTreeEncoderFailsOnCollectionFields() {
         val json = allJsonObjectsJson()

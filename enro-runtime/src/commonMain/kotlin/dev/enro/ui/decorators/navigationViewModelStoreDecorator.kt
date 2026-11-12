@@ -24,16 +24,19 @@ import dev.enro.handle.NavigationHandleHolder
 import dev.enro.ui.LocalNavigationContext
 
 /**
- * Returns a [NavigationDestinationDecorator] that provides [ViewModelStore] functionality
- * to navigation destinations. This decorator ensures that each destination has its own
- * [ViewModelStoreOwner], allowing proper scoping of ViewModels to individual destinations.
+ * Returns a decorator that provides each destination with a separate [ViewModelStoreOwner]
+ * through [LocalViewModelStoreOwner].
  *
- * The decorator also handles cleanup when destinations are removed from the backstack
- * based on the [shouldRemoveStoreOwner] callback.
+ * Apply [rememberSavedStateDecorator] before this decorator: the destination's
+ * [ViewModelStoreOwner] enables `SavedStateHandle` support on the [SavedStateRegistryOwner]
+ * that [rememberSavedStateDecorator] provides.
  *
- * @param viewModelStoreOwner The parent [ViewModelStoreOwner] that provides the [ViewModelStore]
- * @param shouldRemoveStoreOwner A callback that determines if the ViewModelStore should be
- *                               cleared when the destination is removed from the backstack
+ * @param viewModelStoreOwner The owner of the [ViewModelStore] that stores each destination's
+ *   [ViewModelStore]. Throws when omitted and [LocalViewModelStoreOwner] provides no owner.
+ * @param shouldRemoveStoreOwner Called from the decorator's `onPop`. The destination's
+ *   [ViewModelStore] is cleared when [shouldRemoveStoreOwner] returns `true`. The default
+ *   returns `false` on Android while the Activity is changing configurations, and `true`
+ *   otherwise.
  */
 @Composable
 public fun rememberViewModelStoreDecorator(
@@ -53,20 +56,7 @@ public fun rememberViewModelStoreDecorator(
     }
 }
 
-/**
- * Creates a [NavigationDestinationDecorator] that provides ViewModelStore functionality.
- *
- * This decorator wraps each destination with its own [ViewModelStoreOwner] and provides
- * that owner as a [LocalViewModelStoreOwner] so that ViewModels can be properly scoped
- * to individual destinations.
- *
- * **Note:** This decorator requires [savedStateDecorator] to be applied before it to ensure
- * that ViewModels can properly provide access to [androidx.lifecycle.SavedStateHandle]s.
- *
- * @param viewModelStore The parent [ViewModelStore] that manages destination-scoped stores
- * @param shouldRemoveStoreOwner A callback that determines if the ViewModelStore should be
- *                               cleared when the destination is removed from the backstack
- */
+/** Requires [savedStateDecorator] earlier in the decorator list. */
 internal fun viewModelStoreDecorator(
     parentViewModelStoreOwner: ViewModelStoreOwner,
     viewModelStore: ViewModelStore,
@@ -99,10 +89,6 @@ internal fun viewModelStoreDecorator(
     )
 }
 
-/**
- * Internal ViewModelStoreOwner implementation for navigation destinations.
- * Combines ViewModelStore functionality with SavedStateRegistry support.
- */
 private class DestinationViewModelStoreOwner(
     private val parentViewModelStoreOwner: ViewModelStoreOwner,
     private val destinationViewModelStore: ViewModelStore,
@@ -133,16 +119,9 @@ private class DestinationViewModelStoreOwner(
         }
 
     init {
-        // The flag on DestinationSavedStateRegistry is the source of truth
-        // for "has enableSavedStateHandles() already run for this registry".
-        // The first owner constructed for a given registry does the
-        // initialisation; subsequent owners (which can happen when Compose
-        // freshly inserts movable content at a new slot, causing the
-        // remember(savedStateRegistryOwner) inside the decorator chain to
-        // re-evaluate) treat it as a no-op. The original require still
-        // catches the "decorator chain isn't wired up correctly" case —
-        // when the savedStateRegistryOwner isn't one of ours, we fall
-        // through to the strict check.
+        // enableSavedStateHandles() must run once per registry; see
+        // DestinationSavedStateRegistry.savedStateHandlesEnabled. A registry of any other type
+        // always takes the lifecycle check, which fails when savedStateDecorator is missing.
         val destinationRegistry = savedStateRegistryOwner as? DestinationSavedStateRegistry
         if (destinationRegistry == null || !destinationRegistry.savedStateHandlesEnabled) {
             require(
@@ -161,8 +140,8 @@ private class DestinationViewModelStoreOwner(
 }
 
 /**
- * Internal storage for managing ViewModelStores per navigation instance.
- * This ViewModel is stored in the parent ViewModelStore and manages child stores.
+ * Stored in the parent ViewModelStore, so that clearing the parent ViewModelStore clears each
+ * destination's ViewModelStore through [onCleared].
  */
 private class ViewModelStoreStorage : ViewModel() {
     private val stores = mutableMapOf<String, StoreEntry>()
@@ -190,15 +169,13 @@ private class ViewModelStoreStorage : ViewModel() {
 }
 
 /**
- * A destination's composition can outlive the clear of its ViewModelStore:
- * a Dialog's content (or a ModalBottomSheet's, on iOS) composes in a separate
- * window/layer composition that initializes and tears down asynchronously, so a
- * destination that is popped — or whose parent destination is popped, which clears
- * every child store through [ViewModelStoreStorage.onCleared] — can still create
- * ViewModels against this store for a frame. Reseed a cleared holder so that late
- * creation receives a no-op NavigationHandle (which logs and ignores operations)
- * instead of crashing the strict lookup in getNavigationHandleHolder or the
- * `navigationHandle()` composable's "No NavigationHandle found" initializer.
+ * Clears the store, then adds a cleared NavigationHandleHolder to the store.
+ *
+ * A destination can create a ViewModel in the store after the store is cleared: the content of
+ * a Dialog (or of a ModalBottomSheet on iOS) is a separate composition that is disposed
+ * asynchronously. With the cleared holder, a ViewModel created after the clear receives a
+ * NavigationHandle that ignores operations, and the lookup in getNavigationHandleHolder and
+ * `navigationHandle()` does not throw.
  */
 private fun ViewModelStore.clearAndReseedNavigationHandle(instance: NavigationKey.Instance<*>) {
     clear()
@@ -210,9 +187,6 @@ private fun ViewModelStore.clearAndReseedNavigationHandle(instance: NavigationKe
     )[NavigationHandleHolder::class]
 }
 
-/**
- * Gets or creates the ViewModelStoreStorage from the parent ViewModelStore.
- */
 private fun ViewModelStore.getOrCreateViewModelStoreStorage(): ViewModelStoreStorage {
     val provider = ViewModelProvider.create(
         store = this,
@@ -224,9 +198,8 @@ private fun ViewModelStore.getOrCreateViewModelStoreStorage(): ViewModelStoreSto
 }
 
 /**
- * Platform-specific callback for determining when to remove ViewModelStores.
- * This is typically based on whether the navigation is temporary (e.g., configuration change)
- * or permanent (e.g., back navigation).
+ * The returned callback returns `false` on Android while the Activity is changing
+ * configurations, and `true` otherwise and on every other platform.
  */
 @Composable
 internal expect fun rememberShouldRemoveViewModelStoreCallback(): () -> Boolean

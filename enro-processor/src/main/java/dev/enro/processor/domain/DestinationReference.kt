@@ -97,7 +97,7 @@ class DestinationReference(
 
     val keyIsKotlinSerializable = keyType.annotations
         .any {
-            // Some annotations may not be resolvable, so we're going to runCatching with this
+            // toAnnotationSpec can throw for an annotation that cannot be resolved.
             runCatching {
                 it.toAnnotationSpec().typeName == ClassNames.Kotlin.kotlinxSerializable
             }.getOrElse { false }

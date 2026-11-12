@@ -6,17 +6,16 @@ nav_order: 2
 
 # View Models
 
-Enro integrates with standard Android `ViewModel`s (and their KMP-friendly
-counterparts via Compose Multiplatform). A ViewModel can read its own
-destination's `NavigationHandle`, drive navigation from business logic, and
-register for results — all without depending on its destination's
-Composable.
+A destination's `ViewModel` can read the destination's `NavigationHandle`,
+execute navigation operations and register for results. Enro uses the
+AndroidX `ViewModel` on every platform.
 
 ## Getting a NavigationHandle in a ViewModel
 
-Inside a `ViewModel`, use the `by navigationHandle<MyKey>()` property
-delegate:
+Inside a `ViewModel`, declare the handle with the
+`by navigationHandle<MyKey>()` property delegate:
 
+<!-- snippet: view-models/handle -->
 ```kotlin
 class ProfileViewModel : ViewModel() {
     val navigation by navigationHandle<ShowProfile>()
@@ -31,13 +30,15 @@ class ProfileViewModel : ViewModel() {
 }
 ```
 
-The handle is the same type the destination's Composable would get from
-`navigationHandle<ShowProfile>()`. It's available immediately at
-construction time — usable from `init { }` and any method.
+`by navigationHandle<ShowProfile>()` returns the same `NavigationHandle`
+that `navigationHandle<ShowProfile>()` returns in the destination's
+Composable. The handle is available while the ViewModel's constructor runs,
+including in `init { }`.
 
-The delegate accepts a `config` block, same as the Composable
-`configure { }`:
+The delegate takes a `config` block. The `config` block accepts the same
+configuration as `navigation.configure { }` in a Composable:
 
+<!-- snippet: view-models/config -->
 ```kotlin
 class EditProfileViewModel : ViewModel() {
     private val draft = MutableStateFlow("")
@@ -58,9 +59,10 @@ See [Navigation Handles → Overriding the close-requested callback](../core-con
 
 ## Constructing a ViewModel inside a destination
 
-In Compose, use the standard `viewModel { }` builder with the
-`createEnroViewModel { }` helper:
+In Compose, construct the ViewModel inside `createEnroViewModel { }`, inside
+the AndroidX `viewModel { }` builder:
 
+<!-- snippet: view-models/create -->
 ```kotlin
 @Composable
 @NavigationDestination(ShowProfile::class)
@@ -71,15 +73,16 @@ fun ProfileScreen() {
 }
 ```
 
-`createEnroViewModel { }` (in `dev.enro.viewmodel`) is what makes
-`by navigationHandle<MyKey>()` work inside the ViewModel — it supplies the
-current `NavigationHandle` to the ViewModel as it's being constructed.
+`createEnroViewModel { }` (in `dev.enro.viewmodel`) provides the
+destination's `NavigationHandle` to the ViewModel while the lambda runs.
+`by navigationHandle<MyKey>()` throws in a ViewModel that is constructed
+outside `createEnroViewModel { }`.
 
-You don't need any special factory. `createEnroViewModel { }` returns the
-same instance the lambda produces, so you can also use it with constructor
-parameters, dependency-injection containers, or whatever your project
-already uses:
+`createEnroViewModel { }` returns the instance that the lambda returns. The
+lambda can call a constructor with parameters or request the instance from
+a dependency injection framework:
 
+<!-- snippet: view-models/create-with-dependencies -->
 ```kotlin
 val viewModel = viewModel<ProfileViewModel> {
     createEnroViewModel {
@@ -91,61 +94,64 @@ val viewModel = viewModel<ProfileViewModel> {
 }
 ```
 
-If you're using Hilt, Koin, or another DI library, build the ViewModel the
-way your container does and wrap the construction call in
-`createEnroViewModel { }`.
+See [Dependency Injection](dependency-injection.md) for Koin and Metro.
 
 ## Lifetime
 
-A ViewModel constructed for a destination shares the destination's
-backstack lifetime. It's created the first time the destination is
-composed, retained across configuration changes, and cleared when the
-destination is permanently removed from the backstack (i.e. after a close
-or a backstack reset).
+A destination's ViewModel is created the first time the destination is
+composed. The ViewModel is retained across configuration changes and while
+the destination is on the backstack. The ViewModel is cleared when the
+destination is removed from the backstack.
 
-The handle held in the ViewModel is *the same handle* used inside the
-destination's Composable. You can drive `open` / `close` / `complete` from
-either place; results dispatched to a `registerForNavigationResult` channel
-go to whichever instance registered them.
+`open`, `close` and `complete` have the same effect when called on the
+handle in the ViewModel or on the handle in the Composable. A result is
+delivered to the `registerForNavigationResult` channel that opened the
+destination.
 
 ## ViewModels and results
 
-`registerForNavigationResult` is available as a `ViewModel` extension and
-uses a property delegate:
+`registerForNavigationResult` is a `ViewModel` extension that is used as a
+property delegate:
 
+<!-- snippet: results/view-model -->
 ```kotlin
 class HomeViewModel : ViewModel() {
     val navigation by navigationHandle<Home>()
 
     val pickDate by registerForNavigationResult<LocalDate>(
-        onCompleted = { date -> /* update StateFlow, call use case, etc. */ },
+        onCompleted = { date ->
+            // Update a StateFlow or call a use case here.
+        },
     )
 
     fun onPickDateClicked() {
-        pickDate.open(SelectDate(maxDate = LocalDate.now()))
+        pickDate.open(SelectDate(maxDate = today))
     }
 }
 ```
 
-See [Results](results.md) for details.
+See [Results](results.md).
 
 ## Shared state
 
-Sharing state between destinations is normal ViewModel territory — Enro
-doesn't add anything special. A common pattern is to lift the state into a
-container that survives both screens (e.g. a hoisted `StateFlow` in a
-parent destination, or a process-wide singleton) and have each destination's
-ViewModel observe it.
+Enro has no API for sharing state between destinations. To share state,
+store the state in an object that outlives both destinations, such as a
+`StateFlow` in a parent destination's ViewModel or a singleton, and observe
+the state from each destination's ViewModel.
 
-For a small inline example, see the [shared ViewModel recipe][shared-recipe].
+A child destination that edits one value does not need shared state. Pass
+the current value in the child's `NavigationKey` and return the edited
+value as a result. See the
+[sharing state with results recipe][shared-recipe].
 
 ## See also
 
-- [Navigation Handles](../core-concepts/navigation-handles.md) — the handle
-  API both ViewModels and Composables use.
-- [Results](results.md) — `registerForNavigationResult` in both forms.
+- [Navigation Handles](../core-concepts/navigation-handles.md) — the
+  `NavigationHandle` API.
+- [Results](results.md) — `registerForNavigationResult` in a Composable and
+  in a ViewModel.
 - [Basic ViewModel recipe][basic-recipe] and
-  [Shared ViewModel recipe][shared-recipe].
+  [Sharing state with results recipe][shared-recipe].
 
 [basic-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/viewmodel/BasicViewModel.kt
-[shared-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/viewmodel/SharedViewModel.kt
+[shared-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/viewmodel/SharedStateWithResults.kt

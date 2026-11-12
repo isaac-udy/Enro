@@ -1,46 +1,48 @@
 # `enro-runtime`
 
-The runtime engine of Enro. Defines the public API every Enro app touches
-at runtime: [`NavigationKey`](../enro-common/src/commonMain/kotlin/dev/enro/NavigationKey.kt),
+`enro-runtime` contains the Enro navigation runtime:
 [`NavigationHandle`](src/commonMain/kotlin/dev/enro/NavigationHandle.kt),
 [`NavigationContainer`](src/commonMain/kotlin/dev/enro/NavigationContainer.kt),
+navigation operations, scene strategies, result channels and path
+bindings. A module that declares a destination or executes navigation
+operations depends on `enro-runtime`.
+
+`enro-runtime` targets **Android, iOS, JVM Desktop, WASM JS and
+Kotlin/JS**.
 [`NavigationDisplay`](../enro-ui/src/commonMain/kotlin/dev/enro/ui/NavigationDisplay.kt),
-plus the operation / scene / result-channel machinery that makes them
-work. If you're declaring a destination or driving navigation from
-inside one, you're using this module.
+the Compose UI renderer, is in `enro-ui`.
+[`NavigationKey`](../enro-common/src/commonMain/kotlin/dev/enro/NavigationKey.kt)
+and the other definitions shared with non-UI targets, such as a NodeJS
+backend, are in [`enro-common`](../enro-common/). `enro-runtime` declares
+`enro-common` as an `api` dependency.
 
-Targets **Android, iOS, JVM Desktop, WASM JS and Kotlin/JS**. The Compose
-UI renderer (`NavigationDisplay` and the scene strategies) is in `enro-ui`. Non-UI definitions that need to be shared with non-UI
-targets (e.g. a NodeJS backend) live in [`enro-common`](../enro-common/)
-instead — `enro-runtime` re-exports them.
+## Contents
 
-## What's in here
+- **Handles** — `NavigationHandle` executes operations for one
+  destination and provides the destination's `NavigationKey`.
+- **Containers and operations** — `NavigationContainer` (a backstack)
+  and `NavigationOperation` (`Open`, `Close`, `Complete`, `CompleteFrom`,
+  `SetBackstack`, `SideEffect`, `AggregateOperation`).
+- **Scenes** — `NavigationSceneStrategy` and `SceneDecoratorStrategy`
+  convert a backstack into scenes. `SinglePaneSceneStrategy` and
+  `DirectOverlaySceneStrategy` are in `enro-runtime`.
+  `DialogSceneStrategy` is in `enro-ui`.
+- **Results** — `registerForNavigationResult` (the caller),
+  `navigation.complete(…)` on a `NavigationKey.WithResult` key (the
+  destination), and `NavigationFlow` (multi-step flows).
+- **Path bindings** — the APIs that convert a URL to a `NavigationKey`
+  and a `NavigationKey` to a URL, used for deep links and web routing.
+- **Synthetic destinations** — `syntheticDestination<K> { … }` for a key
+  whose destination runs code and renders no UI, such as an
+  authentication check, an external URL launcher or a redirect.
 
-- **Keys & handles** — `NavigationKey` (the screen contract),
-  `NavigationKey.WithResult` (typed completion), `NavigationHandle` (the
-  destination's view of the runtime).
-- **Containers & operations** — `NavigationContainer` (a hosted
-  backstack), `NavigationOperation` (Open / Close / Complete /
-  CompleteFrom / SetBackstack and their aggregates).
-- **Scenes & display** — `NavigationDisplay` (Compose renderer),
-  `NavigationSceneStrategy` / `SceneDecoratorStrategy` (how a backstack
-  becomes a scene tree), built-in `SinglePane` / `Dialog` / `DirectOverlay`
-  scene strategies.
-- **Results** — `registerForNavigationResult` (the caller's side),
-  `NavigationKey.WithResult.complete(…)` (the callee's side),
-  `NavigationFlow` (multi-step flows).
-- **Path bindings** — `@NavigationPath` and the path-resolution APIs that
-  turn URLs into keys and back, used for deep-linking and web routing.
-- **Synthetic destinations** — `syntheticDestination<K> { … }` for keys
-  whose "destination" is a synchronous decision, not UI (auth gates,
-  external URL launchers, redirects).
+## Usage
 
-## Typical usage
-
-Apps usually depend on the meta-module `dev.enro:enro`, which pulls in
-`enro-runtime`, `enro-ui`, `enro-common` and `enro-annotations`. The KSP
-processor is a separate `ksp(...)` dependency. Depending on `enro-runtime`
-directly is for setups that don't use Compose UI, such as `enro-html`.
+Most apps depend on `dev.enro:enro`, which includes `enro-runtime`,
+`enro-ui`, `enro-common` and `enro-annotations`. The KSP processor is a
+separate `ksp(...)` dependency. Depend on `enro-runtime` directly in a
+module that does not use Compose UI, such as a module that uses
+`enro-html`.
 
 ```kotlin
 dependencies {
@@ -49,6 +51,6 @@ dependencies {
 }
 ```
 
-See the root [README](../README.md) for a working "define a key, render
-a destination, navigate" example, and [enro.dev](https://enro.dev) for
-the full guide.
+The root [README](../README.md) has an example that declares a key,
+renders a destination and navigates. [enro.dev](https://enro.dev) has
+the full documentation.

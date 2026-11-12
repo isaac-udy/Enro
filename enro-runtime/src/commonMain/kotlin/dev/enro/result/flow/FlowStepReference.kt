@@ -7,18 +7,9 @@ import dev.enro.result.flow.FlowStepReference.Companion.setCompleted
 import kotlin.jvm.JvmName
 
 /**
- * A reference to a specific step in a [NavigationFlow] that allows manual manipulation of the step's result.
- *
- * This class is typically obtained through the [NavigationFlow.getStep] or [NavigationFlow.requireStep] functions.
- * It provides the ability to:
- * - Clear the result of the step using [clearResult]
- * - Set a result for the step using [setResult]
- * - Get the current result of the step using [getResult]
- * - Trigger editing of the step using [editStep], which clears the result and updates the flow,
- *   which will cause the flow to return to this step
- *
- * This is useful for advanced flow management scenarios where you need to programmatically control
- * the execution state of individual steps within a navigation flow.
+ * A reference to one step of a [NavigationFlow]. A [FlowStepReference] reads, sets and clears
+ * the result of the step. [NavigationFlow.getStep] and [NavigationFlow.requireStep] return a
+ * [FlowStepReference].
  */
 @AdvancedEnroApi
 public class FlowStepReference<out T : NavigationKey>(
@@ -36,33 +27,27 @@ public class FlowStepReference<out T : NavigationKey>(
     }
 
     /**
-     * Checks whether this step has been completed.
+     * Returns true if the [FlowResultManager] has a result for this step. The result is set by
+     * the destination of the step or by [setCompleted].
      *
-     * A step is considered completed if it has a result stored in the [FlowResultManager].
-     * This can happen either through normal flow execution, or by manually setting a result
-     * using [setCompleted] or [FlowStepReference.Companion.setCompleted].
-     *
-     * @return true if the step has a result, false otherwise
+     * [isCompleted] discards a result whose dependencies have changed and returns false.
      */
     public fun isCompleted(): Boolean {
         return resultManager.get(step) != null
     }
 
     /**
-     * Clears the result for this step.
-     *
-     * This won't cause the NavigationFlow to update, but next time it does update, the user will be returned to this step.
+     * Clears the result of this step without updating the [NavigationFlow]. The next
+     * [NavigationFlow.update] shows this step again.
      */
     public fun clearResult() {
         resultManager.clear(step.id)
     }
 
     /**
-     * Triggers editing of the step in the NavigationFlow. This clears the result, and immediately triggers an [update] on
-     * the flow.
+     * Clears the result of this step, then calls [NavigationFlow.update], which shows this step.
      *
-     * If you want to cause multiple steps to be cleared before editing, you should call [clearResult] on each step before
-     * calling [editStep] on the step that should be edited.
+     * To clear more than one step, call [clearResult] on each other step before calling [editStep].
      */
     public fun editStep() {
         clearResult()
@@ -71,8 +56,7 @@ public class FlowStepReference<out T : NavigationKey>(
 
     public companion object Companion {
         /**
-         * Gets the current result for the step, which may be null if the result has been cleared or the step has not been
-         * executed yet.
+         * Returns the result of the step, or null if the step has no result or the result was cleared.
          */
         public fun <R : Any> FlowStepReference<NavigationKey.WithResult<R>>.getResult(): R? {
             val result = getResultUnsafe() ?: return null
@@ -81,11 +65,8 @@ public class FlowStepReference<out T : NavigationKey>(
         }
 
         /**
-         * Marks the step as completed for steps that do not have a result type.
-         *
-         * This method sets the result to [Unit], which signifies completion of the step
-         * without returning any meaningful result data. It's primarily used for steps
-         * that don't require a result to be passed back to the flow.
+         * Marks a step without a result type as completed. Does not update the [NavigationFlow]:
+         * call [NavigationFlow.update] to show the next step.
          */
         public fun FlowStepReference<*>.setCompleted() {
             setResultUnsafe(Unit)
@@ -101,11 +82,8 @@ public class FlowStepReference<out T : NavigationKey>(
         }
 
         /**
-         * Sets the result for this step and marks it as completed.
-         *
-         * This method is used for steps that have a result type ([NavigationKey.WithResult]). It stores the provided result
-         * and signals completion of the step. The NavigationFlow will then proceed to the next step that
-         * has not yet been completed.
+         * Sets [result] as the result of the step. Does not update the [NavigationFlow]: call
+         * [NavigationFlow.update] to show the next step that has no result.
          */
         public fun <R : Any> FlowStepReference<NavigationKey.WithResult<R>>.setCompleted(result: R) {
             setResultUnsafe(result)

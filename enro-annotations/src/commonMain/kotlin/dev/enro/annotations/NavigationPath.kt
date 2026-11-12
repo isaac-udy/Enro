@@ -9,15 +9,14 @@ public annotation class NavigationPath(
     val pattern: String,
 ) {
     /**
-     * Declares that a [NavigationKey][dev.enro.NavigationKey] is bound to a path via a
-     * user-implemented `NavigationKey.PathBinding<T>`. Use this for cases that don't
-     * fit the simple property-based mapping provided by the parent [NavigationPath]
-     * annotation — for example, when some properties get default values that aren't
-     * present in the URL, or when the deserialize/serialize logic needs to be hand-written.
+     * Binds a [NavigationKey][dev.enro.NavigationKey] to a path through an implementation
+     * of `NavigationKey.PathBinding<T>`. Use FromBinding when the property mapping of
+     * [NavigationPath] cannot express the path: for example, when a property has a default
+     * value that is not in the URL.
      *
-     * The referenced [binding] must be a class (typically a nested `object` on the key
-     * class) that implements `dev.enro.NavigationKey.PathBinding<T>` where `T` is the
-     * key type itself.
+     * [binding] must be a class (typically a nested `object` on the key class) that
+     * implements `dev.enro.NavigationKey.PathBinding<T>`, where `T` is the annotated key
+     * type.
      */
     @Retention(AnnotationRetention.BINARY)
     @Target(AnnotationTarget.CLASS)

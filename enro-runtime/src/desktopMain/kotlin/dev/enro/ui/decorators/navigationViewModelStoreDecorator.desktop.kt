@@ -4,6 +4,6 @@ import androidx.compose.runtime.Composable
 
 @Composable
 internal actual fun rememberShouldRemoveViewModelStoreCallback(): () -> Boolean {
-    // On desktop, always remove ViewModelStore when destination is removed
+    // Desktop removes the ViewModelStore each time a destination is removed.
     return { true }
 }

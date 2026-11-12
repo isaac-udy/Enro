@@ -7,24 +7,20 @@ import dev.enro.handle.getNavigationHandleHolder
 import kotlin.reflect.KClass
 
 /**
- * Returns the [NavigationHandle] typed to [K] for the destination whose
- * `ViewModelStore` this owner exposes.
+ * Returns the [NavigationHandle] of the destination that owns this `ViewModelStore`,
+ * typed to [K]. Use [getNavigationHandle] from an Activity, a Fragment or a custom host.
+ * A Composable calls `navigationHandle<K>()` and a ViewModel declares
+ * `by navigationHandle<K>()`.
  *
- * Intended for Android-side glue (Activity, Fragment, custom hosts) that
- * needs to reach the handle for a destination it owns. Inside the
- * destination's Composable or ViewModel, prefer `navigationHandle<K>()`
- * (composable) or `by navigationHandle<K>()` (ViewModel) — those are the
- * standard accessors.
- *
- * Throws if no Enro handle is associated with this owner, or if [K]
- * doesn't match the destination's actual key type.
+ * Throws if this owner has no [NavigationHandle], or if the key of the destination is
+ * not a [K].
  */
 public inline fun <reified K: NavigationKey> ViewModelStoreOwner.getNavigationHandle(): NavigationHandle<K> {
     return getNavigationHandle(K::class)
 }
 
 /**
- * Explicit-[KClass] form of `ViewModelStoreOwner.getNavigationHandle<K>()`.
+ * `ViewModelStoreOwner.getNavigationHandle<K>()` with the key type passed as a [KClass].
  */
 public fun <K: NavigationKey> ViewModelStoreOwner.getNavigationHandle(
     keyType: KClass<K>,

@@ -64,7 +64,7 @@ class ComposeEmbeddedResultFlowTest {
             .pushInsideA()
             .pushOutside2()
             .pushOutside1()
-            .pushActivityX() // we can only really do one activity result in the test, for the same reason the testActivity test is ignored
+            .pushActivityX() // One Activity result only: a second Activity result fails for the reason testActivity is ignored.
             .finish()
             .assertResult("in-> in b-> in a-> out 2-> out 1-> act x")
     }

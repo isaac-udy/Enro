@@ -23,9 +23,10 @@ import dev.enro.ui.navigationDestination
 import kotlinx.serialization.Serializable
 
 /**
- * Tagged `fullScreen()`. Short-circuits slot resolution to render only the
- * top destination, and on Mobile suppresses the bottom chrome (search + nav
- * row) for an immersive experience. The chrome's top bar still renders.
+ * The destination sets `fullScreen()`. `ShellPaneSceneStrategy` renders a
+ * `fullScreen()` top destination with no side panes, and `ShellSceneDecorator`
+ * hides the bottom search and navigation row on Mobile. The top bar stays
+ * visible.
  */
 @Serializable
 data class ImmersiveImage(val productId: String) : NavigationKey

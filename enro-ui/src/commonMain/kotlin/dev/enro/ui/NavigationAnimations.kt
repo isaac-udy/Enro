@@ -23,8 +23,7 @@ public data class NavigationAnimations(
         )
     },
     /**
-     * The lambda now receives the `NavigationEvent.SwipeEdge` reported by
-     * the back gesture, mirroring Nav3's `predictivePopTransitionSpec(swipeEdge)`.
+     * The spec receives the `NavigationEvent.SwipeEdge` of the back gesture.
      */
     val predictivePopTransitionSpec: PredictivePopTransitionSpec = { _ ->
         popTransitionSpec()
@@ -35,8 +34,8 @@ public data class NavigationAnimations(
             initialContentExit = fadeOut(),
         )
     },
-    // If this is set to true, transitions to-and-from an empty backstack will use the container transform,
-    // instead of the normal transitionSpec/popTransitionSpec.
+    // When true, a transition to or from an empty backstack uses containerTransitionSpec
+    // instead of transitionSpec or popTransitionSpec.
     val emptyUsesContainerTransition: Boolean = true,
 ) {
     public companion object {

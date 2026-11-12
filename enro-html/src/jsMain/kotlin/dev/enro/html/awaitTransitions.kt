@@ -15,8 +15,8 @@ internal suspend fun Element.awaitTransitions() {
 
 /**
  * The time in milliseconds until the last transition described by the computed
- * `transition-duration` and `transition-delay` lists ends. A shorter delay list repeats, as it
- * does in CSS.
+ * `transition-duration` and `transition-delay` lists ends. A shorter delay list repeats, as
+ * in CSS.
  */
 internal fun longestTransitionMillis(durations: String, delays: String): Double {
     val durationMillis = durations.toMillisList()

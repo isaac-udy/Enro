@@ -34,6 +34,7 @@ jobs:
               - '**/*.kt'
               - '**/*.kts'
               - '**/*.toml'
+              - 'docs/ghpages/**/*.md'
 
       - name: Set up JDK 21
         if: steps.changes.outputs.isCodeChange == 'true'
@@ -70,6 +71,7 @@ jobs:
               - '**/*.kt'
               - '**/*.kts'
               - '**/*.toml'
+              - 'docs/ghpages/**/*.md'
 
       - name: Set up JDK 21
         if: steps.changes.outputs.isCodeChange == 'true'

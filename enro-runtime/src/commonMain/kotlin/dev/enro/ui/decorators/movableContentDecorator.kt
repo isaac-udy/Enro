@@ -10,16 +10,15 @@ import dev.enro.NavigationKey
 import dev.enro.ui.LocalEntriesToExcludeFromCurrentScene
 
 /**
- * Returns a [NavigationDestinationDecorator] that wraps each destination in a [movableContentOf]
- * to allow navigation displays to arbitrarily place destinations in different places in the
- * composable call hierarchy.
+ * Returns a decorator that wraps each destination in a [movableContentOf], so that the
+ * destination keeps its state when a renderer moves the destination to another place in the
+ * composition, for example to another scene.
  *
- * This ensures that the same destination content is not composed multiple times in different
- * places of the hierarchy, and that the destination's state is preserved when it moves between
- * different parts of the UI.
+ * The decorator renders no content for a destination whose id is in
+ * [LocalEntriesToExcludeFromCurrentScene].
  *
- * **Important:** This should typically be the first decorator applied to ensure that other
- * stateful decorators are moved properly inside the [movableContentOf].
+ * Place this decorator before every decorator that remembers state for the destination. State
+ * remembered outside the [movableContentOf] does not move with the destination.
  */
 @Composable
 public fun rememberMovableContentDecorator(): NavigationDestinationDecorator<NavigationKey> =
@@ -27,17 +26,6 @@ public fun rememberMovableContentDecorator(): NavigationDestinationDecorator<Nav
         movableContentDecorator()
     }
 
-/**
- * Creates a [NavigationDestinationDecorator] that wraps destinations in [movableContentOf].
- *
- * This decorator maintains two maps:
- * - A map of content holders that store the actual destination content
- * - A map of movable content wrappers that allow the content to be moved
- *
- * The decorator only renders destinations that are NOT excluded by
- * [LocalEntriesToExcludeFromCurrentScene] (mirroring Nav3's
- * `LocalEntriesToExcludeFromCurrentScene`).
- */
 internal fun movableContentDecorator(): NavigationDestinationDecorator<NavigationKey> {
     val movableContentContentHolderMap: MutableMap<String, MutableState<@Composable () -> Unit>> = mutableMapOf()
     val movableContentHolderMap: MutableMap<String, @Composable () -> Unit> = mutableMapOf()
@@ -45,7 +33,6 @@ internal fun movableContentDecorator(): NavigationDestinationDecorator<Navigatio
     return navigationDestinationDecorator { destination ->
         val key = destination.instance.id
 
-        // Get or create the content holder for this destination
         movableContentContentHolderMap.getOrPut(key) {
             key(key) {
                 remember {
@@ -61,40 +48,30 @@ internal fun movableContentDecorator(): NavigationDestinationDecorator<Navigatio
             }
         }
 
-        // Get or create the movable content wrapper for this destination
+        // Each holder below is remembered where the holder is used, so that a destination that
+        // is removed from the backstack keeps rendering and updating while animating out.
         movableContentHolderMap.getOrPut(key) {
             key(key) {
                 remember {
                     movableContentOf {
-                        // In case the key is removed from the backstack while this is still
-                        // being rendered, we remember the MutableState directly to allow
-                        // rendering it while we are animating out.
                         remember { movableContentContentHolderMap.getValue(key) }.value()
                     }
                 }
             }
         }
 
-        // Skip rendering if a higher-z scene has claimed this entry for itself
+        // Another scene renders a destination that is in LocalEntriesToExcludeFromCurrentScene.
         if (!LocalEntriesToExcludeFromCurrentScene.current.contains(destination.instance.id)) {
             key(key) {
-                // In case the key is removed from the backstack while this is still
-                // being rendered, we remember the MutableState directly to allow
-                // updating it while we are animating out.
                 val movableContentContentHolder = remember {
                     movableContentContentHolderMap.getValue(key)
                 }
-                // Update the state holder with the actual destination content
                 movableContentContentHolder.value = {
                     key(destination.instance.id) {
                         destination.Content()
                     }
                 }
-                // In case the key is removed from the backstack while this is still
-                // being rendered, we remember the movableContent directly to allow
-                // rendering it while we are animating out.
                 val movableContentHolder = remember { movableContentHolderMap.getValue(key) }
-                // Finally, render the destination content via the movableContentOf
                 movableContentHolder()
             }
         }

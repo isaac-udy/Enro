@@ -17,16 +17,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Coverage for the built-in controller-level interceptors installed via
- * [defaultNavigationModule]. Both [RootDestinationInterceptor] and
- * [PreviouslyActiveContainerInterceptor] had zero unit coverage prior to
- * these tests — they're invisible defaults that anyone could refactor
- * without immediate signal.
- *
- * The behaviour tests call the interceptors' methods directly rather than
- * going through a real NavigationDisplay, because both interceptors are
- * pure functions of (fromContext, containerContext, operations) and that
- * approach gives precise, fast assertions.
+ * Tests [RootDestinationInterceptor] and [PreviouslyActiveContainerInterceptor], which
+ * [defaultNavigationModule] installs. The tests call the interceptor functions directly:
+ * the result of each function depends only on `fromContext`, `containerContext` and the
+ * operations.
  */
 class ControllerInterceptorTests {
 
@@ -50,25 +44,20 @@ class ControllerInterceptorTests {
         val containerB = NavigationContextFixtures.createContainerContext(rootContext)
         rootContext.registerChild(containerA)
         rootContext.registerChild(containerB)
-        // Make containerB the currently-active leaf — registerVisibility
-        // also promotes activeChildId to containerB because containerA was
-        // never marked visible.
+        // registerVisibility makes containerB the active child, because containerA is not visible.
         rootContext.registerVisibility(containerB, isVisible = true)
 
         val instance = NavigationKeyFixtures.SimpleKey().asInstance()
         val openOp = NavigationOperation.Open(instance)
 
-        // Intercept the Open targeting containerA. The interceptor sees the
-        // active leaf (containerB) is different from the target container,
-        // and records containerB's id on the instance metadata.
+        // The Open targets containerA while containerB is active, so the interceptor stores the
+        // id of containerB in the instance metadata.
         PreviouslyActiveContainerInterceptor.intercept(
             fromContext = rootContext,
             containerContext = containerA,
             operation = openOp,
         )
 
-        // Closing the same instance via containerA should now produce a
-        // SideEffect that reactivates containerB.
         val closeOp = NavigationOperation.Close(instance)
         val processed = PreviouslyActiveContainerInterceptor.beforeIntercept(
             fromContext = rootContext,
@@ -98,7 +87,7 @@ class ControllerInterceptorTests {
         val instance = NavigationKeyFixtures.SimpleKey().asInstance()
         val openOp = NavigationOperation.Open(instance)
 
-        // Open targets the currently active container, so no metadata is recorded.
+        // The Open targets the active container, so the interceptor stores no metadata.
         PreviouslyActiveContainerInterceptor.intercept(
             fromContext = rootContext,
             containerContext = containerA,

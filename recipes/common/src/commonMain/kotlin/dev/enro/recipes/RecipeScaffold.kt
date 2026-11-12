@@ -13,8 +13,8 @@ import dev.enro.NavigationKey
 import dev.enro.close
 
 /**
- * Shared scaffold for recipe screens that adds a top app bar with a "back to recipes"
- * button so the user can always return to the SelectRecipe list.
+ * The scaffold for a recipe screen. The top app bar has a back button that calls
+ * `close()` on [navigation], which returns to the SelectRecipe list.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

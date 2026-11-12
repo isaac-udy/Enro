@@ -14,15 +14,18 @@ import dev.enro.ui.NavigationSceneStrategy
 import dev.enro.ui.SceneStrategyScope
 
 /**
- * Resolves the visible backstack into a `(left?, main, right?)` triple and
- * renders the slots in a [Row]. Full resolution algorithm is documented in
- * the package `README.md`; in short:
+ * Assigns the top backstack entries to the slots `(left?, main, right?)` and
+ * renders the slots in a [Row]. The package `README.md` documents the slot
+ * resolution in full. In short:
  *
- *   1. Top entry with `rightPane()` becomes the right slot; otherwise it's main.
- *   2. The entry immediately below `main` becomes left iff it has `leftPane()`.
- *   3. Collapse for breakpoint: Mobile = main only, Medium = main + at most one
- *      pane (right takes precedence over left), Wide = all three when available.
- *   4. A `fullScreen()` top entry short-circuits steps 1–3 to "main only".
+ *   1. A top entry with `rightPane()` fills the right slot and the entry
+ *      below fills main. Otherwise the top entry fills main.
+ *   2. The entry directly below main fills the left slot when that entry has
+ *      `leftPane()`.
+ *   3. The breakpoint limits the slots. Mobile: the top entry only. Medium:
+ *      main and one side pane, with right selected before left. Wide: all
+ *      three slots.
+ *   4. A `fullScreen()` top entry fills main with no side panes.
  */
 internal class ShellPaneSceneStrategy(
     private val breakpoints: ShellBreakpoints = ShellBreakpoints(),

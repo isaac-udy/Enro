@@ -2,17 +2,17 @@
 
 > **Note**
 >
-> Please see the [CHANGELOG](./CHANGELOG.md) to understand the latest changes in Enro.
+> The [CHANGELOG](./CHANGELOG.md) lists the changes in each Enro release.
 
 # Enro 🗺️
 ### [enro.dev](https://enro.dev)
 
-Enro is a powerful navigation library for Kotlin Multiplatform, based on a simple
-idea: **screens within an application should behave like functions**.
+Enro is a navigation library for Kotlin Multiplatform. In Enro, **a screen is
+declared like a function**.
 
-A `NavigationKey` is the signature of a screen — it declares the screen's inputs,
-and optionally a typed result. Calling code never needs to know how the screen is
-implemented; it just invokes the contract.
+A `NavigationKey` is the signature of a screen. The `NavigationKey` declares the
+screen's inputs and, optionally, the type of the screen's result. Code that opens
+a screen depends on the `NavigationKey`, not on the screen's implementation.
 
 ```kotlin
 @Serializable
@@ -25,7 +25,7 @@ data class SelectDate(
 ) : NavigationKey.WithResult<LocalDate>
 ```
 
-If you read those as function signatures:
+The same two contracts, written as function signatures:
 
 ```kotlin
 fun showProfile(userId: String): Unit
@@ -33,13 +33,13 @@ fun selectDate(minDate: LocalDate? = null, maxDate: LocalDate? = null): LocalDat
 ```
 
 Enro targets **Android, iOS, Desktop and Web** through Compose Multiplatform.
-A first-class compatibility layer (`enro-compat`) keeps Fragments and Activities
-working on Android, so you can adopt Enro in an existing app without rewriting it.
+On Android, a Fragment or an Activity can be a destination. The `enro-compat`
+module provides the Enro 2 API for apps that are migrating to Enro 3.
 
-## Gradle quick-start
+## Gradle dependencies
 
 Enro is published to [Maven Central](https://search.maven.org/). Add the
-`mavenCentral()` repository and depend on:
+`mavenCentral()` repository and these dependencies:
 
 ```kotlin
 dependencies {
@@ -49,9 +49,10 @@ dependencies {
 }
 ```
 
-## A working screen
+## Defining and opening a screen
 
-Define a key, implement a destination, and navigate. That's the loop.
+Declare a `NavigationKey` for each screen, bind a destination to each key with
+`@NavigationDestination`, and open a key with `navigation.open(key)`.
 
 ```kotlin
 @Serializable
@@ -80,7 +81,8 @@ fun ProfileScreen() {
 }
 ```
 
-Wire Enro into your application once:
+Declare one `NavigationComponent` and install the `NavigationComponent` when the
+application starts:
 
 ```kotlin
 @NavigationComponent
@@ -88,7 +90,7 @@ object MyComponent : NavigationComponentConfiguration(
     module = createNavigationModule { }
 )
 
-// Android — install in your Application
+// Android
 class MyApp : Application() {
     override fun onCreate() {
         super.onCreate()
@@ -97,7 +99,8 @@ class MyApp : Application() {
 }
 ```
 
-Then host a backstack anywhere in your UI:
+Create a navigation container in a Composable and render the container with
+`NavigationDisplay`:
 
 ```kotlin
 val container = rememberNavigationContainer(
@@ -106,28 +109,29 @@ val container = rememberNavigationContainer(
 NavigationDisplay(state = container)
 ```
 
-That's the whole flow. See [enro.dev](https://enro.dev) for the full guide.
+The documentation at [enro.dev](https://enro.dev) covers each of these steps.
 
-## Learn Enro
+## Documentation and examples
 
-- **Documentation:** [enro.dev](https://enro.dev) — installation, concepts, results, animations, testing, platform guides, and the migration guide from Enro 2.
-- **Recipes:** [`recipes/`](./recipes/common/src/commonMain/kotlin/dev/enro/recipes) — every concept (dialogs, bottom sheets, list-detail, tabs, deep links, managed flows, shared view models, custom animations) is a small runnable sample.
-- **API reference:** generate with `./gradlew dokkaGenerate`; the multi-module site lands at `build/dokka/html/index.html`. Also published as a `-javadoc.jar` alongside each artifact on Maven Central.
+- **Documentation:** [enro.dev](https://enro.dev) covers installation, concepts, results, animations, testing, each platform, and migration from Enro 2.
+- **Recipes:** [`recipes/`](./recipes/common/src/commonMain/kotlin/dev/enro/recipes) contains runnable examples. Each recipe shows one concept. [enro.dev/docs/recipes.html](https://enro.dev/docs/recipes.html) lists the recipes. Run the recipes app with `./gradlew :recipes:app:desktop:run`.
+- **Sample apps:** [`tests/application`](./tests/application/common/src/commonMain/kotlin/dev/enro/tests/application/samples) contains three larger samples. Run the test application with `./gradlew :tests:application:app:desktop:run`, then choose "Samples".
+- **API reference:** `./gradlew dokkaGenerate` writes the API reference to `build/dokka/html/index.html`. Each artifact on Maven Central also has a `-javadoc.jar`.
 - **Changelog:** [CHANGELOG.md](./CHANGELOG.md).
 
 ## Migrating from Enro 2
 
-Enro 3 is a significant rewrite that targets Kotlin Multiplatform and a
-Compose-first model. The migration guide at
+Enro 3 is a rewrite of Enro 2 for Kotlin Multiplatform and Compose. The
+migration guide at
 [enro.dev/docs/migrating-from-v2.html](https://enro.dev/docs/migrating-from-v2.html)
-covers the API delta in detail. Highlights:
+lists every API change. The main changes:
 
-- `NavigationKey.SupportsPush` / `SupportsPresent` → flat `NavigationKey` (+ optional `WithResult<T>`)
-- `@Parcelize` → `@Serializable` (kotlinx)
-- `push()` / `present()` → `open(key)`; dialog/overlay behaviour now lives in destination metadata
+- `NavigationKey.SupportsPush` / `SupportsPresent` → `NavigationKey`, or `NavigationKey.WithResult<T>` for a screen with a result
+- `@Parcelize` → `@Serializable` (kotlinx.serialization)
+- `push()` / `present()` → `open(key)`; destination metadata declares dialog and overlay behaviour
 - `closeWithResult(r)` → `complete(r)`
-- `NavigationApplication` interface is gone; install the component directly from `Application.onCreate`
-- Fragments and Activities continue to work via the `enro-compat` module
+- `NavigationApplication` is removed; call `installNavigationController` from `Application.onCreate`
+- A Fragment or an Activity can be a destination; the `enro-compat` module provides the Enro 2 API during migration
 
 ## Applications using Enro
 

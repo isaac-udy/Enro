@@ -17,12 +17,8 @@ import dev.enro.viewmodel.createEnroViewModel
 import kotlin.reflect.KClass
 
 /**
- * Creates a standalone managed flow destination. This destination type allows you to define
- * a multi-step flow as a single destination that automatically manages its own lifecycle.
- *
- * @param keyType The navigation key type for this flow
- * @param flow The flow definition that describes the steps and logic
- * @param metadata Additional metadata for the destination
+ * Creates a destination that runs [flow] as a navigation flow in a container owned by the
+ * destination, and calls [onCompleted] with the result of [flow].
  */
 public inline fun <reified T : NavigationKey, R : Any> managedFlowDestination(
     noinline flow: NavigationFlowScope.() -> R,
@@ -49,12 +45,8 @@ public inline fun <reified T : NavigationKey.WithResult<R>, R : Any> managedFlow
 
 
 /**
- * Creates a standalone managed flow destination. This destination type allows you to define
- * a multi-step flow as a single destination that automatically manages its own lifecycle.
- *
- * @param keyType The navigation key type for this flow
- * @param flow The flow definition that describes the steps and logic
- * @param metadata Additional metadata for the destination
+ * Creates a destination for [keyType] that runs [flow] as a navigation flow in a container
+ * owned by the destination, and calls [onCompleted] with the result of [flow].
  */
 public fun <T : NavigationKey, R : Any> managedFlowDestination(
     keyType: KClass<T>,

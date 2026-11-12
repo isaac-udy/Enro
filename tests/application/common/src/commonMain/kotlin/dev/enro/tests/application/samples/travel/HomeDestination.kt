@@ -59,7 +59,6 @@ fun HomeScreen() {
     val navigation = navigationHandle<HomeDestination>()
     var showLogoutDialog by remember { mutableStateOf(false) }
 
-    // Get destinations from repository
     val travelDestinations by TravelDestinationRepository.instance.destinations.collectAsState()
 
     Scaffold(
@@ -92,7 +91,6 @@ fun HomeScreen() {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Welcome section
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -118,7 +116,6 @@ fun HomeScreen() {
                 }
             }
 
-            // Destinations grid
             Text(
                 text = "Popular Destinations",
                 style = MaterialTheme.typography.titleMedium,

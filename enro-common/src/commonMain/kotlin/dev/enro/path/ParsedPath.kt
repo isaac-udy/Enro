@@ -18,12 +18,10 @@ public data class ParsedPath internal constructor(
                 .removeSuffix("/")
             val queryPattern = parts.getOrNull(1)
 
-            // Parse path pattern
             pathPattern.split("/").forEach { segment ->
                 pathParts.add(UrlEncoderUtil.decode(segment))
             }
 
-            // Parse query pattern
             queryPattern?.split("&")?.forEach { param ->
                 val keyValue = param.split("=")
                 if (keyValue.size == 2) {

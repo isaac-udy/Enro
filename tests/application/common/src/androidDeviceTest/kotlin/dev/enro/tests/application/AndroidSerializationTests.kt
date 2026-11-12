@@ -199,9 +199,8 @@ class AndroidSerializationTests {
 }
 
 /**
- * This function is used to cycle the saved state of a [SavedState] object through a Parcel,
- * which involves writing the SavedState data into a Parcel and then reading it back out.
- * This is important to ensure that the data is correctly marshalled and unmarshalled.
+ * Marshals [data] through a Parcel and returns the unmarshalled copy, so that a
+ * test reads state that was serialized, not the original object references.
  */
 fun cycleSavedState(
     data: SavedState,

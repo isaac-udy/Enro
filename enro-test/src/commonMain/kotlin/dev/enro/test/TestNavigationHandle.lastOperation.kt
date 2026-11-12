@@ -4,9 +4,7 @@ import dev.enro.NavigationOperation
 import kotlin.reflect.KClass
 
 /**
- * Returns the most-recently executed operation. Throws if no operations have
- * been executed yet — use `operations.lastOrNull()` directly if you need
- * to handle the empty case.
+ * Returns the last executed operation. Throws when no operation has been executed.
  */
 public fun TestNavigationHandle<*>.lastOperation(): NavigationOperation.RootOperation {
     val last = operations.lastOrNull()
@@ -17,10 +15,8 @@ public fun TestNavigationHandle<*>.lastOperation(): NavigationOperation.RootOper
 }
 
 /**
- * Returns the most-recently executed operation of type [T], or throws if no
- * operation of that type has been executed. Useful when you want to drill
- * into operation-specific fields (instance, result, etc.) without filtering
- * the whole `operations` list manually.
+ * Returns the last executed operation of type [T]. Throws when no operation of type [T]
+ * has been executed.
  */
 public inline fun <reified T : NavigationOperation.RootOperation> TestNavigationHandle<*>.lastOperationOfType(): T {
     val matching = operations.filterIsInstance<T>()
@@ -32,9 +28,9 @@ public inline fun <reified T : NavigationOperation.RootOperation> TestNavigation
 }
 
 /**
- * Asserts the executed operations match [expectedSequence] exactly in order
- * and count. Compares operation types by `KClass`, not by content — for
- * field-level assertions, use [assertOperationExecuted] per step.
+ * Asserts that the types of the executed operations equal [expectedSequence], in order and
+ * in count. The assertion compares the `KClass` of each operation, not the content of the
+ * operation; use [assertOperationExecuted] to assert on the content of an operation.
  */
 public fun TestNavigationHandle<*>.assertOperationSequence(
     vararg expectedSequence: KClass<out NavigationOperation.RootOperation>,

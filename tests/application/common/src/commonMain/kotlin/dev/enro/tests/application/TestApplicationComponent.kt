@@ -18,7 +18,6 @@ import kotlinx.serialization.modules.subclass
 object TestApplicationComponent : NavigationComponentConfiguration(
     module = createNavigationModule {
         serializersModule(SerializersModule {
-            // Loan Sample Serializers
             polymorphic(Any::class) {
                 subclass(LoanPurposeOption.Car::class)
                 subclass(LoanPurposeOption.Property::class)
@@ -51,7 +50,6 @@ object TestApplicationComponent : NavigationComponentConfiguration(
                 subclass(LoanApplication.RepaymentType.InterestOnly::class)
             }
 
-            // Common Serialization Serializers
             polymorphic(Any::class) {
                 subclass(CommonSerialization.SerializableGenericNavigationKey.GenericContentOne.DataOne::class)
                 subclass(CommonSerialization.SerializableGenericNavigationKey.GenericContentOne.DataTwo::class)

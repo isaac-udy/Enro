@@ -44,7 +44,8 @@ public class NavigationFlow<T> internal constructor(
     }
 
     /**
-     * This method is used to cause the flow to re-evaluate it's current state.
+     * Runs the flow lambda again. When the lambda returns a result, [update] calls `onCompleted`.
+     * Otherwise [update] sets the backstack of the flow's container to the steps the lambda declared.
      */
     public fun update() {
         update(
@@ -84,10 +85,8 @@ public class NavigationFlow<T> internal constructor(
             .mapValues { it.value.lastOrNull() }
 
         if (fromContainerChange && existingInstances.isNotEmpty()) {
-            // If the update is being caused by a container change, that might mean the NavigationFlow
-            // is being restored from a saved state. If we're being restored from a saved state,
-            // we don't actually want to change what's in the backstack, we just want to make sure
-            // that the steps list is up to date, so we can return here after the steps list is updated
+            // A new container that already contains flow steps was restored from saved state.
+            // The restored backstack is kept; only `steps` is updated.
             return
         }
         if (result != null) {

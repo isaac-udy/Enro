@@ -9,20 +9,15 @@ import dev.enro.ui.SceneStrategyScope
 import dev.enro.ui.get
 
 /**
- * A [NavigationScene.Overlay] that renders the overlaid content directly on top of the current scene, and
- * leaves it up to the [NavigationDestination] to decide how exactly to render the content.
+ * A [NavigationScene.Overlay] that renders [entry] above the scenes below, with no window or
+ * container around the content of [entry].
  *
- * When the destination's metadata supplies [OverlayTransitions] (see
- * the [directOverlay] / [directOverlayWithFade] builders), Enro's
- * overlay renderer applies the given enter / exit transitions to the
- * scene's appearance and disappearance — including the disappearance
- * path, by keeping the scene composed for the duration of the exit
- * transition. Without those transitions the scene snaps in and out
- * the way it always did.
+ * `NavigationDisplay` animates the scene with the transitions set by `directOverlay(enter, exit)`
+ * or [directOverlayWithFade], and keeps the scene composed until the exit transition finishes.
+ * A scene with no transitions set appears and disappears without animation.
  *
- * If the content in the [DirectOverlayScene] does not prevent the user from interacting with the underlying
- * scene (e.g. by using a Dialog or ModalBottomSheet), it will be possible to click through the overlay
- * and interact with the underlying scene.
+ * The scene does not block input to the scenes below. Content that does not render a `Dialog`,
+ * `ModalBottomSheet` or similar lets the user click through to the scenes below.
  */
 public data class DirectOverlayScene(
     override val key: Any,
@@ -39,10 +34,10 @@ public data class DirectOverlayScene(
 }
 
 /**
- * A [NavigationSceneStrategy] that displays entries which have opted
- * into direct-overlay rendering via [directOverlay] / [directOverlayWithFade].
+ * Returns a [DirectOverlayScene] when the last entry is marked with [directOverlay] or
+ * [directOverlayWithFade], and `null` otherwise.
  *
- * This strategy should always be added before any non-overlay scene strategies.
+ * Add this strategy before every non-overlay scene strategy.
  */
 public class DirectOverlaySceneStrategy : NavigationSceneStrategy {
     @Composable
@@ -59,10 +54,7 @@ public class DirectOverlaySceneStrategy : NavigationSceneStrategy {
         )
     }
 
-    /**
-     * Metadata flag indicating that a destination should be rendered
-     * as a direct overlay. Default `false`.
-     */
+    /** `true` for a destination that renders as a direct overlay. Default `false`. */
     public object IsDirectOverlayKey :
         NavigationDestination.MetadataKey<Boolean>(
             default = false,
@@ -70,8 +62,8 @@ public class DirectOverlaySceneStrategy : NavigationSceneStrategy {
         )
 
     /**
-     * Optional fade duration, in milliseconds, set by [directOverlayWithFade]. Each renderer
-     * maps it to its own fade. Default `null`.
+     * The fade duration in milliseconds set by [directOverlayWithFade]. Each renderer applies
+     * the duration to the renderer's own fade. Default `null`.
      */
     public object OverlayFadeKey :
         NavigationDestination.MetadataKey<Int?>(
@@ -83,21 +75,17 @@ public class DirectOverlaySceneStrategy : NavigationSceneStrategy {
 }
 
 /**
- * Marks the destination as a direct overlay — rendered on top of the
- * underlying scene with no shell or window wrapper. Snaps in and out
- * by default. Pair with [directOverlayWithFade] (or the explicit
- * `enter` / `exit` overload) to animate the appearance.
+ * Marks the destination as a direct overlay, see [DirectOverlayScene]. The overlay appears and
+ * disappears without animation. Use [directOverlayWithFade] or `directOverlay(enter, exit)` to
+ * animate the overlay.
  */
 public fun NavigationDestination.MetadataBuilder<*>.directOverlay() {
     add(DirectOverlaySceneStrategy.IsDirectOverlayKey, true)
 }
 
 /**
- * Shortcut for [directOverlay] with a symmetric fade-in / fade-out
- * pair — the most common overlay treatment. Override [durationMillis]
- * to tighten or stretch the fade; Compose UI destinations can pass
- * explicit transitions to `directOverlay(enter, exit)` when they need
- * anything fancier (slide, scale, etc).
+ * Marks the destination as a direct overlay that fades in and fades out over [durationMillis].
+ * For any other transition, use `directOverlay(enter, exit)` from `enro-ui`.
  */
 public fun NavigationDestination.MetadataBuilder<*>.directOverlayWithFade(
     durationMillis: Int = 128,

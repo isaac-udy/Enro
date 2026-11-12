@@ -14,16 +14,14 @@ import dev.enro.NavigationBackstack
 import dev.enro.NavigationKey
 
 /**
- * Returns a [NavigationDestinationDecorator] that manages the lifecycle of navigation destinations
- * based on their position in the backstack and the current navigation state.
+ * Returns a decorator that provides each destination with a [LifecycleOwner] through
+ * [LocalLifecycleOwner]. The destination's lifecycle state is the lower of the parent
+ * lifecycle's state and:
+ * - **RESUMED**: the destination is in [backstack] and [isSettled] is `true`
+ * - **STARTED**: the destination is in [backstack] and [isSettled] is `false`
+ * - **CREATED**: the destination is not in [backstack], for example while animating out
  *
- * The lifecycle states are determined as follows:
- * - **RESUMED**: The destination is in the backstack and navigation has settled (no animations)
- * - **STARTED**: The destination is in the backstack but navigation is transitioning
- * - **CREATED**: The destination is not in the backstack (e.g., being animated out)
- *
- * @param backstack The current navigation backstack
- * @param isSettled Whether the navigation state has settled (no animations in progress)
+ * @param isSettled `false` while a navigation animation is running
  */
 @Composable
 public fun rememberLifecycleDecorator(
@@ -33,15 +31,6 @@ public fun rememberLifecycleDecorator(
     navigationLifecycleDecorator(backstack, isSettled)
 }
 
-/**
- * Creates a [NavigationDestinationDecorator] that manages destination lifecycle.
- *
- * This decorator provides each destination with its own [androidx.lifecycle.LifecycleOwner]
- * that reflects the destination's visibility state within the navigation system.
- *
- * @param backstack The current navigation backstack
- * @param isSettled Whether the navigation state has settled
- */
 internal fun navigationLifecycleDecorator(
     backstack: NavigationBackstack,
     isSettled: Boolean,
@@ -49,7 +38,6 @@ internal fun navigationLifecycleDecorator(
     return navigationDestinationDecorator { destination ->
         val isInBackstack = backstack.contains(destination.instance)
 
-        // Determine the appropriate lifecycle state based on destination visibility
         val maxLifecycle = when {
             isInBackstack && isSettled -> Lifecycle.State.RESUMED
             isInBackstack && !isSettled -> Lifecycle.State.STARTED
@@ -71,15 +59,8 @@ internal fun navigationLifecycleDecorator(
 }
 
 /**
- * Creates and remembers a [LifecycleOwner] that follows the parent lifecycle but is capped
- * at the specified [maxLifecycle] state.
- *
- * This is used internally by [navigationLifecycleDecorator] to manage the lifecycle of navigation
- * destinations based on their visibility and animation state.
- *
- * @param maxLifecycle The maximum lifecycle state this owner can reach
- * @param parentLifecycleOwner The parent lifecycle to follow
- * @return A lifecycle owner that is capped at the specified max state
+ * Returns a [LifecycleOwner] whose state is the lower of [maxLifecycle] and the state of
+ * [parentLifecycleOwner].
  */
 @Composable
 private fun rememberNavigationLifecycleOwner(
@@ -87,12 +68,12 @@ private fun rememberNavigationLifecycleOwner(
     parentLifecycleOwner: LifecycleOwner,
 ) : LifecycleOwner {
     val childLifecycleOwner = remember(parentLifecycleOwner) { ChildLifecycleOwner() }
-    // The cap is applied in composition's apply phase rather than a dispatched effect, so a
-    // parent ON_DESTROY can never reach the child while the cap is still INITIALIZED.
+    // maxLifecycle is set in a SideEffect, which runs in the composition's apply phase, and not
+    // in a dispatched effect: the child must not receive a parent ON_DESTROY while the child's
+    // maxLifecycle is still INITIALIZED.
     SideEffect {
         childLifecycleOwner.maxLifecycle = maxLifecycle
     }
-    // Pass LifecycleEvents from the parent down to the child
     DisposableEffect(childLifecycleOwner, parentLifecycleOwner) {
         childLifecycleOwner.maxLifecycle = maxLifecycle
         val observer = LifecycleEventObserver { _, event ->
@@ -106,10 +87,6 @@ private fun rememberNavigationLifecycleOwner(
     return childLifecycleOwner
 }
 
-/**
- * Internal implementation of a child lifecycle owner that follows a parent lifecycle
- * but can be capped at a maximum state.
- */
 internal class ChildLifecycleOwner : LifecycleOwner {
     private val lifecycleRegistry = LifecycleRegistry(this)
 

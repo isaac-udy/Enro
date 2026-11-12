@@ -9,16 +9,11 @@ import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
 
 /**
- * Returns the [NavigationHandle] for the destination this Composable is
- * rendering in. Untyped — the handle is `NavigationHandle<NavigationKey>`,
- * so the key type is whatever the destination was opened with.
+ * Returns the untyped [NavigationHandle] of the destination that contains
+ * this Composable. `navigationHandle<MyKey>()` returns a typed
+ * [NavigationHandle].
  *
- * Prefer the reified `navigationHandle<MyKey>()` overload when you know
- * the key type, to avoid casting and to surface mismatches at compile
- * time.
- *
- * Throws if called outside a destination composition (i.e. outside the
- * Composable lambda passed to `navigationDestination<…>`).
+ * Throws when called outside the content of a destination.
  */
 @JvmName("untypedNavigationHandle")
 @Composable
@@ -27,14 +22,11 @@ public fun navigationHandle(): NavigationHandle<NavigationKey> {
 }
 
 /**
- * Returns the [NavigationHandle] typed to [T] for the destination this
- * Composable is rendering in. Verifies at runtime that the destination's
- * key really is a [T] and throws a descriptive error otherwise — usually
- * a sign the function was called from the wrong destination.
+ * Returns the [NavigationHandle] of the destination that contains this
+ * Composable, typed to [T].
  *
- * The typed handle gives you access to the result-aware overloads of
- * [complete] / [completeFrom] / [closeAndCompleteFrom] when [T] extends
- * [NavigationKey.WithResult].
+ * Throws if the key of the destination is not a [T], or when called
+ * outside the content of a destination.
  */
 @Composable
 public inline fun <reified T: NavigationKey> navigationHandle(): NavigationHandle<T> {
@@ -42,9 +34,7 @@ public inline fun <reified T: NavigationKey> navigationHandle(): NavigationHandl
 }
 
 /**
- * Explicit-[KClass] variant of `navigationHandle<T>()` for the rare case
- * you can't use a reified type parameter (e.g. dynamically chosen key
- * type, Java interop).
+ * `navigationHandle<T>()` with the key type passed as a [KClass].
  */
 @Composable
 public fun <T: NavigationKey> navigationHandle(
@@ -64,15 +54,13 @@ public fun <T: NavigationKey> navigationHandle(
 }
 
 /**
- * Applies a [NavigationHandleConfiguration] block to this handle for the
- * lifetime of the surrounding composition. Registrations made inside
- * [block] (e.g. `onCloseRequested { … }`) are torn down automatically
- * when the Composable leaves composition.
+ * Applies [block] to this handle while the calling Composable is in the
+ * composition. The registrations made in [block] (for example
+ * `onCloseRequested { … }`) are removed when the Composable leaves the
+ * composition.
  *
- * Backed by a [DisposableEffect] keyed on [block], so changing the block
- * identity tears down the previous configuration and re-runs the new one.
- * For a `ViewModel`-scoped lifetime, use the `config` parameter on the
- * `ViewModel.navigationHandle` delegated property instead.
+ * [configure] runs in a [DisposableEffect] keyed on [block]: a new [block]
+ * instance removes the previous registrations and applies the new [block].
  */
 @Composable
 public inline fun <reified T: NavigationKey> NavigationHandle<T>.configure(

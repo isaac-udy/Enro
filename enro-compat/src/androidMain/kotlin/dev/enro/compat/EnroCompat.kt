@@ -8,19 +8,15 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
 /**
- * EnroCompat provides compatibility support for applications migrating from Enro 2.x to Enro 3.x APIs.
+ * Compatibility support for applications that migrate from the Enro 2.x APIs to the
+ * Enro 3.x APIs.
  *
- * When this class is found on the classpath at runtime during the instantiation of Enro's Android
- * platform module, it will be automatically instantiated and its [compatModule] will be registered
- * with the navigation system.
+ * Enro's Android platform module looks up EnroCompat by class name at runtime. When
+ * EnroCompat is on the classpath, the platform module creates an EnroCompat and registers
+ * [compatModule].
  *
- * The compatibility module registers functionality that helps bridge the gap between the older
- * Enro 2.x APIs and the new Enro 3.x APIs, making it easier for applications to gradually migrate
- * their navigation code without breaking existing functionality.
- *
- * This includes serialization support for legacy navigation directions and other compatibility
- * features that ensure smooth interoperability between different versions of the Enro navigation
- * framework.
+ * [compatModule] registers serializers for [NavigationDirection], and a plugin that displays
+ * a destination opened with [NavigationDirection.Present] as a direct overlay.
  */
 public class EnroCompat {
     @JvmField

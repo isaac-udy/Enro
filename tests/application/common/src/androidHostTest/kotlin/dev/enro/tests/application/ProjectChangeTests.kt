@@ -129,9 +129,8 @@ private fun exec(
         ProcessBuilder()
             .command(*command)
             .directory(
-                // Walk up from the module dir to the repository root (where
-                // settings.gradle.kts lives) so git + ./gradlew run from the root,
-                // regardless of how deeply nested this module is.
+                // git and ./gradlew must run from the repository root: the nearest
+                // parent directory that contains settings.gradle.kts.
                 generateSequence(File(".").absoluteFile) { it.parentFile }
                     .first { File(it, "settings.gradle.kts").exists() }
             )

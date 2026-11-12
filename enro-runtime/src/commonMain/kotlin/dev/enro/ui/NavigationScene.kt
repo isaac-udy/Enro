@@ -16,21 +16,17 @@ public interface NavigationScene {
     public val content: @Composable () -> Unit
 
     /**
-     * Optional scene-level metadata. Used by [NavigationDisplay] to look up
-     * per-scene transition overrides (e.g. [NavigationDisplay.TransitionKey])
-     * before falling back to the container-level animations.
+     * [NavigationDisplay] reads transition overrides such as [NavigationDisplay.TransitionKey]
+     * from the scene's metadata before using the container's animations.
      *
-     * Defaults to the metadata of the last entry, mirroring Nav3's
-     * `Scene.metadata` default. Scene strategies that want to expose their
-     * own metadata (or compose it from the entries) should override.
+     * Defaults to the metadata of the last entry, or an empty map when [entries] is empty.
      */
     public val metadata: Map<String, Any>
         get() = entries.lastOrNull()?.metadata ?: emptyMap()
 
     /**
-     * A typed key for values stored in a [NavigationScene]'s metadata map.
-     * Parallel to [NavigationDestination.MetadataKey] — same shape, just
-     * scoped to scene-level metadata.
+     * A typed key for a value in a [NavigationScene]'s metadata map. Reading the key from a
+     * metadata map that has no value for the key returns [default].
      *
      * Example:
      * ```
@@ -59,55 +55,48 @@ public interface NavigationScene {
     }
 
     /**
-     * A specific scene to render 1 or more NavigationDestination instances as an overlay.
+     * A scene that renders one or more destinations above the scenes calculated from
+     * [overlaidEntries]. The [content] of an overlay is expected to render in a separate window
+     * or layer, such as a dialog or popup.
      *
-     * It is expected that the [content] is rendered in one or more separate windows (e.g., a dialog,
-     * popup window, etc.) that are visible above any additional [NavigationScene] instances calculated from the
-     * [overlaidEntries].
-     *
-     * When processing [overlaidEntries], expect processing of each [NavigationSceneStrategy] to restart from the
-     * first strategy. This may result in multiple instances of the same [OverlayNavigationScene] to be shown
-     * simultaneously, making a unique [key] even more important.
+     * [overlaidEntries] are passed to the [NavigationSceneStrategy] again, starting from the
+     * first strategy, so several overlays of the same type can be displayed at once. Each
+     * overlay requires a unique [key].
      */
     public interface Overlay : NavigationScene {
 
         /**
-         * The NavigationDestination entries that should be handled by another [NavigationScene] that sits below this Scene.
-         *
-         * This *must* always be a non-empty list to correctly display entries below the overlay.
+         * The entries that the scenes below this overlay render. An empty list renders no scene
+         * below this overlay.
          */
         public val overlaidEntries: List<NavigationDestination<NavigationKey>>
 
         /**
-         * Invoked after this overlay has been popped from the backstack but
-         * **before** it leaves composition. The overlay renderer awaits the
-         * returned suspending value so the overlay can play its dismissal
-         * animation (or any other suspending teardown work) without being
-         * yanked out of composition mid-animation.
+         * Called after this overlay is removed from the backstack. The overlay's content stays
+         * composed until [onRemove] returns, so [onRemove] can suspend for a dismissal
+         * animation.
          *
-         * The overlay's content stays composed until this returns. In `NavigationDisplay`,
-         * an exit transition set with `directOverlay(enter, exit)` or `directOverlayWithFade`
-         * starts after this returns. Cancelled if an overlay with the same `key` becomes
-         * active again, or if the display leaves composition.
+         * In `NavigationDisplay`, an exit transition set with `directOverlay(enter, exit)` or
+         * `directOverlayWithFade` starts after [onRemove] returns. [onRemove] is cancelled if an
+         * overlay with the same `key` becomes active again, or if the display leaves
+         * composition.
          *
-         * Mirrors Nav3's `OverlayScene.onRemove`. Default is a no-op.
+         * Navigation 3 equivalent: `OverlayScene.onRemove`.
          */
         public suspend fun onRemove() {}
     }
 }
 
 /**
- * Typed accessor for a value stored under a [NavigationScene.MetadataKey].
- * Returns [NavigationScene.MetadataKey.default] when the key is absent.
+ * Returns the value stored under [key], or [NavigationScene.MetadataKey.default] when the map
+ * has no value for [key].
  */
 @Suppress("UNCHECKED_CAST")
 public operator fun <T> Map<String, Any>.get(key: NavigationScene.MetadataKey<T>): T {
     return get(key.name) as T? ?: key.default
 }
 
-/**
- * Returns `true` if this metadata map contains a value for [key].
- */
+/** Returns `true` if this metadata map contains a value for [key]. */
 public operator fun <T> Map<String, Any>.contains(key: NavigationScene.MetadataKey<T>): Boolean {
     return containsKey(key.name)
 }

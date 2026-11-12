@@ -5,11 +5,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
 import kotlin.reflect.KClass
 
-/**
- * When attempting to find a ViewModel in a NavigationContext, we don't want to create a new ViewModel, rather we want to
- * get an existing instance of that ViewModel, if it exists, so this ViewModelProvider.Factory always throws an exception
- * if it is ever asked to actually create a ViewModel.
- */
+// getViewModel returns an existing ViewModel and never creates one, so this factory throws
+// when the ViewModelProvider calls `create`.
 private class NavigationContextViewModelFactory() : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(
         modelClass: KClass<T>,
@@ -29,9 +26,8 @@ private fun viewModelNotFoundError(context: AnyNavigationContext, modelClass: KC
 }
 
 /**
- * Attempt to get a ViewModel of a certain type from a NavigationContext.
- *
- * @return The ViewModel requested, or null if the ViewModel does not exist in the NavigationContext's ViewModelStore
+ * Returns the existing ViewModel of type [cls] in the ViewModelStore of this context, or null
+ * if the ViewModelStore has no ViewModel of type [cls]. [getViewModel] never creates a ViewModel.
  */
 public fun <T : ViewModel> AnyNavigationContext.getViewModel(
     cls: KClass<T>,
@@ -52,11 +48,9 @@ public fun <T : ViewModel> AnyNavigationContext.getViewModel(
 }
 
 /**
- * Attempt to get a ViewModel of a certain type from a NavigationContext.
+ * Returns the existing ViewModel of type [cls] in the ViewModelStore of this context.
  *
- * @return The ViewModel requested
- *
- * @throws IllegalStateException if the ViewModel does not already exist in the NavigationContext
+ * @throws IllegalStateException if the ViewModelStore has no ViewModel of type [cls]
  */
 public fun <T : ViewModel> AnyNavigationContext.requireViewModel(
     cls: KClass<T>,
@@ -67,9 +61,8 @@ public fun <T : ViewModel> AnyNavigationContext.requireViewModel(
 }
 
 /**
- * Attempt to get a ViewModel of a certain type from a NavigationContext.
- *
- * @return The ViewModel requested, or null if the ViewModel does not exist in the NavigationContext's ViewModelStore
+ * Returns the existing [T] in the ViewModelStore of this context, or null if the
+ * ViewModelStore has no [T]. [getViewModel] never creates a ViewModel.
  */
 public inline fun <reified T : ViewModel> AnyNavigationContext.getViewModel(
     key: String? = null,
@@ -78,11 +71,9 @@ public inline fun <reified T : ViewModel> AnyNavigationContext.getViewModel(
 }
 
 /**
- * Attempt to get a ViewModel of a certain type from a NavigationContext.
+ * Returns the existing [T] in the ViewModelStore of this context.
  *
- * @return The ViewModel requested
- *
- * @throws IllegalStateException if the ViewModel does not already exist in the NavigationContext
+ * @throws IllegalStateException if the ViewModelStore has no [T]
  */
 public inline fun <reified T : ViewModel> AnyNavigationContext.requireViewModel(
     key: String? = null,

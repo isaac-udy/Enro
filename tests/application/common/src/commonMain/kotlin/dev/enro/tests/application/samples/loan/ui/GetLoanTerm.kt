@@ -66,7 +66,6 @@ fun GetLoanTermScreen() {
         OutlinedTextField(
             value = months,
             onValueChange = { newValue ->
-                // Only allow numeric input
                 if (newValue.all { it.isDigit() }) {
                     months = newValue
                 }

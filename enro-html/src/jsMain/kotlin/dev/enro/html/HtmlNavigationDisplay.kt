@@ -35,14 +35,14 @@ import org.w3c.dom.HTMLElement
 /**
  * Renders a [NavigationContainerState] with Compose HTML.
  *
- * The current scene is replaced without an animation. Overlay scenes render after it, in
- * backstack order: [htmlDialog] destinations in a native `<dialog>`, and
+ * The current scene is replaced without an animation. Overlay scenes render after the
+ * current scene, in backstack order: [htmlDialog] destinations in a native `<dialog>`, and
  * [dev.enro.ui.scenes.directOverlay] destinations directly. A direct overlay that sets
  * [dev.enro.ui.scenes.directOverlayWithFade] fades in and out. A closed overlay stays in the DOM
- * until its CSS transitions finish.
+ * until the CSS transitions of the overlay finish.
  *
- * Browser back and forward are handled by [dev.enro.ui.InstallWebHistoryPlugin], not by this
- * display.
+ * [dev.enro.ui.InstallWebHistoryPlugin] handles browser back and forward;
+ * HtmlNavigationDisplay does not.
  */
 @Composable
 public fun HtmlNavigationDisplay(

@@ -16,12 +16,10 @@ class LazyColumnTest {
 
     @Test
     fun testLazyColumnScrolling() {
-        // Start at the destination selection screen and navigate to LazyColumn
         val robot = SelectDestinationRobot(composeRule)
             .openLazyColumn()
             .verifyLazyColumnVisible()
         
-        // Test scrolling to different items
         robot.scrollToItem(10)
             .verifyItemVisible(10)
         

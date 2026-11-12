@@ -9,10 +9,8 @@ import kotlinx.parcelize.Parcelize
 
 
 /**
- * This NavigationKey and associated NavigationDestination are used from inside of the
- * ProjectChangeTests of the :tests:application module. This file is modified/renamed/deleted/etc
- * as part of an incremental build which is run during the test to check that the KSP processor
- * correctly generates the associated binding files and compiles correctly.
+ * ProjectChangeTests edits, renames and deletes this file, then runs an incremental
+ * build to check that the KSP processor regenerates the bindings and the project compiles.
  */
 @Parcelize
 internal class TestApplicationEditableDestination : Parcelable, NavigationKey.SupportsPush

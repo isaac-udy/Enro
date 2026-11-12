@@ -1,13 +1,16 @@
 /**
  * Enro Recipe: Synthetic Destination — Auth gate
  *
- * Demonstrates the conditional-redirect pattern: a synthetic that wraps a
- * `open(SomeDestination)` call with a runtime check, branching to either
- * the requested destination or a login screen.
+ * Shows a conditional redirect with `syntheticDestination`. The synthetic
+ * destination reads the auth state and calls `open(...)` with the protected
+ * feature or with the login screen. The synthetic destination renders no UI.
  *
- * Callers don't have to know about the gate — they just open the
- * synthetic. The synthetic decides where to actually land based on the
- * current auth state and dispatches `open(...)` accordingly.
+ * A caller opens the key of the synthetic destination and does not check the
+ * auth state.
+ *
+ * The Conditional Navigation recipe (`dev.enro.recipes.conditional`) builds
+ * the same gate with a NavigationInterceptor. With an interceptor, callers
+ * open the key of the protected destination.
  */
 package dev.enro.recipes.synthetic
 
@@ -53,18 +56,17 @@ object AuthGateLogin : NavigationKey
 object AuthGateProtectedFeature : NavigationKey
 
 /**
- * Synthetic auth gate. When opened, it checks the current auth state and
- * forwards to either the protected feature (logged in) or the login screen
- * (not logged in). The original caller doesn't need to know about the
- * branching — they just open `RequireProtectedFeature`.
+ * The key of the synthetic auth gate. A caller opens [RequireProtectedFeature]
+ * in place of [AuthGateProtectedFeature].
  */
 @Serializable
 object RequireProtectedFeature : NavigationKey
 
-// In a real app this would be a session repository, not a top-level mutable.
-// Kept here so the recipe is self-contained.
+// A top-level property in place of a session repository.
 private var isLoggedIn: Boolean by mutableStateOf(false)
 
+// The `open` outcome opens another key in place of the synthetic. The
+// instance of RequireProtectedFeature is not added to the backstack.
 @NavigationDestination(RequireProtectedFeature::class)
 val requireProtectedFeature = syntheticDestination<RequireProtectedFeature> {
     if (isLoggedIn) {

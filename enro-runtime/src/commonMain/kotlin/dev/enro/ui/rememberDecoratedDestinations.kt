@@ -21,18 +21,11 @@ import dev.enro.ui.decorators.rememberViewModelStoreDecorator
 
 
 /**
- * Creates NavigationDestination instances from the backstack and applies decorators.
- * Decorators add functionality like lifecycle management, view models, and saved state.
+ * Returns a decorated [NavigationDestination] for each instance in [backstack].
  *
- * Onpop tracking mirrors Nav3's PrepareBackStack + per-entry DisposableEffect pattern:
- * each decorated destination's content() runs a DisposableEffect that tracks composition
- * presence, and [PrepareBackStack] runs DisposableEffects keyed on the backstack list so
- * leaving the backstack is observable too. `onPop` fires when an entry has left BOTH.
- *
- * @param controller The navigation controller for binding resolution
- * @param backstack The current navigation backstack
- * @param isSettled Whether animations are currently settled (used by lifecycle decorator)
- * @return List of decorated NavigationDestination instances
+ * A decorator's `onPop` is called once the instance is in neither the backstack nor the
+ * composition. `compositionTrackingDecorator` tracks the composition and [PrepareBackStack]
+ * tracks the backstack. Navigation 3 uses the same pair of effects.
  */
 @Composable
 internal fun rememberDecoratedDestinations(
@@ -41,35 +34,27 @@ internal fun rememberDecoratedDestinations(
     savedStateHolder: NavigationSavedStateHolder,
     isSettled: Boolean,
 ): List<NavigationDestination<NavigationKey>> {
-    // Create decorators that wrap destinations with additional functionality
     val controllerDecorators = remember {
         controller.decorators.getDecorators()
     }
     val decorators = listOf(
-        // The renderer's wrapper must be the OUTERMOST decorator (first
-        // in this list — foldRight makes the first entry the outermost
-        // wrapper). NavigationDisplay's wrapper always emits a
-        // Box(Modifier.sharedElement(...)) for every destination in every
-        // scene that lists it, even when the movableContentDecorator below
-        // skips rendering the actual content. That empty Box is what lets
-        // Compose's SharedTransitionScope bridge an entry's bounds from one
-        // scene's layout slot to another during a transition.
+        // Order matters: the first decorator is the outermost wrapper. The renderer's wrapper
+        // must be outside movableContentDecorator, so that the wrapper is composed in every
+        // scene that lists the destination, including a scene where movableContentDecorator
+        // skips the content. NavigationDisplay's shared element bounds depend on that wrapper.
         remember { destinationWrapperDecorator() },
-        rememberMovableContentDecorator(),  // Preserves content across recompositions
-        rememberSavedStateDecorator(savedStateHolder),      // Manages saved instance state
-        rememberViewModelStoreDecorator(),  // Provides ViewModelStore for each destination
-        rememberLifecycleDecorator(backstack, isSettled),  // Manages lifecycle state
-        rememberNavigationContextDecorator(),  // Provides navigation context
+        rememberMovableContentDecorator(),
+        rememberSavedStateDecorator(savedStateHolder),
+        rememberViewModelStoreDecorator(),
+        rememberLifecycleDecorator(backstack, isSettled),
+        rememberNavigationContextDecorator(),
     ).plus(controllerDecorators)
 
     val idsInBackstack: MutableSet<String> = remember { mutableSetOf() }
     val idsInComposition: MutableSet<String> = remember { mutableSetOf() }
 
-    // Innermost decorator: tracks composition and fires onPop on every
-    // other decorator. Appending it as the LAST element makes foldRight
-    // wrap it as the innermost — which puts its DisposableEffect inside
-    // the movable content set up by movableContentDecorator. See
-    // docs/NAV3-COMPARISON.md for the rationale.
+    // The tracking decorator must be last in the list (innermost), so that the tracking
+    // decorator's DisposableEffect is inside the movable content. See docs/NAV3-COMPARISON.md.
     val trackingDecorator = rememberCompositionTrackingDecorator(
         decoratorsToInvokeOnPop = decorators,
         idsInBackstack = idsInBackstack,
@@ -102,14 +87,12 @@ internal fun rememberDecoratedDestinations(
 }
 
 /**
- * Tracks backstack membership for each decorated destination. Mirrors Nav3's
- * `PrepareBackStack`: every entry gets a [DisposableEffect] keyed on the entry id and
- * the latest backstack list. When the effect disposes (entry left the backstack), if
- * the entry is also not in composition, decorator `onPop` callbacks fire in
- * reverse-decoration order.
+ * Runs a [DisposableEffect] for each entry, keyed on the entry id and the entries list. When
+ * the effect is disposed for an entry that is in neither the latest entries nor the
+ * composition, each decorator's `onPop` is called, last decorator first.
  *
- * Splits the lifecycle observability into two independent sources (backstack + composition)
- * so we never miss the moment both have settled, regardless of which goes first.
+ * `compositionTrackingDecorator` handles the other order, where the entry leaves the
+ * composition after the entry leaves the backstack. Navigation 3 equivalent: `PrepareBackStack`.
  */
 @Composable
 private fun PrepareBackStack(

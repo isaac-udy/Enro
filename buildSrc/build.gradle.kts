@@ -67,5 +67,9 @@ gradlePlugin {
             id = "configure-compose-runtime"
             implementationClass = "ConfigureComposeRuntime"
         }
+        register("configure-docs-snippets") {
+            id = "configure-docs-snippets"
+            implementationClass = "ConfigureDocsSnippets"
+        }
     }
 }

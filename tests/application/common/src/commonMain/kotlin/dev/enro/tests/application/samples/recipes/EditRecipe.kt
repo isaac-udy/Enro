@@ -106,7 +106,6 @@ fun EditRecipeScreen() {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Basic Information
             Card {
                 Column(
                     modifier = Modifier
@@ -174,7 +173,6 @@ fun EditRecipeScreen() {
                 }
             }
 
-            // Ingredients
             Card {
                 Column(
                     modifier = Modifier
@@ -244,7 +242,6 @@ fun EditRecipeScreen() {
                 }
             }
 
-            // Instructions
             Card {
                 Column(
                     modifier = Modifier
@@ -317,7 +314,6 @@ fun EditRecipeScreen() {
                 }
             }
 
-            // Notes
             Card {
                 Column(
                     modifier = Modifier

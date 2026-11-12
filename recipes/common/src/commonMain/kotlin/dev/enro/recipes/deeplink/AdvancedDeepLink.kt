@@ -1,13 +1,13 @@
 /**
  * Enro Recipe: Advanced Deep Link
  *
- * Demonstrates how Enro handles synthetic backstacks for deep links by
- * pre-populating the backstack so the user has a sensible navigation history.
+ * Shows a synthetic backstack for a deep link. `updateBackstack` replaces the
+ * container's backstack with the target screen on top of the parent screens
+ * of the target, so Back from the target opens a parent screen.
  *
- * The recipe entry key has a `@NavigationPath` so the web platform plugin
- * writes `/advanced-deep-link` to the URL bar when active. Inner-container
- * navigation (Category -> Article) is session-local — see the web platform
- * docs for the root-only URL routing model.
+ * The recipe entry key has a `@NavigationPath`, so on the web the URL bar
+ * shows `/advanced-deep-link` while the recipe is active. `Category` and
+ * `Article` have no registered path binding and do not change the URL.
  */
 @file:OptIn(ExperimentalEnroApi::class)
 
@@ -21,10 +21,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.NavigationKey
@@ -56,8 +52,8 @@ data class Category(val categoryId: String) : NavigationKey
 @Serializable
 data class Article(val articleId: String, val categoryId: String) : NavigationKey
 
-// Illustrative: nested hand-written path bindings for the manual API.
-// Not registered with the controller; shown for API reference only.
+// Examples of nested patterns with createPathBinding. No module registers
+// these two bindings with the controller.
 
 val categoryPathBinding: NavigationPathBinding<Category> = NavigationPathBinding.createPathBinding(
     pattern = "/categories/{categoryId}",
@@ -77,17 +73,16 @@ val articlePathBinding: NavigationPathBinding<Article> = NavigationPathBinding.c
 fun AdvancedDeepLinkRecipeScreen() {
     val navigation = navigationHandle<AdvancedDeepLinkRecipe>()
 
-    // Toggle between "normal" launch and "deep link" launch to demonstrate the
-    // synthetic backstack approach.
-    var deepLinkArticleId by rememberSaveable { mutableStateOf<String?>(null) }
-    var deepLinkCategoryId by rememberSaveable { mutableStateOf<String?>(null) }
-
     RecipeScaffold(
         title = "Advanced Deep Link",
         navigation = navigation,
     ) { modifier ->
+        // `backstack` is the backstack for a normal launch. The buttons below
+        // replace the backstack of this container to simulate a deep link.
+        val container = rememberNavigationContainer(
+            backstack = backstackOf(AppHome.asInstance()),
+        )
         Column(modifier = modifier) {
-            // Controls to "simulate" a deep link arrival
             Column(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -97,35 +92,27 @@ fun AdvancedDeepLinkRecipeScreen() {
                     style = MaterialTheme.typography.titleSmall,
                 )
                 Button(onClick = {
-                    deepLinkArticleId = null
-                    deepLinkCategoryId = null
+                    container.updateBackstack { backstackOf(AppHome.asInstance()) }
                 }) {
                     Text("Normal launch")
                 }
                 Button(onClick = {
-                    deepLinkArticleId = "deep-link-article"
-                    deepLinkCategoryId = "tech"
+                    // The new backstack contains the article's parent screens below
+                    // the article, so Back opens the category and then home.
+                    // region docs:deep-links/synthetic-backstack
+                    container.updateBackstack {
+                        backstackOf(
+                            AppHome.asInstance(),
+                            Category("tech").asInstance(),
+                            Article("deep-link-article", "tech").asInstance(),
+                        )
+                    }
+                    // endregion
                 }) {
                     Text("Deep link to /categories/tech/articles/deep-link-article")
                 }
             }
 
-            // Build the initial backstack based on whether we're "deep linked".
-            val initialBackstack = if (deepLinkArticleId != null && deepLinkCategoryId != null) {
-                backstackOf(
-                    AppHome.asInstance(),
-                    Category(deepLinkCategoryId!!).asInstance(),
-                    Article(deepLinkArticleId!!, deepLinkCategoryId!!).asInstance(),
-                )
-            } else {
-                backstackOf(AppHome.asInstance())
-            }
-
-            // We use the deepLink ids in the container key to force re-creation when
-            // toggling launch types.
-            val container = rememberNavigationContainer(
-                backstack = initialBackstack,
-            )
             NavigationDisplay(state = container)
         }
     }

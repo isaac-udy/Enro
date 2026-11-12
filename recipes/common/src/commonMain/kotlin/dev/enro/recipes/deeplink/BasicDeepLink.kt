@@ -1,14 +1,18 @@
 /**
  * Enro Recipe: Basic Deep Link
  *
- * Demonstrates two ways of mapping URLs to NavigationKeys:
- *  - `@NavigationPath` on the recipe entry key, which is what the web platform
- *    plugin actually uses to drive the URL bar. Only root-level destinations
- *    participate in URL routing today; see the web platform docs.
- *  - The manual `NavigationPathBinding.createPathBinding(...)` API, shown
- *    below as illustrative code. The bindings here are NOT registered with
- *    the controller — they're examples of the hand-written form for cases
- *    where you want full control over deserialize/serialize.
+ * Shows two ways to bind a URL path to a NavigationKey, and how to resolve a
+ * URL to a key:
+ *  - `@NavigationPath` on the recipe entry key. The processor generates and
+ *    registers the binding.
+ *  - `NavigationPathBinding.createPathBinding(...)` and the
+ *    `NavigationPathBinding` constructor, which take the pattern and the
+ *    conversion between path and key. [deepLinkModule] registers these
+ *    bindings, and `RecipesComponent` installs [deepLinkModule].
+ *  - `navigation.getNavigationKeyFromPath(url)` resolves a URL to a key. The
+ *    home screen resolves four URLs and opens each resolved key.
+ *
+ * On the web, the URL bar shows the bound path of the active destination.
  */
 @file:OptIn(ExperimentalEnroApi::class)
 
@@ -22,6 +26,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.enro.NavigationKey
@@ -37,6 +45,7 @@ import dev.enro.navigationHandle
 import dev.enro.open
 import dev.enro.path.NavigationPathBinding
 import dev.enro.path.createPathBinding
+import dev.enro.path.getNavigationKeyFromPath
 import dev.enro.recipes.RecipeScaffold
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
@@ -55,8 +64,8 @@ data class ProductDetail(val productId: String, val source: String? = null) : Na
 @Serializable
 data object DeepLinkHome : NavigationKey
 
-// Illustrative: hand-written path bindings using the createPathBinding API.
-// Not registered with the controller — this recipe shows the shape of the API.
+// createPathBinding matches each `{name}` in the pattern to the key property
+// with the same name. deepLinkModule, below, registers these bindings.
 
 val userProfilePathBinding: NavigationPathBinding<UserProfile> = NavigationPathBinding.createPathBinding(
     pattern = "/users/{userId}",
@@ -112,17 +121,35 @@ fun DeepLinkHomeDestination() {
     ) {
         Text("Deep Link Home", style = MaterialTheme.typography.titleLarge)
         Text(
-            "Illustrative bindings: /home, /users/{userId}, /products/{productId}?source={source?}",
+            "Bindings: /home, /users/{userId}, /products/{productId}?source={source?}",
             style = MaterialTheme.typography.bodySmall,
         )
-        Button(onClick = { navigation.open(UserProfile("alice")) }) {
-            Text("Open user 'alice'")
+        Text(
+            "Each button resolves its URL with getNavigationKeyFromPath and opens the key.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        var unresolved by remember { mutableStateOf<String?>(null) }
+        val urls = listOf(
+            "/users/alice",
+            "/products/shoe-1?source=email",
+            "/products/shoe-2",
+            "/not-a-registered-path",
+        )
+        urls.forEach { url ->
+            Button(onClick = {
+                // getNavigationKeyFromPath returns null when no registered binding matches the URL.
+                val key = navigation.getNavigationKeyFromPath(url)
+                unresolved = if (key == null) url else null
+                if (key != null) navigation.open(key)
+            }) {
+                Text("Open $url")
+            }
         }
-        Button(onClick = { navigation.open(ProductDetail("shoe-1", "email")) }) {
-            Text("Open product 'shoe-1' from email")
-        }
-        Button(onClick = { navigation.open(ProductDetail("shoe-2")) }) {
-            Text("Open product 'shoe-2' (no source)")
+        unresolved?.let {
+            Text(
+                "No binding matches $it",
+                color = MaterialTheme.colorScheme.error,
+            )
         }
     }
 }

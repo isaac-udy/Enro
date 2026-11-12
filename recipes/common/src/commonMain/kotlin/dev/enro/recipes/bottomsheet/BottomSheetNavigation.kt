@@ -1,7 +1,8 @@
 /**
  * Enro Recipe: Bottom Sheet Navigation
  *
- * Demonstrates ModalBottomSheet as a navigation destination using directOverlay().
+ * Shows a Material `ModalBottomSheet` as a destination. The `directOverlay()`
+ * metadata renders the destination on top of the current scene.
  */
 package dev.enro.recipes.bottomsheet
 

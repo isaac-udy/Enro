@@ -8,15 +8,11 @@ import kotlin.experimental.ExperimentalObjCRefinement
 import kotlin.native.HiddenFromObjC
 
 /**
- * Enter + exit transition pair carried in a [NavigationDestination]'s
- * metadata for [DirectOverlayScene]s that opt into animated
- * enter/exit. The overlay renderer reads this off the scene's top
- * entry and forwards both transitions to the underlying
- * `AnimatedVisibility`.
+ * The enter and exit transitions of a [DirectOverlayScene], stored in the metadata of a
+ * [NavigationDestination] under [OverlayTransitionsKey]. `NavigationDisplay` reads the
+ * transitions from the last entry of the scene.
  *
- * Stored as a plain (non-serialisable) value — same trade-off as
- * Dialog's `DialogProperties` metadata. Lives for the lifetime of
- * the destination only.
+ * OverlayTransitions is not serializable and is not restored with the destination.
  */
 @Immutable
 public data class OverlayTransitions(
@@ -25,9 +21,8 @@ public data class OverlayTransitions(
 )
 
 /**
- * Optional metadata key carrying [OverlayTransitions] for animated
- * appearance/disappearance. Default `null`. Takes precedence over
- * [DirectOverlaySceneStrategy.OverlayFadeKey].
+ * Metadata key for the [OverlayTransitions] of a direct overlay. The default is `null`.
+ * A non-null value takes precedence over [DirectOverlaySceneStrategy.OverlayFadeKey].
  */
 @OptIn(ExperimentalObjCRefinement::class)
 @HiddenFromObjC
@@ -38,13 +33,10 @@ public object OverlayTransitionsKey :
     )
 
 /**
- * Marks the destination as a direct overlay AND attaches a pair of
- * transitions for the renderer to apply when the scene appears and
- * disappears. The exit transition runs even when the destination is
- * removed externally (back press, sibling navigation, programmatic
- * close) — the renderer keeps the scene composed for the duration of
- * the transition. The exit transition starts after the scene's
- * [dev.enro.ui.NavigationScene.Overlay.onRemove] returns.
+ * Marks the destination as a direct overlay, with [enter] and [exit] applied when the
+ * overlay scene appears and disappears. `NavigationDisplay` keeps the scene composed until
+ * [exit] finishes, whichever operation removed the destination. [exit] starts after the
+ * scene's [dev.enro.ui.NavigationScene.Overlay.onRemove] returns.
  */
 public fun NavigationDestination.MetadataBuilder<*>.directOverlay(
     enter: EnterTransition,

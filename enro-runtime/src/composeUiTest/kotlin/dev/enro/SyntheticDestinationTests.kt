@@ -20,21 +20,10 @@ import kotlinx.serialization.Serializable
 import kotlin.test.*
 
 /**
- * Coverage for [SyntheticDestination] and its registered interceptor.
- * The synthetic destination mechanism is the third built-in
- * controller interceptor (alongside RootDestinationInterceptor and
- * PreviouslyActiveContainerInterceptor) and had zero unit coverage.
- *
- * A synthetic destination is "a NavigationKey that, when opened, runs a
- * block of code instead of rendering anything" -- the interceptor
- * recognises the open, replaces it with a SideEffect that invokes the
- * synthetic block, and the destination never reaches the backstack.
- * It's the redirect / fire-and-forget primitive in Enro.
- *
- * The block can fall through (pure side-effect bridge) or short-circuit by
- * calling one of the outcome methods on the scope (`open`, `close`,
- * `complete`, `completeFrom`). Outcome methods throw a sentinel that the
- * dispatcher catches and converts to a [NavigationOperation].
+ * Tests [SyntheticDestination] and [SyntheticDestination.interceptor]. A synthetic destination
+ * runs a block in place of rendering content and is never added to a backstack. The block
+ * returns without an outcome, or calls an outcome function of the scope (`open`, `close`,
+ * `complete`, `completeFrom`), which is converted to a [NavigationOperation].
  */
 class SyntheticDestinationTests {
 
@@ -79,13 +68,8 @@ class SyntheticDestinationTests {
 
     @Test
     fun `Opening a synthetic destination runs its block with the right scope and does not add to the backstack`() = runEnroTest {
-        // In production, the SyntheticDestination.interceptor is installed
-        // via defaultNavigationModule on EnroController. commonTest uses a
-        // bare controller, so we attach the same interceptor manually to
-        // exercise the full path: Open(synthetic) -> interceptor returns
-        // SideEffect -> SideEffect calls executeSynthetic -> the
-        // syntheticDestination block runs with a scope carrying the
-        // originating fromContext and the original instance.
+        // The test controller does not install defaultNavigationModule, so openSynthetic adds
+        // SyntheticDestination.interceptor to the container.
         var blockExecutions = 0
         var capturedContext: NavigationContext? = null
         var capturedInstance: NavigationKey.Instance<*>? = null
@@ -132,7 +116,7 @@ class SyntheticDestinationTests {
             createNavigationModule {
                 destination<SyntheticTestKey>(
                     syntheticDestination<SyntheticTestKey> {
-                        // pure side-effect bridge — no outcome method called
+                        // The block calls no outcome function.
                     }
                 )
             }
@@ -254,10 +238,6 @@ class SyntheticDestinationTests {
 
     @Test
     fun `Synthetic close does not strip the parent destination from the backstack`() = runEnroTest {
-        // Belt-and-braces test: the synthetic's Close operation targets the
-        // synthetic's instance (which is never in any backstack), so the
-        // parent destination — the one that opened the synthetic — must
-        // remain on the backstack untouched.
         EnroTest.getCurrentNavigationController().addModule(
             createNavigationModule {
                 destination<SyntheticTestKey>(
@@ -293,17 +273,14 @@ class SyntheticDestinationTests {
 
     @Test
     fun `Calling an outcome method after the synthetic finished throws already-finished`() = runEnroTest {
-        // Simulates the "block launched a coroutine that outlived the
-        // block" case. We can't easily await a real coroutine in a test,
-        // so we capture the scope and invoke an outcome method after the
-        // dispatcher has moved on — same shape, same failure mode.
+        // A coroutine launched by the block can call an outcome function after the block returns.
+        // The test captures the scope and calls `close` after the synthetic destination finished.
         var capturedScope: dev.enro.ui.destinations.SyntheticDestinationScope<SyntheticTestKey>? = null
         EnroTest.getCurrentNavigationController().addModule(
             createNavigationModule {
                 destination<SyntheticTestKey>(
                     syntheticDestination<SyntheticTestKey> {
                         capturedScope = this
-                        // Falling through — dispatcher will mark this as silent close.
                     }
                 )
             }
@@ -325,11 +302,6 @@ class SyntheticDestinationTests {
 
     @Test
     fun `Pure synthetic outcomes are rewritten in place and preserve initial-backstack ordering`() = runEnroTest {
-        // A synthetic that opens TargetKey, placed as the FIRST entry in an
-        // AggregateOperation alongside RegularKey, should land as
-        // [TargetKey, RegularKey]. The synthetic's outcome must replace
-        // the synthetic's Open in the same processing pass — not be
-        // appended at the end via a separate execute call.
         val targetKey = NavigationKeyFixtures.SimpleKey()
         val regularKey = NavigationKeyFixtures.SimpleKey()
         EnroTest.getCurrentNavigationController().addModule(
@@ -369,10 +341,6 @@ class SyntheticDestinationTests {
 
     @Test
     fun `Side-effect synthetic runs after the surrounding pass settles`() = runEnroTest {
-        // Assert that when the side-effect block runs, the container's
-        // backstack already reflects the other operations from the same
-        // processing pass — i.e. the side effect is deferred to
-        // afterExecution as advertised.
         var observedBackstackAtSideEffect: List<NavigationKey>? = null
         val regularKey = NavigationKeyFixtures.SimpleKey()
         EnroTest.getCurrentNavigationController().addModule(
@@ -416,9 +384,6 @@ class SyntheticDestinationTests {
 
     @Test
     fun `Side-effect synthetic can rewrite the backstack via container execute`() = runEnroTest {
-        // Use sideEffect's container reference to perform a SetBackstack —
-        // the deferred-execution model that the framework prescribes for
-        // anything that can't be expressed as a pure outcome.
         val newRootKey = NavigationKeyFixtures.SimpleKey()
         val newTopKey = NavigationKeyFixtures.SimpleKey()
         EnroTest.getCurrentNavigationController().addModule(
@@ -456,9 +421,6 @@ class SyntheticDestinationTests {
 
     @Test
     fun `Self-referential synthetic outcome trips the recursion guard`() = runEnroTest {
-        // A synthetic whose pure outcome opens itself would loop forever
-        // inside processOperations without a guard. We expect a clear
-        // IllegalStateException naming the offender.
         EnroTest.getCurrentNavigationController().addModule(
             createNavigationModule {
                 destination<SyntheticTestKey>(
@@ -510,14 +472,11 @@ class SyntheticDestinationTests {
 
         val container = openSynthetic(syntheticInstance)
 
-        // The forwarded key should have landed in the container's backstack…
         val landed = container.container.backstack.singleOrNull()
         assertTrue(
             actual = landed != null && landed.key == forwarded,
             message = "completeFrom should have opened the forwarded key; backstack was: ${container.container.backstack.map { it.key }}",
         )
-        // …and the forwarded instance must carry the synthetic's original ResultIdKey, so
-        // when *it* completes, the original caller's channel gets the result.
         assertEquals(
             expected = resultId,
             actual = landed?.metadata?.get(NavigationResultChannel.ResultIdKey),

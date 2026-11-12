@@ -12,7 +12,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// Travel-inspired colors
 private val TravelBlue = Color(0xFF1E88E5)
 private val TravelSkyBlue = Color(0xFF64B5F6)
 private val TravelDeepBlue = Color(0xFF0D47A1)
@@ -25,7 +24,6 @@ private val TravelLavender = Color(0xFF9575CD)
 private val TravelCoral = Color(0xFFFF5252)
 private val TravelPink = Color(0xFFFF80AB)
 
-// Neutral colors
 private val TravelGray900 = Color(0xFF212121)
 private val TravelGray800 = Color(0xFF424242)
 private val TravelGray700 = Color(0xFF616161)
@@ -33,7 +31,6 @@ private val TravelGray200 = Color(0xFFEEEEEE)
 private val TravelGray100 = Color(0xFFF5F5F5)
 private val TravelGray50 = Color(0xFFFAFAFA)
 
-// Custom Typography
 private val TravelTypography = Typography(
     displayLarge = TextStyle(
         fontFamily = FontFamily.Default,

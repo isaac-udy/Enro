@@ -82,8 +82,8 @@ class ComposeManagedResultViewModel : ViewModel() {
             val firstResult = open(ComposeManagedResultFlow.FirstResult())
             val presentedResult = open(ComposeManagedResultFlow.PresentedResult())
 
-            // We're using extras here as a simple way to test that pushWithExtras/NavigationKey.withExtra work within
-            // managed flows - this extra is verified by the associated tests, but has no real impact on the flow itself
+            // The metadata has no effect on the flow. The tests read the metadata to check
+            // that `withMetadata` works inside a managed flow.
             val secondResult = open(
                 ComposeManagedResultFlow.SecondResult()
                     .withMetadata(

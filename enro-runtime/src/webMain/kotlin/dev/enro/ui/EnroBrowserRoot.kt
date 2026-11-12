@@ -22,7 +22,8 @@ import kotlin.uuid.Uuid
 
 /**
  * Provides the browser's root navigation context, navigation handle and ViewModelStoreOwner to
- * [content]. The renderer-specific browser entry points, such as `EnroBrowserContent`, build on it.
+ * [content]. The renderer-specific browser entry points, such as `EnroBrowserContent`, call
+ * [EnroBrowserRoot].
  */
 @InternalEnroApi
 @Composable
@@ -51,7 +52,7 @@ public fun EnroBrowserRoot(
     val (context, navigationHandle) = remember(viewModelStoreOwner) {
         val context = RootContext(
             id = "Browser(${instance.key::class.simpleName})@$browserId",
-            parent = Unit, // Browser tabs don't have a parent object like UIViewController
+            parent = Unit, // A browser tab has no parent object.
             controller = enroController,
             lifecycleOwner = lifecycleOwner,
             viewModelStoreOwner = viewModelStoreOwner,
@@ -94,7 +95,7 @@ public fun EnroBrowserRoot(
 }
 
 /**
- * Scope for the EnroBrowserContent composable, providing access to the root navigation handle.
+ * Receiver of the `EnroBrowserContent` content. [navigation] is the root navigation handle.
  */
 public class EnroBrowserScope internal constructor(
     public val navigation: NavigationHandle<*>,

@@ -4,10 +4,9 @@ import androidx.compose.runtime.Immutable
 import androidx.navigationevent.NavigationEventInfo
 
 /**
- * A snapshot of the active [NavigationScene] for use with the navigation
- * event system. Mirrors Nav3's `SceneInfo<T>`: a typed [NavigationEventInfo]
- * that lets back handlers (predictive or otherwise) reason about which scene
- * is currently rendering.
+ * The [NavigationEventInfo] that `NavigationDisplay` registers with the navigation event
+ * system, so that a back handler can read the current [NavigationScene]. Navigation 3
+ * equivalent: `SceneInfo`.
  */
 @Immutable
 public class NavigationSceneInfo(public val scene: NavigationScene) : NavigationEventInfo() {

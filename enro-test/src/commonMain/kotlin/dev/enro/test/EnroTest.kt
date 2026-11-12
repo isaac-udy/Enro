@@ -9,26 +9,24 @@ public object EnroTest {
     private var navigationController: EnroController? = null
     private var wasInstalled = false
 
-    // TODO: Would be nice to add functionality to temporarily install a NavigationModule for a particular test
+    // TODO: support installing a NavigationModule for the duration of one test.
     public fun installNavigationController() {
         if (navigationController != null) {
             uninstallNavigationController()
         }
 
-        // Reuse an already-installed controller if one is present — this is the
-        // path Android-instrumented tests take, where the test Application has
-        // already installed Enro via ActivityPlugin before the test rule runs.
+        // An installed controller is reused. In an Android instrumented test, the test
+        // Application installs Enro before the test rule runs.
         navigationController = EnroController.instance
         if (navigationController != null) {
             wasInstalled = true
             return
         }
 
-        // For commonTest running on desktop/iOS/wasm — and for unit tests that
-        // need a fresh controller without going through an Application — we
-        // install with a null platform reference. EnroController.platformReference
-        // is only consumed by Android-specific runtime code (ActivityPlugin,
-        // EnroLog.android), all of which null-check before use, so this is safe.
+        // A test without an Application (commonTest on desktop, iOS or wasm, or a JVM unit
+        // test) installs a new controller with a null platform reference. Only Android
+        // runtime code (ActivityPlugin, EnroLog.android) reads
+        // EnroController.platformReference, and that code handles null.
         navigationController = EnroController().apply {
             install(reference = null)
         }
@@ -36,7 +34,7 @@ public object EnroTest {
     }
 
     public fun uninstallNavigationController() {
-        // Only uninstall if we created it
+        // EnroTest uninstalls only a controller that EnroTest created.
         if (!wasInstalled) {
             navigationController?.uninstall()
         }

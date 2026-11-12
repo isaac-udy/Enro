@@ -11,7 +11,9 @@ android {
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         applicationId = "dev.enro.recipes"
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        // 24, not the library's minSdk: the Material 3 Adaptive library used by
+        // two recipes requires API 24.
+        minSdk = 24
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"

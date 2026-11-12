@@ -14,22 +14,11 @@ public abstract class NavigationPlugin {
     public open fun onClosed(navigationHandle: NavigationHandle<*>) {}
     
     /**
-     * Called when a navigation destination is created, allowing plugins to modify its metadata
-     * before rendering.
+     * Called when a [NavigationDestination] is created, before the destination is rendered.
      *
-     * Plugins can use this to alter how destinations are rendered by adding or overriding metadata.
-     * For example, a compatibility plugin might change a destination to render as an overlay by
-     * setting the "directOverlay" metadata.
-     *
-     * Setting a value in the additionalMetadata map to null will remove it from the destination's
-     * metadata.
-     *
-     * **Warning:** This is an advanced API. Modifying metadata incorrectly can break the way that
-     * destinations are rendered.
-     *
-     * @param destination The newly created navigation destination
-     * @param additionalMetadata A mutable map for adding/modifying metadata. Values here override
-     *                          existing destination metadata with the same key.
+     * An entry added to [additionalMetadata] replaces the entry with the same key in the
+     * metadata of [destination]. A null value removes the key from the metadata of
+     * [destination]. Each plugin receives the same [additionalMetadata] map, in plugin order.
      */
     @AdvancedEnroApi
     public open fun onDestinationCreated(

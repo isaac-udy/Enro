@@ -1,17 +1,12 @@
 /**
  * Enro Recipe: OpenedTimestampPlugin
  *
- * Demonstrates a small NavigationPlugin that stamps every NavigationKey.Instance
- * with the wall-clock time at which it was opened. This is a canonical example
- * of "NavigationKey.Instance metadata" — extra data attached to an instance
- * that any destination might want to read, but that doesn't change how the
- * destination is rendered.
+ * Shows a NavigationPlugin that stores the time of opening in the metadata
+ * of each NavigationKey.Instance. A destination reads the value from
+ * `navigation.instance.metadata`.
  *
- * Real-world uses for this pattern include analytics correlation, screen-time
- * tracking, and origin tagging for animations.
- *
- * The plugin is installed globally in RecipesComponent so every destination in
- * the recipes app receives a timestamp.
+ * `RecipesComponent` registers the plugin, so the plugin receives `onOpened`
+ * for every destination in the recipes app.
  */
 package dev.enro.recipes.plugins
 
@@ -34,33 +29,27 @@ import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 import kotlin.time.Clock
 
-// -- The metadata key --
-
 /**
- * Epoch-millisecond timestamp captured the first time an instance is opened.
- * Defaults to null so the absence of the value is observable (for example,
- * the plugin might not be installed in tests).
+ * The time in epoch milliseconds when the instance was first opened. The
+ * default is `null`, which a destination reads when the plugin is not
+ * registered.
  *
- * `internal` is required for K/Native's ObjC export — NavigationKey
- * .MetadataKey is a generic type and gets auto-marked @HiddenFromObjC by
- * the compiler, and public subtypes of a HiddenFromObjC type are rejected.
+ * `internal` is required for Kotlin/Native ObjC export: the compiler marks
+ * the generic `NavigationKey.MetadataKey` as `@HiddenFromObjC` and rejects a
+ * public subtype of a `@HiddenFromObjC` type.
  */
 internal object OpenedAt : NavigationKey.MetadataKey<Long?>(default = null)
-
-// -- The plugin --
 
 class OpenedTimestampPlugin : NavigationPlugin() {
     override fun onOpened(navigationHandle: NavigationHandle<*>) {
         val instance = navigationHandle.instance
-        // Only stamp the first time we see this instance; subsequent opens (e.g.
-        // an instance restored from saved state) keep their original timestamp.
+        // onOpened can run more than once for an instance, for example after
+        // the instance is restored from saved state. The first value is kept.
         if (instance.metadata.get(OpenedAt) == null) {
             instance.metadata.set(OpenedAt, Clock.System.now().toEpochMilliseconds())
         }
     }
 }
-
-// -- Recipe keys --
 
 @Serializable
 object OpenedTimestampPluginRecipe : NavigationKey
@@ -70,8 +59,6 @@ data object TimestampHome : NavigationKey
 
 @Serializable
 data class TimestampDetail(val label: String) : NavigationKey
-
-// -- Recipe root --
 
 @Composable
 @NavigationDestination(OpenedTimestampPluginRecipe::class)
@@ -123,17 +110,16 @@ fun TimestampDetailDestination() {
     )
 }
 
-// -- Shared UI: shows the OpenedAt metadata for the current destination --
-
 @Composable
 private fun OpenedTimestampPanel(
     navigation: NavigationHandle<*>,
     body: String,
     action: @Composable () -> Unit,
 ) {
+    // The typed key returns the value that OpenedTimestampPlugin stored, or the
+    // default `null`.
     val openedAt = navigation.instance.metadata.get(OpenedAt)
 
-    // Tick once per second so the "seconds since opened" display stays current.
     var now by remember { mutableLongStateOf(Clock.System.now().toEpochMilliseconds()) }
     LaunchedEffect(Unit) {
         while (true) {

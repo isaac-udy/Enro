@@ -1,11 +1,18 @@
 /**
  * Enro Recipe: Conditional Navigation
  *
- * Demonstrates conditional navigation (auth gates) using NavigationInterceptors.
+ * Shows an auth gate built with a `NavigationInterceptor`. An `onOpened<Key>`
+ * block runs when the key is opened: `replaceWith` opens a different key and
+ * `continueWithOpen` opens the original key.
  *
- * Note: For simplicity in this recipe app, the interceptor is created on the recipe
- * host using `interceptor` parameter on rememberNavigationContainer. In a real app
- * you would register interceptors via a NavigationModule on the controller.
+ * The recipe passes the interceptor to the `interceptor` parameter of
+ * `rememberNavigationContainer`, so the interceptor applies to one container.
+ * An app can register an interceptor on the controller with a `NavigationModule`.
+ *
+ * The Auth Gate recipe (`dev.enro.recipes.synthetic.AuthGateSynthetic`) builds
+ * the same gate with a synthetic destination. An interceptor gates a key
+ * without a change to the callers of the key. A synthetic destination requires
+ * callers to open a separate "gated" key.
  */
 package dev.enro.recipes.conditional
 

@@ -67,7 +67,6 @@ fun RegistrationOverviewScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Welcome emoji and title
             Text(
                 text = "🛫",
                 fontSize = 72.sp,
@@ -90,7 +89,6 @@ fun RegistrationOverviewScreen() {
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
-            // Registration steps
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -117,7 +115,6 @@ fun RegistrationOverviewScreen() {
                 }
             }
 
-            // Benefits
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(bottom = 32.dp)
@@ -128,7 +125,6 @@ fun RegistrationOverviewScreen() {
                 BenefitItem("🔖 Save your favorite destinations")
             }
 
-            // Continue button
             Button(
                 onClick = { navigation.open(RegistrationNameDestination) },
                 modifier = Modifier

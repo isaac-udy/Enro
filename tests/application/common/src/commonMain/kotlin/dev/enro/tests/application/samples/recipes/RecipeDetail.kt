@@ -108,7 +108,6 @@ fun RecipeDetailScreen() {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Description
             if (recipe.description.isNotEmpty()) {
                 Card {
                     Column(
@@ -130,7 +129,6 @@ fun RecipeDetailScreen() {
                 }
             }
 
-            // Info Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -173,7 +171,6 @@ fun RecipeDetailScreen() {
                 }
             }
 
-            // Ingredients
             if (recipe.ingredients.isNotEmpty()) {
                 Card {
                     Column(
@@ -197,7 +194,6 @@ fun RecipeDetailScreen() {
                 }
             }
 
-            // Instructions
             if (recipe.instructions.isNotEmpty()) {
                 Card {
                     Column(
@@ -231,7 +227,6 @@ fun RecipeDetailScreen() {
                 }
             }
 
-            // Notes
             if (recipe.notes.isNotEmpty()) {
                 Card {
                     Column(

@@ -7,13 +7,10 @@ import dev.enro.NavigationKey
 @Stable
 public fun interface NavigationSceneStrategy {
     /**
-     * Try to construct a [NavigationScene] from the given [entries]. Return
-     * `null` to defer to the next strategy in the chain. The receiver
-     * [SceneStrategyScope] gives the strategy a callback to dispatch back
-     * navigation back into the surrounding [NavigationDisplay].
+     * Returns a [NavigationScene] for [entries], or `null` to pass [entries] to the next
+     * strategy. [entries] is never empty when called by [rememberNavigationSceneState].
      *
-     * Mirrors Nav3's `SceneStrategy<T>.calculateScene` shape (receiver +
-     * entries argument).
+     * Navigation 3 equivalent: `SceneStrategy<T>.calculateScene`.
      */
     @Composable
     public fun SceneStrategyScope.calculateScene(
@@ -22,8 +19,8 @@ public fun interface NavigationSceneStrategy {
 
     public companion object {
         /**
-         * Chains a list of strategies so the first non-null result wins.
-         * Mirrors the `List<SceneStrategy<T>>` overloads of `NavDisplay`.
+         * Returns a strategy that calls each of [sceneStrategies] in order and returns the
+         * first non-null scene.
          */
         public fun from(
             sceneStrategies: List<NavigationSceneStrategy>,

@@ -24,8 +24,8 @@ import org.w3c.dom.HTMLElement
 /**
  * How an [htmlDialog] destination is dismissed.
  *
- * @param dismissOnEscape whether Escape requests the destination closes.
- * @param dismissOnBackdropClick whether a click outside the dialog's box requests the
+ * @param dismissOnEscape whether Escape requests that the destination closes.
+ * @param dismissOnBackdropClick whether a click outside the dialog's box requests that the
  *   destination closes.
  */
 public class HtmlDialogProperties(
@@ -35,8 +35,9 @@ public class HtmlDialogProperties(
 
 /**
  * Marks the destination as one that [HtmlNavigationDisplay] renders inside a modal `<dialog>`
- * element. Style the dialog and its backdrop with CSS (`dialog` and `dialog::backdrop`). A CSS
- * transition on the closed dialog runs before the destination leaves the DOM.
+ * element. Style the dialog and the dialog backdrop with CSS (`dialog` and
+ * `dialog::backdrop`). A CSS transition on the closed dialog runs before the destination is
+ * removed from the DOM.
  */
 public fun NavigationDestination.MetadataBuilder<*>.htmlDialog(
     properties: HtmlDialogProperties = HtmlDialogProperties(),
@@ -45,10 +46,10 @@ public fun NavigationDestination.MetadataBuilder<*>.htmlDialog(
 }
 
 /**
- * A [NavigationSceneStrategy] that displays entries that have added [htmlDialog] to their
- * metadata inside a modal `<dialog>` element.
+ * A [NavigationSceneStrategy] that displays the last entry in a modal `<dialog>` element
+ * when the metadata of the last entry contains [htmlDialog].
  *
- * This strategy should always be added before any non-overlay scene strategies.
+ * Add HtmlDialogSceneStrategy before every non-overlay scene strategy.
  */
 public class HtmlDialogSceneStrategy : NavigationSceneStrategy {
     @Composable

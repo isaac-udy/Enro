@@ -19,11 +19,7 @@ import dev.enro.asInstance
 import dev.enro.backstackOf
 import dev.enro.ui.*
 
-/**
- * A single navigable section in [AdaptiveNavigationSceneDecorator]. Pair a
- * [NavigationKey] (the root destination of the section) with a label and an
- * icon for the sidebar / bottom-bar UI.
- */
+/** A section of [AdaptiveNavigationSceneDecorator]. [key] is the root destination of the section. */
 internal data class NavigationSection(
     val key: NavigationKey,
     val label: String,
@@ -31,39 +27,23 @@ internal data class NavigationSection(
 )
 
 /**
- * A [SceneDecoratorStrategy] that wraps the current scene in either a
- * vertical sidebar (on wide windows) or a Material 3 bottom navigation bar
- * (on narrow windows). Tapping a section replaces the container's backstack
- * with that section's root key so the section's destination renders inside
- * the chrome.
+ * A [SceneDecoratorStrategy] that wraps the scene in a sidebar on a wide
+ * window and in a Material 3 bottom navigation bar on a narrow window. A tap
+ * on a section replaces the container's backstack with the root key of the
+ * section.
  *
- * **How this preserves the chrome across section transitions**:
+ * The decorated scene derives `key` from the wrapped scene, so
+ * `NavigationDisplay` runs the configured transition when the wrapped scene
+ * changes. A decorated scene with a constant `key` would run no transition.
  *
- * The wrapper's `key` is derived from the inner scene's identity, so
- * `NavigationDisplay`'s outer `AnimatedContent` treats each section as a
- * different `SceneIdentity` and runs whatever transition the display /
- * destination is configured with — push, pop, predictive back, per-scene
- * `TransitionKey` overrides, all of it works automatically. The inner
- * scene's content (`scene.content()`) sits directly inside the wrapper's
- * content and rides those transitions.
+ * The sidebar and the bottom bar must not animate with the scene. Each is
+ * `movableContentOf` content inside a `Modifier.sharedElement` slot with a
+ * constant shared content key. Movable content is composed in one place at
+ * a time: the entering scene composes the content, and the exiting scene
+ * composes an empty slot. The `SharedTransitionScope` keeps the bounds of
+ * the slot constant during the transition.
  *
- * To keep the chrome itself from re-animating (it's just the
- * sidebar/bottom-bar; tapping a section shouldn't fade or slide the
- * navigation chrome), the sidebar and bottom-bar composables are wrapped
- * in `movableContentOf` and rendered inside a `Modifier.sharedElement`
- * with a stable key. Compose's invariant is "movable content is composed
- * in exactly one place at a time": the outgoing scene's composition
- * holds an empty placeholder box (still keyed for the shared element);
- * the incoming scene's composition is the one that actually invokes the
- * movable chrome. The `SharedTransitionScope` bridges the chrome's
- * bounds from old to new, so visually it never moves.
- *
- * This pattern mirrors Nav3's `ResponsiveNavigationSceneDecorator` and
- * is the recommended way to add "stable" chrome around an
- * `AnimatedContent`-driven scene model. The alternative — giving the
- * wrapper a constant `key` so the outer slot never re-animates — keeps
- * the chrome stable but also robs the inner content of all the
- * configurable transitions, so we don't use it here.
+ * Nav3 equivalent: `ResponsiveNavigationSceneDecorator`.
  */
 internal class AdaptiveNavigationSceneDecorator(
     private val sections: List<NavigationSection>,
@@ -78,21 +58,16 @@ internal class AdaptiveNavigationSceneDecorator(
         }
         val showSidebar = width >= sidebarBreakpointDp.dp
 
-        // Remember the movable chrome once for the lifetime of the strategy
-        // composition. These compose in exactly one place at a time even when
-        // both the outgoing and incoming wrapper compositions invoke them
-        // during an AnimatedContent transition — the `isMovableContentCaller`
-        // gate below picks the incoming one.
+        // During a transition the entering scene and the exiting scene are both
+        // composed. `isMovableContentCaller` below is true only in the entering
+        // scene, so one scene composes the movable chrome.
         val movableSidebar = remember { movableContentOf { Sidebar(sections) } }
         val movableBottomBar = remember { movableContentOf { BottomBar(sections) } }
 
         return remember(scene, showSidebar) {
             object : NavigationScene by scene {
-                // Derive key from the inner scene so NavigationDisplay's
-                // outer AnimatedContent runs a normal transition between
-                // sections / between push & pop within a section, using
-                // the configured NavigationAnimations and any per-scene
-                // metadata transition overrides.
+                // `key` changes when the wrapped scene changes, so
+                // NavigationDisplay runs the configured transition.
                 override val key: Any = scene::class to scene.key
 
                 override val content: @Composable () -> Unit = {

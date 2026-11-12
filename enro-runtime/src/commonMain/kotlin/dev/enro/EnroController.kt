@@ -17,8 +17,8 @@ import kotlinx.serialization.json.Json
 
 @Stable
 public class EnroController @AdvancedEnroApi constructor() {
-    // Set during construction by internalCreateEnroController, plumbed through
-    // from the isDebug parameter on the generated installNavigationController.
+    // Set by internalCreateEnroController from the isDebug parameter of the generated
+    // installNavigationController.
     internal var isDebug: Boolean = false
     internal var platformReference: Any? = null
     internal val plugins = PluginRepository()
@@ -31,10 +31,7 @@ public class EnroController @AdvancedEnroApi constructor() {
 
     internal val rootContextRegistry: RootContextRegistry = RootContextRegistry()
 
-    /**
-     * Attaches a module to the EnroController *after* the Controller has been attached;
-     * you can't uninstall a module once it has been added, use with caution.
-     */
+    // Adds a module after the controller is created. A module cannot be removed.
     internal fun addModule(module: NavigationModule) {
         plugins.addPlugins(module.plugins)
         bindings.addNavigationBindings(module.bindings)
@@ -45,8 +42,8 @@ public class EnroController @AdvancedEnroApi constructor() {
         serializers.registerSerializersModule(module.serializersForBindings)
     }
 
-    // The reference parameter is used to pass the platform-specific reference to the NavigationController,
-    // for example, the Application instance in Android, or the ApplicationScope instance on Desktop
+    // `reference` is the platform object that owns the controller: the Application on Android,
+    // the ApplicationScope on Desktop.
     public fun install(reference: Any?) {
         if (instance == this) return
         require (instance == null) {
@@ -57,7 +54,7 @@ public class EnroController @AdvancedEnroApi constructor() {
         plugins.onAttached(this)
     }
 
-    // This method is called by the test module to install/uninstall Enro from test applications
+    // Called by the test module.
     internal fun uninstall() {
         plugins.onDetached(this)
         if (instance == null) return
@@ -72,11 +69,8 @@ public class EnroController @AdvancedEnroApi constructor() {
         init {
             @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
             NavigationKey.verifyMetadataSerialization = verifyMetadataSerialization@ { key, value ->
-                // The verification is a debug-mode safety check; if no
-                // controller is installed (e.g. teardown is racing
-                // composition disposal in a test), there's nothing to check
-                // against, so silently no-op rather than throw out of a
-                // DisposableEffect's onDispose path.
+                // Returns without a check when no controller is installed: a test can uninstall
+                // the controller before a DisposableEffect.onDispose sets metadata.
                 val controller = instance ?: return@verifyMetadataSerialization
                 if (!controller.isDebug) return@verifyMetadataSerialization
                 val isTransient = key is NavigationKey.TransientMetadataKey
@@ -99,13 +93,12 @@ public class EnroController @AdvancedEnroApi constructor() {
         }
 
         /**
-         * The controller's Json configuration, including all registered
-         * serializers. Uses the default (POLYMORPHIC) class-discriminator
-         * mode — `ALL_JSON_OBJECTS` is incompatible with kotlinx 1.11 for
-         * keys containing value-class or collection fields
-         * (https://github.com/Kotlin/kotlinx.serialization/issues/3022); see
-         * the note on SerializerRepository.jsonConfiguration and
-         * HistoryStateSerializationTests in enro-runtime.
+         * The [Json] configuration of the installed controller, including each registered
+         * serializer. Throws [IllegalStateException] if no controller is installed.
+         *
+         * The configuration uses the default `POLYMORPHIC` class-discriminator mode.
+         * `ALL_JSON_OBJECTS` fails in kotlinx.serialization 1.11 for a key with a value-class
+         * or collection field (https://github.com/Kotlin/kotlinx.serialization/issues/3022).
          */
         public val jsonConfiguration: Json get() {
             val instance = requireInstance()

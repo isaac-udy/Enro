@@ -7,12 +7,11 @@ import dev.enro.NavigationBackstack
 import dev.enro.path.getBackstackFromPath
 
 /**
- * Reads the current `window.location` once at composition and tries to resolve it
- * to a [NavigationBackstack] using the controller's path bindings. If no binding
- * matches (or no [EnroController] is installed yet), returns [default] instead.
+ * Resolves the path of `window.location` to a [NavigationBackstack] through the path bindings
+ * of the installed [EnroController]. Returns [default] if no binding matches the path or no
+ * [EnroController] is installed. The result is remembered, so the path is read once.
  *
- * Intended to be used as the `backstack` argument of `rememberNavigationContainer`
- * so that opening a deep-link URL on a cold load lands on the right destination:
+ * Pass the result as the `backstack` argument of `rememberNavigationContainer`:
  *
  * ```kotlin
  * EnroBrowserContent {

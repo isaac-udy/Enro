@@ -48,9 +48,7 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
         name = "dev.enro.result.NavigationResultChannel.ResultIdKey",
     )
 
-    //    @PublishedApi
     public companion object {
-        //        @PublishedApi
         public val pendingResults: MutableStateFlow<Map<Id, NavigationResult<*>>> = MutableStateFlow(emptyMap())
 
         @PublishedApi
@@ -109,9 +107,8 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
             result: NavigationResult<NavigationKey>,
         ) {
             val resultId = result.instance.metadata.get(ResultIdKey)
-            // If the NavigationKey.Instance does not have a value for ResultIdKey,
-            // then there is no NavigationResultChannel that is waiting for results
-            // from that NavigationKey.Instance, and we won't register the result
+            // An instance without a ResultIdKey value has no NavigationResultChannel waiting
+            // for a result, so the result is not registered.
             if (resultId == null) {
                 return
             }
@@ -126,11 +123,9 @@ public class NavigationResultChannel<Result : Any> @PublishedApi internal constr
             return resultId != null && pendingResults[resultId] is NavigationResult.Completed<*>
         }
 
-        // Returns a flow that will emit a single Unit value whenever a
-        // NavigationResult.Completed is registered for the resultId associated with the
-        // NavigationKey.Instance passed as a parameter, but only if the result did not
-        // come from the instance itself (i.e. it launched another destination
-        // as completeFrom, and that destination returned a result)
+        // Returns a flow that emits once, when a different instance registers a
+        // NavigationResult.Completed for the resultId of `instance`. The different instance is a
+        // destination that `instance` opened with completeFrom.
         internal fun completedFromSignalFor(
             instance: NavigationKey.Instance<*>,
         ): Flow<Unit> {

@@ -3,9 +3,9 @@ package dev.enro.processor.generator
 import dev.enro.processor.domain.GeneratedBindingReference
 
 /**
- * Selects the bindings a Compose HTML navigation component registers: the platform override for
- * each overridden key, so the overridden Compose UI binding is unreferenced and dead-code
- * elimination removes it.
+ * Selects the bindings that a Compose HTML navigation component registers. For each
+ * overridden key, only the platform override is selected, so the overridden Compose UI
+ * binding is unreferenced and dead-code elimination removes the Compose UI binding.
  */
 class HtmlBindingResolution(allBindings: List<GeneratedBindingReference>) {
 
@@ -17,8 +17,8 @@ class HtmlBindingResolution(allBindings: List<GeneratedBindingReference>) {
     val bindings: List<GeneratedBindingReference> = allBindings
         .filter { it.isPlatformOverride || it.navigationKey !in overriddenKeys }
 
-    // Only a platform override is taken to be a Compose HTML destination. A property destination's
-    // builder isn't visible to KSP, so it can't be classified either way.
+    // Only a platform override is classified as a Compose HTML destination. KSP cannot read
+    // the builder of a property destination, so a property destination is unverified.
     val composeUiBindings: List<GeneratedBindingReference> = bindings
         .filter { !it.isPlatformOverride && it.isComposableFunction }
 

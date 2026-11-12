@@ -30,7 +30,7 @@ public class NavigationContainerState @AdvancedEnroApi constructor(
 
     public val key: NavigationContainer.Key = container.key
 
-    /** Whether the navigation state is settled (no animations running) */
+    /** `false` while the renderer is animating a change to the container's destinations. */
     public var isSettled: Boolean by mutableStateOf(true)
         @InternalEnroApi set
 

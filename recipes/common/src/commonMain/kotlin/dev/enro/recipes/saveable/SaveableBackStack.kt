@@ -1,8 +1,9 @@
 /**
  * Enro Recipe: Saveable Back Stack
  *
- * Demonstrates how Enro's rememberNavigationContainer automatically saves and
- * restores the entire backstack.
+ * Shows that `rememberNavigationContainer` saves and restores the backstack
+ * of the container, and that the `rememberSaveable` state of each destination
+ * on the backstack is restored with the backstack.
  */
 package dev.enro.recipes.saveable
 

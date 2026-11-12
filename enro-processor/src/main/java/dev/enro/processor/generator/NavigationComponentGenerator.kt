@@ -80,7 +80,6 @@ object NavigationComponentGenerator {
             )
             .build()
 
-        // Generate extension function for installing navigation controller
         val functionName = "installNavigationController"
         val (platformParameterName, addPlatformParameter) = createPlatformApplicationReferenceParameter(platform)
 

@@ -1,9 +1,9 @@
 package dev.enro.ui
 
 /**
- * The `window.history` / `window.location` calls the web history support needs. js and wasmJs
- * declare the DOM with different interop types (`Any?` vs `JsAny?`), so history state crosses
- * this boundary as the serialized JSON string the plugin writes.
+ * The `window.history` and `window.location` calls used by WebHistoryPlugin. js and wasmJs
+ * declare the DOM with different interop types (`Any?` and `JsAny?`), so history state is
+ * passed as the serialized JSON string that WebHistoryPlugin writes.
  */
 internal expect object BrowserHistory {
     val path: String
@@ -12,6 +12,6 @@ internal expect object BrowserHistory {
     fun replaceState(state: String, url: String)
     fun go(delta: Int)
 
-    /** Registers [listener] for `popstate`, passing the event's state; returns the unregister call. */
+    /** Registers [listener] for `popstate` with the state of the event. Returns a function that unregisters [listener]. */
     fun addPopStateListener(listener: (state: String?) -> Unit): () -> Unit
 }

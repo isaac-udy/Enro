@@ -66,8 +66,7 @@ fun SyntheticViewModelAccessDestination() {
     }
 }
 
-// This destination should successfully access the ViewModelForSyntheticViewModelAccess from the Destination defined above,
-// and trigger a side effect on that ViewModel
+// Reads the ViewModelForSyntheticViewModelAccess that SyntheticViewModelAccessDestination created.
 @NavigationDestination(SyntheticViewModelAccess.AccessValidViewModel::class)
 internal val accessValidViewModel = syntheticDestination<SyntheticViewModelAccess.AccessValidViewModel> {
     val target = context.requireContext<SyntheticViewModelAccess>()
@@ -77,7 +76,7 @@ internal val accessValidViewModel = syntheticDestination<SyntheticViewModelAcces
 
 class InvalidViewModel : ViewModel()
 
-// This destination should throw an exception for attempting to access an invalid ViewModel
+// Throws: SyntheticViewModelAccessDestination does not create an InvalidViewModel.
 @NavigationDestination(SyntheticViewModelAccess.AccessInvalidViewModel::class)
 internal val accessInvalidViewModel = syntheticDestination<SyntheticViewModelAccess.AccessInvalidViewModel> {
     val target = context.requireContext<SyntheticViewModelAccess>()

@@ -17,9 +17,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import dev.enro.platform.EnroLog
 
-/**
- * This is largely copied from the AndroidFragment implementation, but with some changes to support DialogFragments
- */
+// A copy of the androidx AndroidFragment composable, changed to add a DialogFragment.
 @Composable
 internal fun <T : DialogFragment> AndroidDialogFragment(
     clazz: Class<T>,
@@ -50,11 +48,9 @@ internal fun <T : DialogFragment> AndroidDialogFragment(
                         .add(this, tag)
 
                     if (fragmentManager.isStateSaved) {
-                        // If the state is saved when we add the fragment,
-                        // we want to remove the Fragment in onDispose
-                        // if isStateSaved never becomes true for the lifetime
-                        // of this AndroidFragment - we use a LifecycleObserver
-                        // on the Fragment as a proxy for that signal
+                        // The fragment is added while the FragmentManager state is saved.
+                        // onDispose removes the fragment with state loss, unless the fragment
+                        // was started before onDispose.
                         removeEvenIfStateIsSaved = true
                         lifecycle.addObserver(
                             object : DefaultLifecycleObserver {
@@ -75,13 +71,10 @@ internal fun <T : DialogFragment> AndroidDialogFragment(
             val state = fragmentManager.saveFragmentInstanceState(fragment)
             fragmentState.state.value = state
             if (removeEvenIfStateIsSaved) {
-                // The Fragment was added when the state was saved and
-                // isStateSaved never became true for the lifetime of this
-                // AndroidFragment, so we unconditionally remove it here
                 fragmentManager.commitNow(allowStateLoss = true) { remove(fragment) }
             } else if (!fragmentManager.isStateSaved) {
-                // If the state isn't saved, that means that some state change
-                // has removed this Composable from the hierarchy
+                // With the state not saved, a state change removed this Composable from the
+                // composition, so the fragment is removed.
                 fragmentManager.commitNow {
                     remove(fragment)
                 }

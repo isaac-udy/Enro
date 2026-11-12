@@ -47,7 +47,7 @@ internal actual fun <T : NavigationKey> RootNavigationHandle<T>.handleNavigation
         Intent(activity, type.java).putNavigationKeyInstance(instance)
     }
     if (intents.isNotEmpty()) {
-        // TODO for result!
+        // TODO: start the Activities for a result.
         activity.startActivities(intents.toTypedArray())
     }
     when {

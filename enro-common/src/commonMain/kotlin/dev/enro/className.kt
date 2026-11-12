@@ -4,12 +4,13 @@ import dev.enro.annotations.AdvancedEnroApi
 import kotlin.reflect.KClass
 
 /**
- * A stable string identifier for a class, suitable for persisting in saved state (for example
- * as the storage key of a [NavigationKey.MetadataKey] inside [NavigationKey.Metadata]).
+ * Returns a string identifier for [kClass] that is safe to store in saved state, for example
+ * as the name of a [NavigationKey.MetadataKey] in [NavigationKey.Metadata].
  *
- * On every target except Kotlin/JS this is `KClass.qualifiedName`, falling back to `simpleName`.
- * Kotlin/JS reflection has no `qualifiedName`, so there it is `simpleName`, which is only unique
- * while no two persisted classes in the app share a simple name.
+ * On every target except Kotlin/JS, the identifier is `KClass.qualifiedName`, or `simpleName`
+ * when `qualifiedName` is null. Kotlin/JS reflection has no `qualifiedName`, so the identifier
+ * on Kotlin/JS is `simpleName`, and two classes with the same simple name have the same
+ * identifier.
  *
  * Throws for a class with neither name, such as an anonymous class.
  */
@@ -17,13 +18,13 @@ import kotlin.reflect.KClass
 public expect fun stableClassName(kClass: KClass<*>): String
 
 /**
- * The name a metadata key's values are stored under: [explicitName], or [stableClassName] of
- * [keyClass] when the key has no explicit name.
+ * Returns the name under which the values of a metadata key are stored: [explicitName], or
+ * the [stableClassName] of [keyClass] when [explicitName] is null.
  *
  * [namespace] is the key type whose values share one map (for example
- * [NavigationKey.MetadataKey]). On Kotlin/JS, where [stableClassName] is a simple name, this
- * throws when a different key class in the same [namespace] already has the same name, because the
- * two keys would read and overwrite each other's values.
+ * [NavigationKey.MetadataKey]). On Kotlin/JS, metadataKeyName throws when a different key
+ * class in the same [namespace] already has the same name, because each of the two keys
+ * would read and overwrite the values of the other key.
  */
 @AdvancedEnroApi
 public fun metadataKeyName(

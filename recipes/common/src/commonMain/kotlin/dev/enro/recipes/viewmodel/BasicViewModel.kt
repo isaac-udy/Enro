@@ -1,7 +1,10 @@
 /**
  * Enro Recipe: Basic ViewModel
  *
- * Demonstrates using NavigationHandle in a ViewModel.
+ * Shows a ViewModel that reads the NavigationKey and navigates with
+ * `by navigationHandle()`. The destination creates the ViewModel inside
+ * `createEnroViewModel { }`, which provides the NavigationHandle to the
+ * ViewModel.
  */
 package dev.enro.recipes.viewmodel
 

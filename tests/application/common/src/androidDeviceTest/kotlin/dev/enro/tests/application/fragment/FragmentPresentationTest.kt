@@ -16,7 +16,6 @@ class FragmentPresentationTest {
     
     @Before
     fun setup() {
-        // Initialize the select destination robot
         selectDestinationRobot = SelectDestinationRobot(composeRule)
     }
     
@@ -37,7 +36,7 @@ class FragmentPresentationTest {
             .presentComposable()
             .close()
         
-        // Verification is implicit in the robot implementation - it waits for the root fragment to be active again
+        // No explicit assertion: close() waits until the root fragment is displayed again.
     }
     
     @Test
@@ -67,7 +66,7 @@ class FragmentPresentationTest {
             .presentFragment()
             .close()
         
-        // Verification is implicit in the robot implementation - it waits for the root fragment to be active again
+        // No explicit assertion: close() waits until the root fragment is displayed again.
     }
     
     @Test
@@ -97,7 +96,7 @@ class FragmentPresentationTest {
             .presentActivity()
             .close()
         
-        // Verification is implicit in the robot implementation - it waits for the root fragment to be active again
+        // No explicit assertion: close() waits until the root fragment is displayed again.
     }
     
     @Test
@@ -109,8 +108,6 @@ class FragmentPresentationTest {
             .closeWithResult()
             .assertHasResult()
     }
-    
-    // Dialog Composable Tests
     
     @Test
     fun givenFragmentDestination_whenExecutingPresent_andTargetIsDialog_andTargetIsComposableDestination_thenCorrectDestinationIsOpened() {
@@ -129,7 +126,7 @@ class FragmentPresentationTest {
             .presentDialogComposable()
             .close()
         
-        // Verification is implicit in the robot implementation - it waits for the root fragment to be active again
+        // No explicit assertion: close() waits until the root fragment is displayed again.
     }
     
     @Test
@@ -141,8 +138,6 @@ class FragmentPresentationTest {
             .closeWithResult()
             .assertHasResult()
     }
-    
-    // Dialog Fragment Tests
     
     @Test
     fun givenFragmentDestination_whenExecutingPresent_andTargetIsDialog_andTargetIsFragmentDestination_thenCorrectDestinationIsOpened() {
@@ -161,7 +156,7 @@ class FragmentPresentationTest {
             .presentDialogFragment()
             .close()
         
-        // Verification is implicit in the robot implementation - it waits for the root fragment to be active again
+        // No explicit assertion: close() waits until the root fragment is displayed again.
     }
     
     @Test

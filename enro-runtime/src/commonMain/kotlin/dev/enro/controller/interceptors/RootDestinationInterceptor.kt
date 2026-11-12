@@ -10,30 +10,11 @@ import dev.enro.ui.destinations.isRootContextDestination
 import dev.enro.viewmodel.getNavigationHandle
 
 /**
- * A core navigation interceptor that handles operations targeting root context destinations.
- *
- * This interceptor identifies navigation operations that should open new root contexts (e.g., new activities
- * on Android, new windows on desktop) and redirects them to the appropriate root navigation handle.
- * While most navigation operations resolve to composables that can be rendered within existing containers,
- * some destinations require opening entirely new root contexts.
- *
- * The interceptor works by:
- * 1. Filtering out operations marked as root context destinations
- * 2. Creating a side effect that executes these operations through the root context's navigation handle
- * 3. Allowing platform-specific implementations to handle root context creation appropriately
- *
- * @see NavigationInterceptor
+ * Removes each Open of a root context destination (an Activity on Android, a window on
+ * desktop) from the operations of a container. The removed operations are executed by the
+ * NavigationHandle of the root context, in a side effect.
  */
 internal object RootDestinationInterceptor : NavigationInterceptor() {
-    /**
-     * Intercepts navigation operations before they are processed, extracting root context operations
-     * and redirecting them to the root navigation handle.
-     *
-     * @param fromContext The navigation context initiating the operation
-     * @param containerContext The container context where operations would normally be rendered
-     * @param operations The list of navigation operations to process
-     * @return Modified list of operations with root operations replaced by a side effect
-     */
     override fun beforeIntercept(
         fromContext: NavigationContext,
         containerContext: ContainerContext,

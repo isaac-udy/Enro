@@ -16,16 +16,9 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 /**
- * Tests for the `CompleteFrom` / `closeAndCompleteFrom` family of
- * operations. These let a destination open a *different* destination as
- * the delegate that will produce the original waiter's result -- the
- * delegate inherits the origin's [NavigationResultChannel.ResultIdKey]
- * so that when the delegate completes, the result reaches the origin's
- * registered channel instead of the delegate's.
- *
- * This is what `registerForFlowResult { open(...); openAnother(...) }`
- * builds on, and what `navigation.closeAndCompleteFrom(key)` uses to
- * forward a pending result to a successor screen.
+ * `CompleteFrom` and `closeAndCompleteFrom` open a delegate destination with the
+ * [NavigationResultChannel.ResultIdKey] of the origin destination, so that the result of the
+ * delegate is delivered to the result channel of the origin.
  */
 class ResultDelegationTests {
 
@@ -68,33 +61,26 @@ class ResultDelegationTests {
         val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, sourceDestination)
 
         val resultId = NavigationResultChannel.Id(ownerId = "owner", resultId = "delegated")
-        // Use NavigationKey.WithResult<String> so the eventual
-        // NavigationOperation.Complete(delegate, "...") goes through the
-        // public typed Complete invoke instead of the private constructor.
+        // The public NavigationOperation.Complete(instance, result) overload requires a
+        // NavigationKey.WithResult instance.
         val origin = NavigationKeyFixtures.StringResultKey().asInstance().apply {
             metadata.set(NavigationResultChannel.ResultIdKey, resultId)
         }
         val delegate = NavigationKeyFixtures.StringResultKey().asInstance()
 
-        // Origin is already on the backstack waiting for a result.
         container.setBackstackDirect(backstackOf(origin))
 
-        // CompleteFrom transfers the resultId to the delegate and opens it.
         container.execute(
             destinationContext,
             NavigationOperation.CompleteFrom(origin, delegate),
         )
 
-        // Delegate is now on top, sharing the origin's ResultIdKey.
         assertEquals(2, container.backstack.size)
         assertEquals(
             expected = resultId,
             actual = delegate.metadata.get(NavigationResultChannel.ResultIdKey),
         )
 
-        // Completing the delegate publishes the result under the origin's
-        // ResultIdKey -- which is what the origin's NavigationResultChannel
-        // is observing.
         container.execute(destinationContext, NavigationOperation.Complete(delegate, "delegated result"))
 
         val pending = NavigationResultChannel.pendingResults.value[resultId]
@@ -108,8 +94,7 @@ class ResultDelegationTests {
     fun `closeAndCompleteFrom dispatches Close of self and Open of the delegate with propagated ResultIdKey`() = runEnroTest {
         val resultId = NavigationResultChannel.Id(ownerId = "owner", resultId = "delegated")
 
-        // Build a TestNavigationHandle whose instance already carries a
-        // ResultIdKey (as it would if it had been opened by a result channel).
+        // The instance has a ResultIdKey, as an instance opened by a result channel has.
         val handle = createTestNavigationHandle(NavigationKeyFixtures.SimpleKey()).apply {
             instance.metadata.set(NavigationResultChannel.ResultIdKey, resultId)
         }

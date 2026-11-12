@@ -95,10 +95,8 @@ public class FlowResultManager private constructor(
         val id: FlowStep.Id<*>,
         val result: T,
         val dependsOn: Long,
-        // instanceId is should be set to a random UUID whenever a new result is published for a
-        // FlowStep. It is used by FlowStepOptions.AlwaysAfterPrevious to determine if
-        // the previous step has published a new result, even when the result itself is the same
-        // as the previous result
+        // A random UUID assigned each time a result is set. FlowStepOptions.AlwaysAfterPrevious
+        // compares instanceId to detect a new result that is equal to the earlier result.
         val instanceId: String,
     )
 
@@ -136,10 +134,8 @@ public class FlowResultManager private constructor(
 private fun encodeFlowResults(
     results: Map<FlowStep.Id<*>, FlowResultManager.FlowStepResult<Any>>,
 ): SavedState {
-    // TODO: Provide an option to set "filterMissingSerializers" to true, which might be useful in some cases.
-    //  it's probably also useful to clear the "forward" steps of the missing serializers, so that if something
-    //  is skipped, then when the restore happens, we go straight back to that step, rather than staying on
-    //  the current step and then going back to that step when the current step is completed
+    // TODO: add an option that sets filterMissingSerializers. Filtering a result should also clear the
+    //  results of each later step, so that a restored flow shows the step with the filtered result.
     val filterMissingSerializers = false
     val wrappedResults = results.values
         .map {

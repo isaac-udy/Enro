@@ -7,7 +7,8 @@ import dev.enro.NavigationOperation
 import dev.enro.context.ContainerContext
 
 /**
- * Scope for handling when a navigation key is closed.
+ * Receiver of an `onClosed` block. A block that returns without calling [cancel], [cancelAnd]
+ * or [replaceWith] continues the Close operation.
  */
 public class OnNavigationKeyClosedScope<K : NavigationKey> @PublishedApi internal constructor(
     public val isSilent: Boolean,
@@ -18,31 +19,30 @@ public class OnNavigationKeyClosedScope<K : NavigationKey> @PublishedApi interna
     public val key: K get() = instance.key
 
     /**
-     * The current backstack of the container the operation is being applied to.
-     * Read this to make decisions based on what's already on the stack — e.g.
-     * to find entries above the one being closed and cascade additional closes
-     * into an `AggregateOperation`.
+     * The backstack of the container that receives the operation, before the operation
+     * is applied.
      */
     public val backstack: NavigationBackstack get() = containerContext.container.backstack
 
     /**
-     * Continue with the navigation as normal.
+     * Ends the block and continues the Close operation unchanged.
      */
     public fun continueWithClose(): Nothing = throw InterceptorBuilderResult.Continue()
 
     /**
-     * Cancel the navigation entirely.
+     * Ends the block and cancels the Close operation.
      */
     public fun cancel(): Nothing = throw InterceptorBuilderResult.Cancel()
 
     /**
-     * Cancel the navigation and execute the provided block after the navigation is canceled.
+     * Ends the block, cancels the Close operation and runs [block] as a
+     * [NavigationOperation.SideEffect] in place of the Close operation.
      */
     public fun cancelAnd(block: () -> Unit): Nothing =
         throw InterceptorBuilderResult.CancelAnd(block)
 
     /**
-     * Replace the current transition with a modified one.
+     * Ends the block and replaces the Close operation with [operation].
      */
     public fun replaceWith(operation: NavigationOperation): Nothing =
         throw InterceptorBuilderResult.ReplaceWith(operation)

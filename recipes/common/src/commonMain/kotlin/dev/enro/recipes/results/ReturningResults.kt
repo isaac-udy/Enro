@@ -1,7 +1,10 @@
 /**
  * Enro Recipe: Returning Results
  *
- * Demonstrates how Enro handles typed results between screens.
+ * Shows typed results between screens. A `NavigationKey.WithResult<R>` key
+ * declares the result type. `registerForNavigationResult<R>` returns a
+ * channel that opens the key and receives the result. The opened screen
+ * returns the result with `navigation.complete(result)`.
  */
 package dev.enro.recipes.results
 
@@ -74,6 +77,7 @@ fun ResultsHomeDestination() {
     var selectedColor by rememberSaveable { mutableStateOf<String?>(null) }
     var isConfirmed by rememberSaveable { mutableStateOf<Boolean?>(null) }
 
+    // onClosed runs when the opened screen closes without a result.
     val getTextResult = registerForNavigationResult<String>(
         onClosed = { },
         onCompleted = { result ->

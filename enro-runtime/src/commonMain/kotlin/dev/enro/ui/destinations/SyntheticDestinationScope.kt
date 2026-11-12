@@ -9,51 +9,36 @@ import dev.enro.context.DestinationContext
 import dev.enro.context.RootContext
 
 /**
- * The receiver scope of a `syntheticDestination { ... }` block. A synthetic
- * destination is a [NavigationKey] that, when opened, runs the block instead
- * of rendering a UI; the synthetic instance never reaches a backstack.
+ * The receiver of a `syntheticDestination { ... }` block. Opening a synthetic destination's
+ * [NavigationKey] runs the block and renders no UI. The synthetic's instance is never added to
+ * a backstack.
  *
- * Outcomes split into **pure** outcomes (synchronous, in-place rewrite of
- * the original `Open(synthetic)`) and a **side-effect** outcome (deferred
- * imperative work with platform/container access). The pure outcomes are:
+ * The block selects one outcome by calling an outcome method:
  *
- * - [open] — open another [NavigationKey] in place of the synthetic.
- * - [close] — register a `Closed` result for whoever called the synthetic.
- * - [closeSilently] — close without firing the result-channel callback.
- * - [complete] — register a `Completed` result. For result-bearing
- *   synthetics see the `complete(result: T)` extension.
- * - [completeFrom] — open another key and have *its* completion fulfil the
- *   synthetic's contract.
+ * - [open] opens another [NavigationKey] in place of the synthetic.
+ * - [close] registers a `Closed` result for the caller that opened the synthetic.
+ * - [closeSilently] closes the synthetic without calling the result-channel callback.
+ * - [complete] registers a `Completed` result. A synthetic for a [NavigationKey.WithResult]
+ *   calls the `complete(result)` extension.
+ * - [completeFrom] opens another key and delivers the result of that key to the caller that
+ *   opened the synthetic.
+ * - [sideEffect] runs a block after the container has applied the other operations.
  *
- * Pure outcomes flow through the same interceptor pipeline as any other
- * operation, in order, in the same processing pass. That preserves
- * ordering when synthetics appear in an initial backstack alongside
- * normal destinations.
+ * Every outcome except [sideEffect] replaces the synthetic's `Open` at the same position in
+ * the list of operations, so a synthetic in an initial backstack keeps its position.
  *
- * For everything else — launching a system browser, rewriting the
- * container's backstack, calling out to a non-Enro API — reach for
- * [sideEffect]. The side-effect block runs deferred, has access to the
- * originating [NavigationContext] and the target [dev.enro.NavigationContainer],
- * and never blocks the operation pipeline.
+ * A block that returns without calling an outcome method is a silent close.
  *
- * The block can fall through without calling any outcome method — that's
- * treated as a silent close (no result-channel callback fires, no
- * operation is dispatched against the backstack).
- *
- * Each outcome method throws a sentinel and returns [Nothing], so calls
- * inside conditionals flow naturally without needing explicit `return`.
- * The scope tracks the outcome it settles on: once one is set, any further
- * outcome call from an async coroutine that outlived the block throws a
- * clear "already finished" error rather than silently double-handling.
+ * Each outcome method throws and returns [Nothing], so the block ends at the first outcome
+ * method called. An outcome method called after an outcome is set, for example from a
+ * coroutine that is still running after the block returned, throws an
+ * [IllegalStateException].
  */
 public class SyntheticDestinationScope<K : NavigationKey> @PublishedApi internal constructor(
     /**
-     * The [NavigationContext] the synthetic was opened from. Intended for
-     * reads — inspecting `controller`, walking parent contexts, checking
-     * `activeChild` — to inform the outcome decision. Imperative actions
-     * (calling `controller.execute`, mutating containers) should go through
-     * [sideEffect] instead, which is dispatched after the synthetic's own
-     * outcome has settled.
+     * The [NavigationContext] that opened the synthetic. Read [context] to select an outcome.
+     * To execute navigation operations or change a container, use [sideEffect], which runs
+     * after the synthetic's outcome is applied.
      */
     public val context: NavigationContext,
     public val instance: NavigationKey.Instance<K>,
@@ -61,12 +46,10 @@ public class SyntheticDestinationScope<K : NavigationKey> @PublishedApi internal
     public val key: K = instance.key
 
     /**
-     * The active destination closest to [context]. Read-only convenience —
-     * useful for synthetics that want to know "what screen am I being opened
-     * from?" Walks the context tree: if [context] is a
-     * [DestinationContext] this is that context; if it's a
-     * [ContainerContext], it's the container's active child; if it's a
-     * [RootContext], it's the active child of the root's active container.
+     * The destination that the synthetic was opened from: [context] when [context] is a
+     * [DestinationContext], the active child of a [ContainerContext], or the active child of
+     * the active container of a [RootContext]. `null` when the container or root has no
+     * active child.
      */
     public val destinationContext: DestinationContext<NavigationKey>?
         get() = when (context) {
@@ -82,20 +65,13 @@ public class SyntheticDestinationScope<K : NavigationKey> @PublishedApi internal
     @Deprecated("Use instance")
     public val instruction: NavigationKey.Instance<K> = instance
 
-    /**
-     * The outcome the synthetic settled on. Null while the block is running
-     * and before any method is called; set the first time one of the scope's
-     * outcome methods runs (or by the dispatcher after the block falls
-     * through to record a silent close).
-     */
+    /** `null` until an outcome method or [finalizeAsSilentCloseIfNoOutcome] sets the outcome. */
     internal var outcome: SyntheticDestinationOutcome? = null
         private set
 
     /**
-     * Records [newOutcome] and throws it. If an outcome is already set,
-     * throws an [IllegalStateException] instead — this catches the case
-     * where an async coroutine outlived the block and tried to complete /
-     * close the synthetic after the dispatcher had already moved on.
+     * Records [newOutcome] and throws [newOutcome]. Throws an [IllegalStateException] when an
+     * outcome is already set.
      */
     internal fun setOutcome(newOutcome: SyntheticDestinationOutcome): Nothing {
         val current = outcome
@@ -114,10 +90,8 @@ public class SyntheticDestinationScope<K : NavigationKey> @PublishedApi internal
     }
 
     /**
-     * Used by the dispatcher when the block falls through without calling an
-     * outcome method. Records a silent close so that any later coroutine
-     * call sees [outcome] is non-null and throws the "already finished"
-     * error from [setOutcome].
+     * Records a silent close when the block returned without calling an outcome method, so
+     * that a later outcome method call throws from [setOutcome].
      */
     internal fun finalizeAsSilentCloseIfNoOutcome(): SyntheticDestinationOutcome {
         val existing = outcome
@@ -128,10 +102,8 @@ public class SyntheticDestinationScope<K : NavigationKey> @PublishedApi internal
     }
 
     /**
-     * End the synthetic's outcome decision by opening another [NavigationKey]
-     * in place of this synthetic. The synthetic instance itself never lands
-     * in any backstack; the dispatcher rewrites the original `Open(synthetic)`
-     * to `Open(key)` inline.
+     * Ends the synthetic's block and opens [key] in place of the synthetic. `Open(key)`
+     * replaces the synthetic's `Open` at the same position in the list of operations.
      */
     public fun open(key: NavigationKey): Nothing =
         setOutcome(SyntheticDestinationOutcome.Open(key.asInstance()))
@@ -140,55 +112,44 @@ public class SyntheticDestinationScope<K : NavigationKey> @PublishedApi internal
         setOutcome(SyntheticDestinationOutcome.Open(key.asInstance()))
 
     /**
-     * End the synthetic's outcome decision by registering a `Closed` result
-     * against whichever [dev.enro.result.NavigationResultChannel] originally
-     * opened this synthetic.
+     * Ends the synthetic's block and registers a `Closed` result with the
+     * [dev.enro.result.NavigationResultChannel] that opened the synthetic.
      */
     public fun close(): Nothing =
         setOutcome(SyntheticDestinationOutcome.Close(silent = false))
 
     /**
-     * Close the synthetic without firing the result-channel callback. Use
-     * when the synthetic acted as a pure side-effect bridge and the original
-     * caller doesn't need to know the synthetic finished.
+     * Ends the synthetic's block and closes the synthetic without calling the result-channel
+     * callback.
      */
     public fun closeSilently(): Nothing =
         setOutcome(SyntheticDestinationOutcome.Close(silent = true))
 
     /**
-     * End the synthetic's outcome decision by registering a `Completed`
-     * result with no payload.
+     * Ends the synthetic's block and registers a `Completed` result with no value.
      *
-     * For synthetics whose key is a [NavigationKey.WithResult], this no-arg
-     * overload is shadowed by a deprecated-error extension — call the typed
-     * `complete(result: T)` extension instead.
+     * A synthetic whose key is a [NavigationKey.WithResult] calls the `complete(result)`
+     * extension. A no-argument `complete()` extension with `DeprecationLevel.ERROR` is declared
+     * for such a synthetic.
      */
     public fun complete(): Nothing =
         setOutcome(SyntheticDestinationOutcome.Complete(result = null))
 
     /**
-     * End the synthetic's outcome decision by opening [key] and routing its
-     * eventual completion back to whoever opened the synthetic. The
-     * synthetic itself doesn't produce the result; the forwarded key does.
+     * Ends the synthetic's block and opens [key]. The completion of [key] is delivered to the
+     * caller that opened the synthetic.
      */
     public fun completeFrom(key: NavigationKey): Nothing =
         setOutcome(SyntheticDestinationOutcome.CompleteFrom(key.asInstance()))
 
     /**
-     * End the synthetic's outcome decision by dispatching a side effect.
-     * The [block] runs deferred, in `afterExecution` of the current
-     * operation pass — meaning every other operation in the same pass has
-     * already settled by the time the block runs. Use this when the
-     * synthetic needs platform handles (e.g. an Android Activity), the
-     * container reference, or any imperative work that doesn't fit a single
-     * navigation operation.
+     * Ends the synthetic's block and schedules [block]. [block] runs after the container has
+     * applied every operation that was executed together with the synthetic's `Open`. Use
+     * [sideEffect] for work that is not a single navigation operation, for example starting an
+     * Android Activity or replacing the container's backstack with
+     * `container.execute(context, ...)`.
      *
-     * The side-effect block runs with a [SyntheticSideEffectScope] receiver
-     * carrying `context`, `container`, `instance`, and `key`. From inside
-     * the block you can call `container.execute(context, ...)` to drive
-     * further navigation (including `SetBackstack` for whole-backstack
-     * rewrites). The synthetic itself is treated as silently closed once
-     * the side effect dispatches — no result-channel callback fires.
+     * No result-channel callback is called for the synthetic.
      */
     public fun sideEffect(
         block: SyntheticSideEffectScope<K>.() -> Unit,

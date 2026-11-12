@@ -8,9 +8,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 
 /**
- * The window-size buckets the shell adapts to. Both the scene strategy
- * (slot resolution) and the chrome decorator depend on the current breakpoint;
- * keeping the enum here means they agree on the same thresholds.
+ * The window-width class of the shell. [ShellPaneSceneStrategy],
+ * [ShellOverlaySceneStrategy] and [ShellSceneDecorator] read the same
+ * breakpoint from [rememberShellBreakpoint].
  */
 internal enum class ShellBreakpoint {
     Mobile,
@@ -18,20 +18,13 @@ internal enum class ShellBreakpoint {
     Wide,
 }
 
-/**
- * Breakpoint thresholds. Defaults match Material 3 Adaptive's compact /
- * medium / expanded width classes.
- */
+/** The minimum window width of the Medium and Wide breakpoints. */
 internal data class ShellBreakpoints(
     val mediumMinWidth: Dp = 600.dp,
     val wideMinWidth: Dp = 1200.dp,
 )
 
-/**
- * Reads the current window width and maps it to a [ShellBreakpoint] under
- * the supplied [breakpoints]. Recomposes whenever the window resizes across
- * a threshold.
- */
+/** Returns the [ShellBreakpoint] for the current window width. */
 @Composable
 internal fun rememberShellBreakpoint(
     breakpoints: ShellBreakpoints = ShellBreakpoints(),

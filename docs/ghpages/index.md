@@ -5,14 +5,15 @@ nav_order: 1
 
 # Enro
 
-Enro is a powerful navigation library for Kotlin Multiplatform — Android, iOS,
-Desktop and Web — built around a simple idea: **screens within an application
-should behave like functions**.
+Enro is a navigation library for Kotlin Multiplatform: Android, iOS, Desktop
+and Web. In Enro, **a screen is declared like a function**.
 
-A `NavigationKey` is the signature of a screen. It declares the screen's inputs,
-and optionally a typed result. Calling code never needs to know how the screen
-is implemented; it just invokes the contract.
+A `NavigationKey` is the signature of a screen. The `NavigationKey` declares
+the screen's inputs and, optionally, the type of the screen's result. Code that
+opens a screen depends on the `NavigationKey`, not on the screen's
+implementation.
 
+<!-- snippet: basic-concepts/keys -->
 ```kotlin
 @Serializable
 data class ShowProfile(val userId: String) : NavigationKey
@@ -24,22 +25,23 @@ data class SelectDate(
 ) : NavigationKey.WithResult<LocalDate>
 ```
 
-If you read those as function signatures:
+The same two contracts, written as function signatures:
 
+<!-- snippet: index/signatures -->
 ```kotlin
 fun showProfile(userId: String): Unit
 fun selectDate(minDate: LocalDate? = null, maxDate: LocalDate? = null): LocalDate
 ```
 
-Enro is Compose-first and Kotlin Multiplatform. On Android, a compatibility
-layer (`enro-compat`) keeps existing Fragments and Activities working alongside
-Compose destinations, so you can adopt Enro incrementally.
+Enro destinations are Composables. On Android, a Fragment or an Activity can
+also be a destination. The `enro-compat` module provides the Enro 2 API for
+apps that are migrating to Enro 3.
 
 ## Getting Started
 
-- [Installation](docs/getting-started/installation.md) — add Enro to your project and install it on each platform.
-- [Basic Concepts](docs/getting-started/basic-concepts.md) — the small vocabulary you need to read everything else.
-- [Your First Screen](docs/getting-started/your-first-screen.md) — a complete worked example from key to navigation to result.
+- [Installation](docs/getting-started/installation.md) — the Gradle dependencies and the install call for each platform.
+- [Basic Concepts](docs/getting-started/basic-concepts.md) — a definition of each Enro term.
+- [Your First Screen](docs/getting-started/your-first-screen.md) — an example with three screens, navigation between the screens, and a result.
 
 ## Core Concepts
 
@@ -53,10 +55,18 @@ Compose destinations, so you can adopt Enro incrementally.
 - [Results](docs/advanced/results.md)
     - [Embedded Result Flows](docs/advanced/results/embedded-result-flows.md)
     - [Managed Result Flows](docs/advanced/results/managed-result-flows.md)
+    - [Flows in a ViewModel](docs/advanced/results/navigation-flows.md)
 - [View Models](docs/advanced/view-models.md)
 - [Animations](docs/advanced/animations.md)
 - [Testing](docs/advanced/testing.md)
 - [Plugins](docs/advanced/plugins.md)
+- [Synthetic Destinations](docs/advanced/synthetic-destinations.md)
+- [Path Bindings](docs/advanced/path-bindings.md)
+- [Interceptors](docs/advanced/interceptors.md)
+- [Deep Links](docs/advanced/deep-links.md)
+- [Saved State](docs/advanced/saved-state.md)
+- [Dependency Injection](docs/advanced/dependency-injection.md)
+- [Multi-Module Projects](docs/advanced/multi-module.md)
 
 ## Platform-Specific Guides
 
@@ -67,14 +77,25 @@ Compose destinations, so you can adopt Enro incrementally.
 
 ## Migrating from Enro 2
 
-Enro 3 is a substantial rewrite. See the [migration guide](docs/migrating-from-v2.md)
-for the API delta and a step-by-step conversion.
+Enro 3 is a rewrite of Enro 2. The [migration guide](docs/migrating-from-v2.md)
+lists each API change and the steps to convert an app.
 
 ## Recipes
 
-The [recipes module](https://github.com/isaac-udy/Enro/tree/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes)
-in the source repo is a set of small, runnable examples — one per concept. The
-documentation below links into them for every working snippet.
+The recipes app contains runnable examples. Each recipe shows one concept.
+[Recipes](docs/recipes.md) lists the recipes and the commands that run the
+recipes app.
+
+## Sample apps
+
+Three larger samples each combine several features: a branching loan
+application form, a recipe browser, and a travel planner with login. See
+[Sample Apps](docs/samples.md).
+
+## Troubleshooting
+
+[Troubleshooting](docs/troubleshooting.md) lists Enro error messages and the
+fix for each error.
 
 ## Applications using Enro
 

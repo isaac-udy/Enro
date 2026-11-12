@@ -17,8 +17,8 @@ import androidx.savedstate.savedState
 import androidx.savedstate.write
 
 /**
- * A holder that manages both SavedStateRegistry and SaveableStateRegistry for navigation destinations.
- * This allows external control over saving and restoring state for all destinations.
+ * Stores the `SavedStateRegistry` state and the `SaveableStateRegistry` state of each
+ * destination in a container, keyed by destination id.
  */
 @Stable
 public class NavigationSavedStateHolder @dev.enro.annotations.AdvancedEnroApi constructor(
@@ -28,9 +28,6 @@ public class NavigationSavedStateHolder @dev.enro.annotations.AdvancedEnroApi co
     private val saveableStateRegistryMap = mutableMapOf<String, DestinationSaveableStateRegistry>()
     private var savedState by mutableStateOf(savedState)
 
-    /**
-     * Gets or creates a [DestinationSavedStateRegistry] for the given destination ID.
-     */
     @Composable
     internal fun getSavedStateRegistry(destinationId: String): DestinationSavedStateRegistry {
         return remember(destinationId, savedState) {
@@ -46,11 +43,6 @@ public class NavigationSavedStateHolder @dev.enro.annotations.AdvancedEnroApi co
         }
     }
 
-    /**
-     * Gets or creates a [DestinationSaveableStateRegistry] for the given destination ID.
-     *
-     * @param canBeSaved A function to determine if a value can be saved
-     */
     @Composable
     internal fun getSaveableStateRegistry(
         destinationId: String,
@@ -84,15 +76,8 @@ public class NavigationSavedStateHolder @dev.enro.annotations.AdvancedEnroApi co
         savedStateRegistry?.lifecycle?.currentState = Lifecycle.State.RESUMED
         DisposableEffect(destinationId, savedState) {
             onDispose {
-                // Defensive: this DisposableEffect lives inside the movable
-                // content set up by movableContentDecorator, which Compose
-                // tears down later than the outer DisposableEffect in
-                // decorateNavigationDestination (the one that fires
-                // savedStateDecorator.onPop -> removeState -> DESTROYED).
-                // By the time this onDispose runs after a pop, the registry
-                // may already be DESTROYED — and a DESTROYED -> CREATED
-                // transition throws in LifecycleRegistry. Treat the
-                // already-destroyed case as "nothing to do".
+                // removeState can move the registry to DESTROYED before this onDispose runs,
+                // and LifecycleRegistry throws on a move from DESTROYED to CREATED.
                 val registry = savedStateRegistry ?: return@onDispose
                 if (registry.lifecycle.currentState != Lifecycle.State.DESTROYED) {
                     registry.lifecycle.currentState = Lifecycle.State.CREATED
@@ -114,28 +99,24 @@ public class NavigationSavedStateHolder @dev.enro.annotations.AdvancedEnroApi co
     }
 
     /**
-     * Saves the state for all destinations.
-     *
-     * @return A [SavedState] containing all destination states, where each destination ID is a key
-     * mapped to another [SavedState] with "saved" and "saveable" entries.
+     * Returns a [SavedState] with two entries for each destination: the `SavedStateRegistry`
+     * state under the key `<destination id>_saved`, and the `SaveableStateRegistry` state under
+     * the key `<destination id>_saveable`.
      */
     internal fun saveState(): SavedState {
         return savedState(savedState) {
-            // Get all destination IDs from both maps
             val allDestinationIds = (savedStateRegistryMap.keys + saveableStateRegistryMap.keys).toSet()
 
             allDestinationIds.forEach { destinationId ->
                 val savedStateRegistry = savedStateRegistryMap[destinationId]
                 val saveableStateRegistry = saveableStateRegistryMap[destinationId]
 
-                // Save the SavedStateRegistry state
                 savedStateRegistry?.let {
                     val state = savedState()
                     it.savedStateRegistryController.performSave(state)
                     putSavedState(destinationId+"_saved", state)
                 }
 
-                // Save the SaveableStateRegistry state
                 saveableStateRegistry?.let {
                     putSavedState(destinationId+"_saveable", savedState(it.performSave()))
                 }
@@ -150,7 +131,8 @@ public class NavigationSavedStateHolder @dev.enro.annotations.AdvancedEnroApi co
     }
 
     /**
-     * Removes and cleans up state for a specific destination.
+     * Removes the stored state for [destinationId] and moves the destination's
+     * `SavedStateRegistryOwner` lifecycle to `DESTROYED`.
      */
     public fun removeState(destinationId: String) {
         savedStateRegistryMap[destinationId]?.let {
@@ -165,7 +147,8 @@ public class NavigationSavedStateHolder @dev.enro.annotations.AdvancedEnroApi co
     }
 
     /**
-     * Clears all state.
+     * Calls [removeState] for each destination that has a `SavedStateRegistryOwner`. State that
+     * is stored for a destination with no `SavedStateRegistryOwner` is kept.
      */
     public fun clear() {
         savedStateRegistryMap.keys.toList().forEach { removeState(it) }

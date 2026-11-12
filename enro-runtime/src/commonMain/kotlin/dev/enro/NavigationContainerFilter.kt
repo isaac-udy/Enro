@@ -3,40 +3,40 @@ package dev.enro
 import kotlin.jvm.JvmName
 
 /**
- * A NavigationContainerFilter is used to determine whether or not a given [NavigationKey.Instance] should be accepted by a [NavigationContainer] to be handled/displayed by that container.
+ * Decides whether a [NavigationContainer] accepts a [NavigationKey.Instance].
  */
 public class NavigationContainerFilter internal constructor(
     internal val fromChildrenOnly: Boolean = false,
     private val block: (NavigationKey.Instance<NavigationKey>) -> Boolean
 ) {
-    // validates
     public fun accepts(instance: NavigationKey.Instance<NavigationKey>): Boolean {
         return block(instance)
     }
 }
 
 /**
- * A builder for creating a [NavigationContainerFilter]
+ * Builds a [NavigationContainerFilter] that matches a [NavigationKey.Instance] when at least
+ * one registered rule matches. A builder with no rules matches no [NavigationKey.Instance].
  */
 public class NavigationContainerFilterBuilder internal constructor() {
     private val filters: MutableList<NavigationContainerFilter> = mutableListOf()
 
     /**
-     * Matches any instructions that have a NavigationKey that returns true for the provided predicate
+     * Matches a [NavigationKey.Instance] whose key satisfies [predicate].
      */
     public fun key(predicate: (NavigationKey) -> Boolean) {
         filters.add(NavigationContainerFilter { predicate(it.key) })
     }
 
     /**
-     * Matches any instructions that have a NavigationKey that is equal to the provided key
+     * Matches a [NavigationKey.Instance] whose key is equal to [key].
      */
     public fun key(key: NavigationKey) {
         key { it == key }
     }
 
     /**
-     * Matches any instructions that match the provided predicate
+     * Matches a [NavigationKey.Instance] whose key is a [T] and satisfies [predicate].
      */
     @JvmName("keyWithType")
     public inline fun <reified T: NavigationKey> key(
@@ -46,7 +46,7 @@ public class NavigationContainerFilterBuilder internal constructor() {
     }
 
     /**
-     * Matches any instructions that match the provided predicate
+     * Matches a [NavigationKey.Instance] that satisfies [predicate].
      */
     public fun instance(predicate: (NavigationKey.Instance<NavigationKey>) -> Boolean) {
         filters.add(
@@ -65,8 +65,7 @@ public class NavigationContainerFilterBuilder internal constructor() {
 
 /**
  * Returns a [NavigationContainerFilter] that accepts the same [NavigationKey.Instance]s as this
- * filter, but only when the operation comes from a destination inside the container, so
- * destinations outside the container never open into it.
+ * filter, but only for an operation executed by a destination inside the container.
  */
 public fun NavigationContainerFilter.fromChildrenOnly(): NavigationContainerFilter {
     val filter = this
@@ -79,17 +78,14 @@ public fun NavigationContainerFilter.fromChildrenOnly(): NavigationContainerFilt
 public fun acceptAll(): NavigationContainerFilter = NavigationContainerFilter { true }
 
 /**
- * A [NavigationContainerFilter] that accepts no [NavigationKey.Instance].
- *
- * This is useful in cases where a Navigation Container should only contain the initial destination,
- * or where the Navigation Container only has it's backstack updated manually through the
- * [NavigationContainer.setBackstack] method
+ * A [NavigationContainerFilter] that accepts no [NavigationKey.Instance]. Use [acceptNone] for
+ * a container whose backstack is changed only through [NavigationContainer.updateBackstack].
  */
 public fun acceptNone(): NavigationContainerFilter = NavigationContainerFilter { false }
 
 /**
- * A [NavigationContainerFilter] that accepts [NavigationKey.Instance]
- * that match configuration provided a NavigationContainerFilterBuilder created using the [block].
+ * A [NavigationContainerFilter] that accepts each [NavigationKey.Instance] matched by a rule
+ * registered in [block].
  */
 public fun accept(block: NavigationContainerFilterBuilder.() -> Unit): NavigationContainerFilter {
     return NavigationContainerFilterBuilder()
@@ -99,8 +95,8 @@ public fun accept(block: NavigationContainerFilterBuilder.() -> Unit): Navigatio
 
 
 /**
- * A [NavigationContainerFilter] that accepts [NavigationKey.Instance]
- * that do not match configuration provided a NavigationContainerFilterBuilder created using the [block].
+ * A [NavigationContainerFilter] that accepts each [NavigationKey.Instance] that no rule
+ * registered in [block] matches.
  */
 public fun doNotAccept(block: NavigationContainerFilterBuilder.() -> Unit): NavigationContainerFilter {
     return NavigationContainerFilterBuilder()

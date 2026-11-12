@@ -52,32 +52,25 @@ abstract class NavigationContextWithContainerChildrenCommonTests(
         val child2 = NavigationContextFixtures.createContainerContext(rootContext)
         val child3 = NavigationContextFixtures.createContainerContext(rootContext)
 
-        // Register all children
         rootContext.registerChild(child1)
         rootContext.registerChild(child2)
         rootContext.registerChild(child3)
 
-        // First registered child should be active
         assertEquals(child1, rootContext.activeChild)
 
-        // Make child2 and child3 visible
         rootContext.registerVisibility(child2, true)
         rootContext.registerVisibility(child3, true)
 
-        // When child is registered as visible, if the previously active child was not visible, it
-        // should become active
+        // The active child1 is not visible, so the first child registered as visible becomes active.
         assertEquals(child2, rootContext.activeChild)
 
-        // Make child3 active
         rootContext.setActiveContainer(child3.id)
         assertEquals(child3, rootContext.activeChild)
 
-        // When child3 becomes not visible, child2 should become active
         rootContext.registerVisibility(child3, false)
         assertEquals(child2, rootContext.activeChild)
 
-        // Even when there is a visible container, setting the active container should still
-        // respect the request for that container to become active
+        // setActiveContainer makes child1 active although child1 is not visible and child2 is visible.
         rootContext.setActiveContainer(child1)
         assertEquals(child1, rootContext.activeChild)
     }
@@ -97,7 +90,6 @@ abstract class NavigationContextWithContainerChildrenCommonTests(
         rootContext.setActiveContainer(child2.id)
         assertEquals(child2, rootContext.activeChild)
 
-        // Make all children not visible
         rootContext.registerVisibility(child2, false)
         rootContext.registerVisibility(child1, false)
 
@@ -122,10 +114,8 @@ abstract class NavigationContextWithContainerChildrenCommonTests(
         rootContext.setActiveContainer(child3.id)
         assertEquals(child3, rootContext.activeChild)
 
-        // Unregister the active child
         rootContext.unregisterChild(child3)
 
-        // First visible child should become active
         assertEquals(child1, rootContext.activeChild)
     }
 
@@ -139,10 +129,8 @@ abstract class NavigationContextWithContainerChildrenCommonTests(
             rootContext.registerChild(child1)
             rootContext.registerChild(child2)
 
-            // child1 is active by default (first registered)
             assertEquals(child1, rootContext.activeChild)
 
-            // child1 is not visible by default, so when child2 becomes visible it should become active
             rootContext.registerVisibility(child2, true)
             assertEquals(child2, rootContext.activeChild)
         }
@@ -179,7 +167,6 @@ abstract class NavigationContextWithContainerChildrenCommonTests(
         assertEquals(3, rootContext.children.size)
         assertEquals(setOf(child1, child2, child3), rootContext.children.toSet())
 
-        // Change visibility doesn't affect children list
         rootContext.registerVisibility(child1, true)
         rootContext.registerVisibility(child2, false)
         rootContext.registerVisibility(child3, true)
@@ -193,7 +180,6 @@ abstract class NavigationContextWithContainerChildrenCommonTests(
         val rootContext = constructContext()
         val child = NavigationContextFixtures.createContainerContext(rootContext)
 
-        // Try to register visibility without registering child first
         rootContext.registerVisibility(child, true)
 
         assertNull(rootContext.activeChild)
@@ -211,15 +197,12 @@ abstract class NavigationContextWithContainerChildrenCommonTests(
         rootContext.registerChild(child2)
         rootContext.registerChild(child3)
 
-        // Initially child1 is active
         assertEquals(child1, rootContext.activeChild)
 
-        // Make child2 visible and active
         rootContext.registerVisibility(child2, true)
         rootContext.setActiveContainer(child2.id)
         assertEquals(child2, rootContext.activeChild)
 
-        // Toggle visibility multiple times
         rootContext.registerVisibility(child1, true)
         rootContext.registerVisibility(child3, true)
         assertEquals(child2, rootContext.activeChild) // Should remain child2

@@ -5,18 +5,12 @@ import dev.enro.NavigationKey
 import dev.enro.ui.NavigationDestination
 
 /**
- * A decorator that wraps navigation destinations to provide additional functionality
- * such as lifecycle management, state preservation, or visual effects.
+ * Wraps the content of each navigation destination. Navigation 3 equivalent:
+ * `NavEntryDecorator`.
  *
- * Parameter names ([onPop], [decorate]) mirror Nav3's `NavEntryDecorator` so a
- * decorator written against Nav3 can almost copy-paste over. See
- * `docs/NAV3-COMPARISON.md` for the broader alignment rationale.
- *
- * @param T The type of NavigationKey this decorator can handle
- * @property onPop Called when the destination is popped from the backstack and
- *   has left composition. Mirrors Nav3's `NavEntryDecorator.onPop`.
- * @property decorate The composable function that wraps the destination content.
- *   Mirrors Nav3's `NavEntryDecorator.decorate`.
+ * @property onPop Called once the destination is in neither the backstack nor the composition.
+ * @property decorate Renders the destination. Call [NavigationDestination.Content] on the
+ *   destination passed to [decorate] to render the content that the decorator wraps.
  */
 public open class NavigationDestinationDecorator<T : NavigationKey>(
     internal val onPop: (key: NavigationKey.Instance<T>) -> Unit,
@@ -24,10 +18,9 @@ public open class NavigationDestinationDecorator<T : NavigationKey>(
 )
 
 /**
- * Creates a [NavigationDestinationDecorator] with the provided lifecycle callback and decorate function.
- *
- * @param onPop Called when the destination is popped from the backstack and has left composition.
- * @param decorate The composable function that wraps the destination content.
+ * @param onPop Called once the destination is in neither the backstack nor the composition.
+ * @param decorate Renders the destination. Call [NavigationDestination.Content] on the
+ *   destination passed to [decorate] to render the content that the decorator wraps.
  */
 public fun <T : NavigationKey> navigationDestinationDecorator(
     onPop: (key: NavigationKey.Instance<T>) -> Unit = {},
@@ -35,18 +28,11 @@ public fun <T : NavigationKey> navigationDestinationDecorator(
 ): NavigationDestinationDecorator<T> = NavigationDestinationDecorator(onPop, decorate)
 
 /**
- * Applies a list of decorators to a navigation destination, wrapping it in the order provided.
- * Decorators are applied from first to last, meaning the first decorator in the list will be
- * the outermost wrapper.
+ * Returns [destination] wrapped in [decorators]. The first decorator is the outermost wrapper.
+ * A decorator that is in [decorators] more than once is applied once.
  *
- * For composition-tracking + `onPop`-firing semantics, append a `compositionTrackingDecorator`
- * to the decorator list as the **last** element (innermost wrap). See
- * `docs/NAV3-COMPARISON.md` for why Enro tracks composition from inside the chain rather than
- * from an outer `DisposableEffect`, the way Nav3's `decorateEntry` does.
- *
- * @param destination The destination to decorate
- * @param decorators The list of decorators to apply
- * @return The decorated navigation destination
+ * [decorateNavigationDestination] does not call a decorator's `onPop`. Inside Enro,
+ * `compositionTrackingDecorator` calls `onPop` and must be the last decorator in the list.
  */
 public fun <T : NavigationKey> decorateNavigationDestination(
     destination: NavigationDestination<T>,

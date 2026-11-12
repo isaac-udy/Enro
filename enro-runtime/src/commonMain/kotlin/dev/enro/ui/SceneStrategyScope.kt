@@ -3,34 +3,24 @@ package dev.enro.ui
 import androidx.compose.runtime.Immutable
 
 /**
- * Scope passed into [NavigationSceneStrategy.calculateScene] so the
- * strategy can plug back-handling done inside its scene (custom
- * gestures, "X" close buttons in a dialog, drag-to-dismiss sheets)
- * into the surrounding [NavigationDisplay]'s navigation event system.
- *
- * Mirrors Nav3's `SceneStrategyScope<T>`.
+ * The receiver of [NavigationSceneStrategy.calculateScene]. Navigation 3 equivalent:
+ * `SceneStrategyScope<T>`.
  */
 @Immutable
 public open class SceneStrategyScope internal constructor(
     /**
-     * Invoke when the scene wants to pop the current top entry —
-     * typically because the user dismissed the scene through its
-     * internal affordance (drag-down on a sheet, tap-outside on a
-     * dialog, custom back gesture).
+     * Call [onBack] when the user dismisses the scene from inside the scene, for example by
+     * dragging a sheet down or tapping outside a dialog.
      *
-     * The surrounding [NavigationDisplay] receives the event and
-     * applies it to the backstack the same way a hardware back press
-     * would. If you need different semantics (close a flow, navigate
-     * to a sibling), use a [dev.enro.NavigationHandle] directly
-     * instead.
+     * [NavigationDisplay] requests a close of each destination in the container that is not in
+     * the current scene's `previousEntries`. For any other navigation, use a
+     * [dev.enro.NavigationHandle].
      */
     public val onBack: () -> Unit,
 ) {
     /**
-     * Constructs a [SceneStrategyScope] suitable for calling a
-     * strategy in isolation (e.g. tests). Real consumers get one
-     * automatically from [NavigationDisplay] /
-     * [rememberNavigationSceneState].
+     * Creates a [SceneStrategyScope] whose [onBack] does nothing, for calling a strategy
+     * outside [NavigationDisplay] and [rememberNavigationSceneState], for example in a test.
      */
     public constructor() : this(onBack = {})
 }

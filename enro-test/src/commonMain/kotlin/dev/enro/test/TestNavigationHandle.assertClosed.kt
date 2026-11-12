@@ -5,7 +5,7 @@ import dev.enro.NavigationKey
 import dev.enro.NavigationOperation
 
 /**
- * Asserts that the NavigationHandle's instance has been closed
+ * Asserts that the last recorded operation is a Close of the handle's own instance.
  */
 public fun TestNavigationHandle<*>.assertClosed() {
     val last = operations.lastOrNull()

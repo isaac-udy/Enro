@@ -8,14 +8,9 @@ public val LocalNavigationAnimatedVisibilityScope: ProvidableCompositionLocal<An
     compositionLocalOf { error("AnimatedContentScope not provided") }
 
 /**
- * Nullable mirror of [LocalNavigationAnimatedVisibilityScope] for
- * callers that want to gracefully degrade when no overlay scope is
- * available (e.g. design-system snapshot tests rendering a dialog
- * standalone, outside any `NavigationDisplay`).
- *
- * Provided alongside the strict local everywhere the strict local is
- * provided — reading this returns `null` when nothing's been set,
- * rather than throwing.
+ * The scope of [LocalNavigationAnimatedVisibilityScope], or `null` when no scope is
+ * provided: for example, a destination rendered outside a `NavigationDisplay` in a snapshot
+ * test. `NavigationDisplay` provides both locals together.
  */
 public val LocalNavigationAnimatedVisibilityScopeOrNull: ProvidableCompositionLocal<AnimatedVisibilityScope?> =
     compositionLocalOf { null }

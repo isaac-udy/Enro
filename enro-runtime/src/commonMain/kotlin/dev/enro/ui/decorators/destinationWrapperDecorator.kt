@@ -7,15 +7,16 @@ import dev.enro.NavigationKey
 import dev.enro.ui.NavigationDestination
 
 /**
- * Wraps every destination a renderer displays. It sits outside the movable-content gate, so it
- * runs even for a destination whose content another scene is rendering.
+ * Wraps every destination a renderer displays. [Wrap] is called outside
+ * `movableContentDecorator`, so [Wrap] is also called in a scene that lists the destination
+ * while another scene renders the destination's content.
  */
 public fun interface NavigationDestinationWrapper {
     @Composable
     public fun Wrap(destination: NavigationDestination<NavigationKey>)
 }
 
-/** The wrapper the enclosing renderer applies; `null` renders destinations unwrapped. */
+/** The wrapper that the enclosing renderer provides. `null` renders destinations unwrapped. */
 public val LocalNavigationDestinationWrapper: ProvidableCompositionLocal<NavigationDestinationWrapper?> =
     staticCompositionLocalOf { null }
 

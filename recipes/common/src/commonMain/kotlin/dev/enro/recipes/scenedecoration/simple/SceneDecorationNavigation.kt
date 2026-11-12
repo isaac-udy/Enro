@@ -1,19 +1,15 @@
 /**
  * Enro Recipe: Scene Decoration
  *
- * Demonstrates `SceneDecoratorStrategy` — wrapping the scene produced by a
- * regular `NavigationSceneStrategy` chain with extra chrome that lives
- * *outside* the destination layer. This recipe's decorator switches between
- * a vertical sidebar (on wide windows) and a Material 3 bottom navigation
- * bar (on narrow windows), with the section buttons driving navigation
- * directly via `LocalNavigationContainer`.
+ * Shows a `SceneDecoratorStrategy`, which wraps the scene that the
+ * `NavigationSceneStrategy` selects. [AdaptiveNavigationSceneDecorator] adds
+ * a sidebar on a wide window and a Material 3 bottom navigation bar on a
+ * narrow window. The section buttons replace the backstack through
+ * `LocalNavigationContainer`.
  *
- * Contrast with the `Tab Navigation` recipe, which achieves a similar
- * visual result with multiple sibling `NavigationContainer`s. The
- * scene-decoration approach uses **one** container and one backstack —
- * the decorator just adds chrome.
- *
- * See [AdaptiveNavigationSceneDecorator] for the decorator implementation.
+ * The Tab Navigation recipe builds a similar layout with one
+ * `NavigationContainer` per tab. This recipe has one container and one
+ * backstack.
  */
 package dev.enro.recipes.scenedecoration.simple
 
@@ -49,12 +45,8 @@ import dev.enro.ui.scenes.DirectOverlaySceneStrategy
 import dev.enro.ui.scenes.SinglePaneSceneStrategy
 import kotlinx.serialization.Serializable
 
-// -- Recipe root --
-
 @Serializable
 object SceneDecorationRecipe : NavigationKey
-
-// -- Section root destinations --
 
 @Serializable
 data object HomeSection : NavigationKey
@@ -68,8 +60,6 @@ data object FavoritesSection : NavigationKey
 @Serializable
 data object ProfileSection : NavigationKey
 
-// -- Inner destination (demonstrates push within a section) --
-
 @Serializable
 data class HomeDetail(val itemId: String) : NavigationKey
 
@@ -79,10 +69,6 @@ private val sections = listOf(
     NavigationSection(FavoritesSection, "Favorites", Icons.Filled.Star),
     NavigationSection(ProfileSection, "Profile", Icons.Filled.Person),
 )
-
-// ─────────────────────────────────────────────────────────────────────
-// Recipe screen
-// ─────────────────────────────────────────────────────────────────────
 
 @Composable
 @NavigationDestination(SceneDecorationRecipe::class)
@@ -95,6 +81,7 @@ fun SceneDecorationRecipeScreen() {
         val container = rememberNavigationContainer(
             backstack = backstackOf(HomeSection.asInstance()),
         )
+        // region docs:scenes/decorator-display
         NavigationDisplay(
             state = container,
             modifier = modifier,
@@ -109,12 +96,9 @@ fun SceneDecorationRecipeScreen() {
                 remember { AdaptiveNavigationSceneDecorator(sections) },
             ),
         )
+        // endregion
     }
 }
-
-// ─────────────────────────────────────────────────────────────────────
-// Section destinations
-// ─────────────────────────────────────────────────────────────────────
 
 @Composable
 @NavigationDestination(HomeSection::class)
@@ -145,8 +129,8 @@ fun SearchSectionDestination() {
 fun FavoritesSectionDestination() {
     SectionContent(
         title = "Favorites",
-        body = "The chrome itself does not re-animate when you change sections — the " +
-            "decorator returns a scene with a constant key so the AnimatedContent slot is reused.",
+        body = "The navigation bar does not animate when the section changes. The " +
+            "decorator draws the navigation bar as a shared element with a constant key.",
     )
 }
 

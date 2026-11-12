@@ -222,9 +222,8 @@ fun ParcelableNavigationKeyScreen() {
 
         Button(
             onClick = {
-                // TODO the encodeToSavedState doesn't work here unless a type is specified
-                // encodeToSavedState<NavigationKey>(...) works, but encodeToSavedState(...) doesn't
-                // and will crash; need to understand why that's happening
+                // TODO: find out why encodeToSavedState(...) without a type argument crashes
+                //  here. encodeToSavedState<NavigationKey>(...) works.
                 navigation.open(
                     AndroidSerialization.DisplaySerializedData(
                         AndroidSerialization.SerializedData.NavigationKeySavedState(

@@ -1,7 +1,9 @@
 /**
  * Enro Recipe: Dialog Navigation
  *
- * Demonstrates how to show dialogs as navigation destinations.
+ * Shows four dialog destinations. The `dialog()` metadata displays a
+ * destination inside a Compose `Dialog`. The `directOverlay()` metadata
+ * displays a destination that creates a dialog window, such as `AlertDialog`.
  */
 package dev.enro.recipes.dialog
 
@@ -72,8 +74,7 @@ fun DialogRecipeScreen() {
     }
 }
 
-// Style 1: dialog metadata
-
+// region docs:scenes/dialog
 @NavigationDestination(ConfirmDeleteDialog::class)
 val confirmDeleteDialogDestination: NavigationDestinationProvider<ConfirmDeleteDialog> = navigationDestination(
     metadata = {
@@ -101,9 +102,9 @@ val confirmDeleteDialogDestination: NavigationDestinationProvider<ConfirmDeleteD
         }
     }
 }
+// endregion
 
-// Style 2: custom dialog properties
-
+// dialog() passes `dialogProperties` to the Compose Dialog that displays the destination.
 @NavigationDestination(CustomStyledDialog::class)
 val customStyledDialogDestination: NavigationDestinationProvider<CustomStyledDialog> = navigationDestination(
     metadata = {
@@ -134,8 +135,6 @@ val customStyledDialogDestination: NavigationDestinationProvider<CustomStyledDia
     }
 }
 
-// Style 3: full-screen dialog
-
 @NavigationDestination(FullScreenDialog::class)
 val fullScreenDialogDestination: NavigationDestinationProvider<FullScreenDialog> = navigationDestination(
     metadata = {
@@ -159,8 +158,7 @@ val fullScreenDialogDestination: NavigationDestinationProvider<FullScreenDialog>
     }
 }
 
-// Style 4: direct overlay with AlertDialog
-
+// directOverlay() adds no Dialog around the destination; AlertDialog creates the dialog window.
 @NavigationDestination(AlertOverlay::class)
 val alertOverlayDestination: NavigationDestinationProvider<AlertOverlay> = navigationDestination(
     metadata = {

@@ -1,8 +1,10 @@
 /**
  * Enro Recipe: Managed Flow
  *
- * Demonstrates Enro's managedFlowDestination, which allows multi-step navigation
- * flows to be defined as sequential, imperative code.
+ * Shows `managedFlowDestination`, which declares a multi-step flow as
+ * sequential code. Each `open(key)` in the `flow` block opens a step and
+ * returns the result of the step. The destination completes with the value
+ * that the `flow` block returns.
  */
 package dev.enro.recipes.managedflow
 

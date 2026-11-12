@@ -17,17 +17,11 @@ import kotlin.reflect.KClass
 
 public object UIViewControllerDestination {
 
-    // Represents the configuration for a UIViewControllerDestination, where the list of
-    // Configuration.Flags represent what kinds of presentation the UIViewControllerDestination
-    // should support; the order of the flags is important, as this indicates the order of
-    // preference for presentation styles; for example, if "SupportsCompose" is first,
-    // then the UIViewController will prefer being hosted within Compose, and if this is
-    // possible, will use that presentation format, but if "SupportsPresent" is first,
-    // the UIViewController will prefer being presented as a modal.
-    // These flags are provided inside a NavigationDestination.MetadataBuilder<T>, which allows
-    // different flags to be returned, depending on the NavigationKey.Instance used for the destination.
-    // For example, a NavigationKey could have "present: Boolean" as a property, causing the
-    // associated UIViewControllerDestination to return "SupportsPresent" as the first flag.
+    // `flags` lists the presentations that the UIViewController supports, in order of preference.
+    // The first flag that can be applied is used: with SupportsCompose first, the UIViewController
+    // is hosted in Compose; with SupportsPresent first, the UIViewController is presented.
+    // A NavigationDestination.MetadataBuilder<T> returns the flags, so the flags can depend on
+    // the NavigationKey.Instance of the destination.
     public class Configuration(
         internal val flags: List<Flag>,
         internal val constructor: (NavigationKey.Instance<NavigationKey>) -> UIViewController
@@ -35,17 +29,15 @@ public object UIViewControllerDestination {
         public sealed interface Flag
     }
 
-    // Whether the UIViewController should be able to be hosted inside
-    // Compose (i.e. within an Enro NavigationContainer)
+    // The UIViewController can be hosted in Compose, inside a NavigationContainer.
     public object SupportsCompose : Configuration.Flag
 
-    // Whether the UIViewController is able to be presented from another
-    // UIViewController, will use the "style" presentation style if presented
+    // The UIViewController can be presented from another UIViewController.
     public class SupportsPresent(
         public val style: UIModalPresentationStyle = UIModalPresentationAutomatic,
     ) : Configuration.Flag
 
-    // Whether the UIViewController supports being pushed into a UINavigationView
+    // The UIViewController can be pushed onto a UINavigationController.
     public object SupportsUINavigationView : Configuration.Flag
 
     internal const val ConfigurationKey: String = " dev.enro.ui.destinations.UIViewControllerDestination.Configuration"
@@ -111,8 +103,7 @@ public fun <T: NavigationKey> uiViewControllerDestination(
     return navigationDestinationContent(
         metadata = {
             val flags = metadata().filter {
-                // If the instance has been set specifically to ignore Compose hosting,
-                // we're going to filter out any SupportsCompose flags
+                // An instance with IgnoreComposeKey set does not use the SupportsCompose flag.
                 if (instance.metadata.get(UIViewControllerDestination.IgnoreComposeKey)) {
                     return@filter it !is UIViewControllerDestination.SupportsCompose
                 }

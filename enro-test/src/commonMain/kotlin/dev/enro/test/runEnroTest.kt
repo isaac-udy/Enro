@@ -1,14 +1,14 @@
 package dev.enro.test
 
 /**
- * runEnroTest is a way to perform the same behaviour as that of the EnroTestRule, but without
- * using a JUnit TestRule. It is designed to wrap the entire block of a test, as in:
+ * Runs [block] with a test NavigationController installed, and uninstalls the controller
+ * when [block] returns or throws. runEnroTest wraps the whole body of a test:
  * ```
  * @Test
  * fun exampleTest() = runEnroTest { ... }
  * ```
  *
- * See the documentation for [dev.enro.test.EnroTestRule] for more information.
+ * [dev.enro.test.EnroTestRule] is the JUnit rule that calls runEnroTest for each test.
  */
 public fun runEnroTest(block: () -> Unit) {
     EnroTest.installNavigationController()

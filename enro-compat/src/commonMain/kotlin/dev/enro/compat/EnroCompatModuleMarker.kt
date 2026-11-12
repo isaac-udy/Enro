@@ -1,9 +1,10 @@
 package dev.enro.compat
 
 /**
- * All of `enro-compat`'s code is Android-only, but the module declares the other targets
- * too. Kotlin/Native produces no klib for a target without sources, and publishing that
- * target then fails, so this declaration gives every target something to compile.
+ * Every other declaration in `enro-compat` is Android-only, and the module also declares
+ * the other targets. Kotlin/Native produces no klib for a target without sources, and
+ * publishing a target without a klib fails. EnroCompatModuleMarker is a source declaration
+ * for every target.
  */
 @Suppress("unused")
 internal object EnroCompatModuleMarker

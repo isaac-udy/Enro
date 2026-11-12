@@ -24,17 +24,15 @@ internal fun findContainer(
     alreadyVisitedContainers: Set<NavigationContainer.Key> = emptySet()
 ): ContainerContext? {
     val visited = alreadyVisitedContainers.toMutableSet()
-    // TODO isVisible
+    // TODO: skip a container that is not visible.
     val containerContext = fromContext
         .getActiveChildContainers(exclude = visited)
         .onEach { visited.add(it.container.key) }
         .firstOrNull {
             predicate(it.container)
-//            /*it.isVisible &&*/ it.container.accepts(instruction)
         }
         ?: fromContext.getChildContainers(exclude = visited)
             .onEach { visited.add(it.container.key) }
-//            .filter { it.isVisible }
             .firstOrNull { predicate(it.container) }
 
     if (containerContext != null) return containerContext
@@ -59,8 +57,8 @@ private fun NavigationContext<*, *>.getActiveChildContainer(): ContainerContext?
 
 private fun NavigationContext<*, *>.getChildContainers(): List<ContainerContext> {
     return when (this) {
-        // A destination that has left the backstack stays registered while it animates out;
-        // its containers must not receive new operations.
+        // A destination removed from the backstack stays registered while the destination
+        // animates out. The containers of that destination must not receive new operations.
         is ContainerContext -> {
             val backstackIds = container.backstack.map { it.id }.toSet()
             children
@@ -72,13 +70,8 @@ private fun NavigationContext<*, *>.getChildContainers(): List<ContainerContext>
     }
 }
 
-/**
- * Returns a list of active child containers down from a particular NavigationContext, the results in the list
- * should be in descending distance from the context that this was invoked on. This means that the first result will
- * be the active container for this NavigationContext, and the next result will be the active container for that container's context,
- * and so on. This method also takes an "exclude" parameter, which will exclude any containers in the set from the results,
- * including their children.
- */
+// Returns the chain of active child containers below this context, nearest first. The chain
+// ends before the first container in `exclude`.
 private fun NavigationContext<*, *>.getActiveChildContainers(
     exclude: Set<NavigationContainer.Key>,
 ): List<ContainerContext> {
@@ -94,12 +87,8 @@ private fun NavigationContext<*, *>.getActiveChildContainers(
     return result
 }
 
-/**
- * Returns a list of all child containers down from a particular NavigationContext, the results in the list
- * should be in descending distance from the context that this was invoked on. This is a breadth first search,
- * and doesn't take into account the active context. This method also takes an "exclude" parameter, which will exclude any
- * containers in the exclude set from the results, including the children of containers which are excluded.
- */
+// Returns each container below this context in breadth-first order, active or not. A container
+// in `exclude` is left out together with the containers below that container.
 private fun NavigationContext<*, *>.getChildContainers(
     exclude: Set<NavigationContainer.Key>,
 ): List<ContainerContext> {

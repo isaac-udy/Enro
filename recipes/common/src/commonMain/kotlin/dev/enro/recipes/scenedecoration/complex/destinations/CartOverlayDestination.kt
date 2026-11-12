@@ -21,11 +21,11 @@ import dev.enro.ui.scenes.directOverlay
 import kotlinx.serialization.Serializable
 
 /**
- * Tagged with the built-in `directOverlay()` builder from
- * `dev.enro.ui.scenes`. The recipe's `ShellOverlaySceneStrategy` (registered
- * earlier in the chain than the default `DirectOverlaySceneStrategy`) wraps
- * the content as a right-side drawer on Wide / Medium breakpoints, or a
- * bottom sheet on Mobile, with a scrim that dismisses on tap.
+ * The destination sets the `directOverlay()` metadata from
+ * `dev.enro.ui.scenes`. The recipe registers `ShellOverlaySceneStrategy` in
+ * place of `DirectOverlaySceneStrategy`. `ShellOverlaySceneStrategy` renders
+ * the destination as a right-side drawer with a scrim on the Wide and Medium
+ * breakpoints, and as a bottom sheet on Mobile.
  */
 @Serializable
 data object CartOverlay : NavigationKey

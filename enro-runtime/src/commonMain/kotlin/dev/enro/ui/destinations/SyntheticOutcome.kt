@@ -5,40 +5,34 @@ import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 
 /**
- * The decision a synthetic destination's block made when it ran. Returned by
- * [NavigationDestinationProvider.peekSyntheticOutcome] and consumed by
- * `testSyntheticDestination` in enro-test for unit-testing synthetic logic
- * without going through the navigation container's interceptor pipeline.
- *
- * Mirrors the internal `SyntheticDestinationOutcome` sealed class but is a
- * plain value type — not a thrown sentinel — so it can be inspected,
- * pattern-matched and asserted against.
+ * The outcome that a synthetic destination's block selected. Returned by `peekSyntheticOutcome`,
+ * which runs the block without executing a navigation operation. `testSyntheticDestination` in
+ * enro-test asserts on a [SyntheticOutcome].
  */
 public sealed class SyntheticOutcome {
 
-    /** The synthetic's block called `open(...)` — the dispatcher would rewrite the synthetic's `Open` to `Open(target)`. */
+    /** The synthetic's block called `open(...)` with [instance]. */
     public data class Open(public val instance: NavigationKey.Instance<*>) : SyntheticOutcome() {
         public val key: NavigationKey get() = instance.key
     }
 
-    /** The synthetic's block called `close()` or `closeSilently()`. */
+    /**
+     * The synthetic's block called `close()` or `closeSilently()`, or returned without calling
+     * an outcome method. [silent] is `false` only for `close()`.
+     */
     public data class Close(public val silent: Boolean) : SyntheticOutcome()
 
-    /** The synthetic's block called `complete(...)`. `result` is the typed payload (or `null` for non-result keys). */
+    /** The synthetic's block called `complete(...)`. [result] is `null` for `complete()`. */
     public data class Complete(public val result: Any?) : SyntheticOutcome()
 
-    /** The synthetic's block called `completeFrom(...)` — the chosen key's eventual completion would route back to the original caller. */
+    /** The synthetic's block called `completeFrom(...)` with [instance]. */
     public data class CompleteFrom(public val instance: NavigationKey.Instance<*>) : SyntheticOutcome() {
         public val key: NavigationKey get() = instance.key
     }
 
     /**
-     * The synthetic's block called `sideEffect { ... }`. The block is not
-     * automatically invoked when the outcome is produced — call [runWith]
-     * to execute it. Useful in tests that want to inspect *what* side
-     * effect the synthetic chose without running it, or that want to
-     * provide a controlled scope (e.g. a mock context) for the side effect
-     * to operate against.
+     * The synthetic's block called `sideEffect { ... }`. The side-effect block has not run; call
+     * [runWith] to run the side-effect block.
      */
     public class SideEffect @PublishedApi internal constructor(
         public val instance: NavigationKey.Instance<*>,
@@ -46,8 +40,8 @@ public sealed class SyntheticOutcome {
         internal val block: SyntheticSideEffectScope<NavigationKey>.() -> Unit,
     ) : SyntheticOutcome() {
         /**
-         * Executes the side-effect block with the given [context] and
-         * [container] as the scope.
+         * Runs the side-effect block with a [SyntheticSideEffectScope] built from [context] and
+         * [container].
          */
         public fun runWith(
             context: NavigationContext,

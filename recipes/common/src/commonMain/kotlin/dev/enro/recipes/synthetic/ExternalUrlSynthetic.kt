@@ -1,23 +1,21 @@
 /**
  * Enro Recipe: Synthetic Destination — External URL launcher
  *
- * Demonstrates the side-effect-bridge pattern: a `NavigationKey` whose
- * destination doesn't render any UI and doesn't change the Enro navigation
- * state. The synthetic's outcome is `sideEffect { ... }`, which runs the
- * body deferred — after the surrounding navigation pass has settled —
- * with platform context and the container reference available. The
- * synthetic itself is treated as silently closed; no result-channel
- * callback fires for the caller.
+ * Shows a `syntheticDestination` with the `sideEffect { ... }` outcome: a
+ * `NavigationKey` that runs platform code, renders no UI and does not change
+ * a backstack. The `sideEffect` block runs after the container has applied
+ * the operations executed with the open of the synthetic. No result-channel
+ * callback runs for the caller.
  *
- * In a real app the side-effect body would invoke a platform-specific API:
- *  - Android: `context.findActivity().startActivity(Intent(ACTION_VIEW, Uri.parse(url)))`
- *    or Chrome Custom Tabs via androidx.browser
- *  - Desktop:  `java.awt.Desktop.getDesktop().browse(URI(url))`
+ * The `sideEffect` block calls [launchExternalUrl], an `expect` function with
+ * one `actual` per platform:
+ *  - Android: `context.root().activity.startActivity(Intent(ACTION_VIEW, …))`
+ *  - Desktop: `java.awt.Desktop.getDesktop().browse(URI(url))`
+ *  - iOS:     `UIApplication.sharedApplication.openURL(…)`
  *  - Web:     `window.open(url, "_blank")`
  *
- * Cross-platform launch from common code is out of scope for the recipe
- * itself, so the side effect just records each requested URL in an
- * in-memory log that the recipe screen displays.
+ * The `sideEffect` block also adds each URL to a list that the recipe screen
+ * displays.
  */
 package dev.enro.recipes.synthetic
 
@@ -33,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
 import dev.enro.navigationHandle
@@ -47,20 +46,23 @@ object ExternalUrlSyntheticRecipe : NavigationKey
 @Serializable
 data class OpenExternalUrl(val url: String) : NavigationKey
 
-// In a real app the synthetic would call into a platform API; here we
-// keep a simple in-memory log so the recipe screen has something to show.
+// The recipe screen displays the URLs that the synthetic adds to this list.
 private val openedUrls = mutableStateListOf<String>()
+
+/**
+ * Opens [url] in the platform's browser. [context] is the navigation context
+ * that opened the synthetic. The Android implementation reads the Activity
+ * from the root of [context].
+ */
+internal expect fun launchExternalUrl(context: NavigationContext, url: String)
 
 @NavigationDestination(OpenExternalUrl::class)
 val openExternalUrl = syntheticDestination<OpenExternalUrl> {
+    // With the sideEffect outcome, the instance of OpenExternalUrl is not
+    // added to a backstack and no result-channel callback runs.
     sideEffect {
-        // In a real app: context.findActivity() on Android then start the
-        // CCT intent; Desktop.browse() on desktop; window.open on web.
-        // See the file header for snippets.
+        launchExternalUrl(context, key.url)
         openedUrls.add(key.url)
-        // The side effect dispatched, so the synthetic is silently closed
-        // — no result-channel callback fires, the synthetic instance
-        // never lands on any backstack, and the Enro state is unchanged.
     }
 }
 
@@ -82,7 +84,7 @@ fun ExternalUrlSyntheticRecipeScreen() {
             )
             Text(
                 text = "Each button below calls navigation.open(OpenExternalUrl(...)). The " +
-                    "synthetic 'opens' the URL and falls through — your Enro backstack " +
+                    "synthetic opens the URL in the browser. Your Enro backstack " +
                     "doesn't change.",
                 style = MaterialTheme.typography.bodySmall,
             )
@@ -95,7 +97,7 @@ fun ExternalUrlSyntheticRecipeScreen() {
             }
 
             Text(
-                text = "URLs the synthetic has 'opened' this session:",
+                text = "URLs the synthetic has opened this session:",
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(top = 16.dp),
             )

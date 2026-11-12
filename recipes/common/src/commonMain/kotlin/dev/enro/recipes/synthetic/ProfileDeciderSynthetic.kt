@@ -1,14 +1,14 @@
 /**
  * Enro Recipe: Synthetic Destination — Profile decider (`completeFrom`)
  *
- * Demonstrates the result-forwarding pattern: a synthetic with a result
- * contract (`NavigationKey.WithResult<ProfileUpdate>`) that picks between
- * several actual destinations at runtime. The chosen destination produces
- * the result and the synthetic dispatcher forwards it back to whoever
- * originally opened `EditProfile`.
+ * Shows result forwarding with `syntheticDestination` and `completeFrom`.
+ * `EditProfile` is a `NavigationKey.WithResult<ProfileUpdate>` with a
+ * synthetic destination that selects one of two destinations at runtime.
+ * The selected destination completes with a `ProfileUpdate`, and the caller
+ * that opened `EditProfile` receives the `ProfileUpdate`.
  *
- * The decision here is a coin flip. In a real app this would read a
- * feature flag, an A/B test bucket, a remote config value, etc.
+ * The recipe selects the destination at random. An app can select the
+ * destination from a feature flag or remote config value.
  */
 package dev.enro.recipes.synthetic
 
@@ -54,35 +54,29 @@ object ProfileDeciderHome : NavigationKey
 @Serializable
 data class ProfileUpdate(
     val displayName: String,
-    val variant: String, // which UI produced the update — for the recipe to display
+    val variant: String, // the screen that created the update: "legacy" or "v2"
 )
 
 /**
- * Public-facing key that callers open when they want to edit the profile.
- * It's a synthetic; the dispatcher forwards to one of the concrete
- * implementations below based on a runtime decision.
+ * The key that a caller opens to edit the profile. The synthetic destination
+ * for [EditProfile] forwards to [EditProfileLegacy] or [EditProfileV2].
  */
 @Serializable
 object EditProfile : NavigationKey.WithResult<ProfileUpdate>
 
-/** Concrete implementation: the legacy edit-profile UI. */
 @Serializable
 object EditProfileLegacy : NavigationKey.WithResult<ProfileUpdate>
 
-/** Concrete implementation: the new edit-profile UI. */
 @Serializable
 object EditProfileV2 : NavigationKey.WithResult<ProfileUpdate>
 
 @NavigationDestination(EditProfile::class)
 val editProfile = syntheticDestination<EditProfile> {
-    // In a real app this is where you would read a feature flag, query an
-    // A/B bucket, check remote config, etc. We toss a coin for the recipe.
     val useV2 = Random.nextBoolean()
+    // completeFrom opens the selected key. When the selected destination calls
+    // navigation.complete(...), the caller that opened EditProfile receives
+    // the result.
     if (useV2) completeFrom(EditProfileV2) else completeFrom(EditProfileLegacy)
-    // completeFrom opens the chosen key with EditProfile's result-channel
-    // metadata copied across, so when that key calls navigation.complete(...)
-    // the result routes back to whoever opened `EditProfile` in the first
-    // place — they never need to know about the legacy/V2 split.
 }
 
 @Composable
@@ -106,7 +100,7 @@ fun ProfileDeciderHomeDestination() {
     var lastResult by rememberSaveable { mutableStateOf<ProfileUpdate?>(null) }
 
     val editProfileRequest = registerForNavigationResult<ProfileUpdate>(
-        onClosed = { /* user cancelled */ },
+        onClosed = { /* the selected destination closed without a result */ },
         onCompleted = { result -> lastResult = result },
     )
 

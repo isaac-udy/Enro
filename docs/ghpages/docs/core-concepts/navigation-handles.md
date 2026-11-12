@@ -6,23 +6,24 @@ nav_order: 4
 
 # Navigation Handles
 
-A `NavigationHandle` is the control surface inside a screen — the variable
-you call `open`, `close`, and `complete` on to drive navigation. Every
-destination has one. You read the current key off it; you execute operations
-through it.
+Each destination has one `NavigationHandle`. A screen reads the key from
+the `NavigationHandle` and calls `open`, `close` and `complete` on the
+`NavigationHandle`.
 
+<!-- snippet: basic-concepts/handle -->
 ```kotlin
-val navigation = navigationHandle<ShowProfile>()
+val navigation = navigationHandle<SelectDate>()
 
-navigation.open(SelectDate(maxDate = LocalDate.now())) // open another screen
-navigation.close()                                     // close this screen
-navigation.complete(result)                            // close with a result (WithResult keys only)
+navigation.open(ShowProfile("user-123"))
+navigation.close()
+navigation.complete(today) // closes SelectDate and returns `today` to the caller
 ```
 
 ## Getting a handle
 
 ### In a Composable
 
+<!-- snippet: navigation-handles/composable -->
 ```kotlin
 @Composable
 @NavigationDestination(ShowProfile::class)
@@ -32,34 +33,41 @@ fun ProfileScreen() {
 }
 ```
 
-`navigationHandle<KeyType>()` is a Composable function. The type parameter
-makes `navigation.key` typed.
+`navigationHandle<KeyType>()` is a Composable function. `navigation.key` has
+the type `KeyType`. `navigationHandle<KeyType>()` throws when the
+destination's key is not a `KeyType`.
 
-If you don't care about the key's type (because you're writing reusable
-logic that doesn't depend on it), use the untyped form:
+For code that does not depend on the key's type, use `NavigationKey` as
+the type parameter:
 
+<!-- snippet: navigation-handles/untyped -->
 ```kotlin
 val navigation = navigationHandle<NavigationKey>()
 ```
 
 ### In a ViewModel
 
-Use the property delegate:
+Declare the handle with the `by navigationHandle<KeyType>()` property
+delegate:
 
+<!-- snippet: navigation-handles/view-model -->
 ```kotlin
 class ProfileViewModel : ViewModel() {
     val navigation by navigationHandle<ShowProfile>()
 }
 ```
 
-The handle is resolved when the ViewModel is constructed by Enro's helper
-factory — see [View Models](../advanced/view-models.md).
+The delegate reads the handle when the ViewModel is constructed. The
+delegate throws when the ViewModel was not created by a destination's
+ViewModel factory, or when the destination's key is not a `KeyType`. See
+[View Models](../advanced/view-models.md).
 
 ### Inside a `navigationDestination { }` provider
 
 The provider's content lambda has a `NavigationDestinationScope<T>` receiver,
-which exposes `navigation` and `key` directly:
+which has a `navigation` property:
 
+<!-- snippet: navigation-handles/provider -->
 ```kotlin
 @NavigationDestination(ConfirmDialog::class)
 val confirmDialogDestination = navigationDestination<ConfirmDialog>(
@@ -69,82 +77,84 @@ val confirmDialogDestination = navigationDestination<ConfirmDialog>(
         onDismissRequest = { navigation.close() },
         confirmButton = { Button(onClick = { navigation.close() }) { Text("OK") } },
         title = { Text("Confirm") },
-        text = { Text("Item: ${key /* same as navigation.key */}") },
+        text = { Text("Opened with ${navigation.key}") },
     )
 }
 ```
 
-## What's on a handle
+## NavigationHandle members
 
+<!-- snippet: skip (API outline) -->
 ```kotlin
 abstract class NavigationHandle<out T : NavigationKey> : LifecycleOwner {
-    val key: T                                      // shorthand for instance.key
+    val key: T
     abstract val instance: NavigationKey.Instance<T>
     abstract val savedStateHandle: SavedStateHandle
     abstract fun execute(operation: NavigationOperation)
 }
 ```
 
-- **`key`** — the key the screen was opened with, typed.
-- **`instance`** — the wrapping `NavigationKey.Instance` (id + metadata).
-- **`savedStateHandle`** — a per-destination `SavedStateHandle`, scoped to
-  this navigation entry. Persists across configuration changes and process
-  death.
-- **`execute(operation)`** — the underlying primitive every operation below
-  funnels through. You rarely call this directly.
+- **`key`**: the key the screen was opened with. `key` returns
+  `instance.key`.
+- **`instance`**: the `NavigationKey.Instance` that contains the key, the
+  `id` and the instance metadata.
+- **`savedStateHandle`**: a `SavedStateHandle` scoped to the instance.
+  Enro restores the `SavedStateHandle` after a configuration change and
+  after process death.
+- **`execute(operation)`**: executes a `NavigationOperation`. Each
+  operation in the next section calls `execute`.
 
-`NavigationHandle` also implements `LifecycleOwner`, so you can launch
-coroutines tied to the destination's lifecycle.
+`NavigationHandle` implements `LifecycleOwner`. The lifecycle of the
+`NavigationHandle` follows the lifecycle of the destination.
 
 ## Operations
 
-All operations live in the `dev.enro` package as extension functions on
-`NavigationHandle`. Import them individually.
+Each operation is an extension function on `NavigationHandle` in the
+`dev.enro` package. Import each operation.
 
 ### Opening another destination
 
+<!-- snippet: navigation-handles/open -->
 ```kotlin
-navigation.open(SelectDate(maxDate = LocalDate.now()))
+navigation.open(SelectDate(maxDate = today))
 navigation.open(ShowProfile("user-123").withMetadata(IsExpanded, true))
 ```
 
-`open` accepts either a `NavigationKey` or a `NavigationKey.WithMetadata<*>`
-(produced by `key.withMetadata(MetadataKey, value)`).
+`open` accepts a `NavigationKey` or a `NavigationKey.WithMetadata<*>`.
+`key.withMetadata(MetadataKey, value)` returns a
+`NavigationKey.WithMetadata<*>`.
 
-For result-producing keys, prefer a result channel
-(`registerForNavigationResult`) over `open` — see
+To receive the result of a `NavigationKey.WithResult` key, open the key
+with a `registerForNavigationResult` channel instead of `open`. See
 [Results](../advanced/results.md).
 
 ### Closing the current destination
 
+<!-- snippet: navigation-handles/close -->
 ```kotlin
-navigation.close()             // close this destination
-navigation.requestClose()      // ask this destination to close
+navigation.close()
+navigation.requestClose()
 ```
 
-`close()` and `requestClose()` are both ways of dismissing a destination,
-but they're not interchangeable.
+- `close()` closes the destination. `close()` does not call the
+  `onCloseRequested` callback.
+- `requestClose()` calls the destination's `onCloseRequested` callback.
+  When the destination has registered no `onCloseRequested` callback,
+  `requestClose()` closes the destination.
 
-- `close()` closes the destination directly.
-- `requestClose()` invokes the destination's *onCloseRequested* callback.
-  By default that callback just calls `close()`, so unless you've overridden
-  it, `requestClose()` and `close()` do the same thing. Overriding the
-  callback lets you put logic between the request and the actual close.
-
-The Android back button calls `requestClose()`, not `close()`. Custom
-"dismiss" UI in your destination (a back arrow, an X button, a backdrop tap
-on a dialog) should call `requestClose()` too. As a rule of thumb,
-**prefer `requestClose()` for anything user-initiated** — you'll lose
-nothing today and gain the ability to add behaviour later without hunting
-down every call site.
+The system back button and the back gesture call `requestClose()`. Call
+`requestClose()` from UI that dismisses the destination, such as a back
+arrow, a close button or a tap outside a dialog. An `onCloseRequested`
+callback then applies to every dismissal.
 
 ### Overriding the close-requested callback
 
-In a Composable destination, configure the callback with
-`navigation.configure { onCloseRequested { ... } }`. The `configure` block
-is a `DisposableEffect`, so the callback is automatically cleaned up when
-the destination leaves the composition.
+In a Composable destination, register the callback with
+`navigation.configure { onCloseRequested { ... } }`. `configure` runs the
+block in a `DisposableEffect` and removes the callback when the
+`configure` call leaves the composition.
 
+<!-- snippet: navigation-handles/configure -->
 ```kotlin
 @Composable
 @NavigationDestination(EditProfile::class)
@@ -159,7 +169,7 @@ fun EditProfileScreen() {
     navigation.configure {
         onCloseRequested {
             if (draft == navigation.key.initial) {
-                close()              // nothing changed — close directly
+                close()
             } else {
                 confirmDiscard.open(ConfirmDiscardDialog)
             }
@@ -173,6 +183,7 @@ fun EditProfileScreen() {
 In a `ViewModel`, pass a `config` block to the `by navigationHandle<T>`
 delegate:
 
+<!-- snippet: navigation-handles/configure-view-model -->
 ```kotlin
 class EditProfileViewModel : ViewModel() {
     val draft = MutableStateFlow("")
@@ -183,7 +194,7 @@ class EditProfileViewModel : ViewModel() {
             if (draft.value == originalValue) {
                 close()
             } else {
-                // delegate to a UI-side handler, emit an event, etc.
+                // The destination's UI collects closeRequests.
                 viewModelScope.launch { closeRequests.emit(Unit) }
             }
         }
@@ -193,71 +204,70 @@ class EditProfileViewModel : ViewModel() {
 }
 ```
 
-The ViewModel form is configured once at construction time and cleaned up
-when the ViewModel is cleared.
+Enro applies the `config` block when the ViewModel is constructed and
+removes the callback when the ViewModel is cleared.
 
-Two things to notice in the Composable example above:
+In the Composable example:
 
-1. The "no changes" branch calls `close()`, **not** `requestClose()` —
-   calling `requestClose()` from inside the `onCloseRequested` callback
-   would loop forever.
-2. The confirmation dialog is opened through a `registerForNavigationResult`
-   channel so the screen can react to the user's confirmation. See
-   [Results](../advanced/results.md).
+1. The callback calls `close()` when the draft is unchanged. A call to
+   `requestClose()` inside the `onCloseRequested` callback calls the
+   callback again, without end.
+2. The screen opens the confirmation dialog with a
+   `registerForNavigationResult` channel and closes when the dialog
+   completes with `true`. See [Results](../advanced/results.md).
 
-Other common reasons to override `onCloseRequested`:
+Other uses of `onCloseRequested`:
 
-- Block the back button while a save is in progress.
-- Run a cleanup side-effect before closing.
-- Redirect the close to a different operation
-  (e.g. `completeFrom(otherKey)`).
+- Ignore the back button while a save is in progress.
+- Run cleanup before calling `close()`.
+- Call a different operation, such as `completeFrom(otherKey)`.
 
-A worked end-to-end example lives in the
-[request-close confirmation recipe][requestclose-recipe].
+See the [request-close confirmation recipe][requestclose-recipe].
 
 ### One callback per handle
 
-A navigation handle can have at most one active `onCloseRequested` callback.
-Registering more than one for the same handle — whether that's two
-`configure { }` blocks in the same composable, two `by navigationHandle<K>`
-properties on the same ViewModel, or one of each running concurrently — is
-an error and will throw when `requestClose()` is invoked. Decide where the
-callback belongs (typically the ViewModel if you have one, otherwise the
-top-level Composable for the destination) and register it once.
+A `NavigationHandle` can have one active `onCloseRequested` callback.
+`requestClose()` throws when the `NavigationHandle` has more than one
+active callback. Each of these combinations registers two callbacks: two
+`configure { }` blocks in the same destination, two
+`by navigationHandle<K> { }` properties in the same ViewModel, or one
+`configure { }` block and one ViewModel `config` block. Register the
+callback in the ViewModel when the destination has
+a ViewModel, and otherwise in the destination's top-level Composable.
 
 ### Closing vs completing
 
-Every destination can be closed *or* completed — those aren't determined by
-the key's type, they're determined by what the destination is trying to
-communicate to its caller.
+A destination with any key can call `close()` or `complete()`. The call
+tells the caller whether the destination finished the task.
 
-- `close()` — the screen is going away **without** finishing the task it
-  was opened for. The user backed out, cancelled, dismissed the dialog, etc.
-- `complete()` / `complete(result)` — the screen is going away **because**
-  it finished the task it was opened for.
+- `close()`: the destination closes without finishing the task. Examples:
+  the user pressed back, cancelled or dismissed a dialog.
+- `complete()` or `complete(result)`: the destination closes because the
+  task is finished.
 
-The distinction is delivered to whoever opened the destination through a
-`registerForNavigationResult` channel: `onCompleted` fires for `complete`,
-`onClosed` fires for `close`. See [Results](../advanced/results.md).
+A caller that opened the destination with a `registerForNavigationResult`
+channel receives `onCompleted` for `complete` and `onClosed` for `close`.
+See [Results](../advanced/results.md).
 
 #### With a result
 
-For destinations whose key implements `NavigationKey.WithResult<R>`,
-`complete` requires the result value:
+When the key implements `NavigationKey.WithResult<R>`, `complete` requires
+the result value:
 
+<!-- snippet: navigation-handles/complete-with-result -->
 ```kotlin
-navigation.complete(LocalDate.now())
+navigation.complete(today)
 ```
 
-Calling `complete()` with no argument on a `WithResult<R>` handle is a
-compile error — a result-producing key has no meaningful completion without
-the result.
+A call to `complete()` with no argument on a `NavigationHandle` for a
+`WithResult<R>` key is a compile error.
 
 #### Without a result
 
-For destinations whose key has no result, both `close()` and `complete()`
-are valid. The choice is semantic:
+When the key has no result, the destination can call `close()` or
+`complete()`:
 
+<!-- snippet: navigation-handles/complete-without-result -->
 ```kotlin
 @Composable
 @NavigationDestination(ConfirmDelete::class)
@@ -275,51 +285,52 @@ fun ConfirmDeleteDialog() {
 }
 ```
 
-Even though `ConfirmDelete` has no result type, the *caller* still gets to
-distinguish "the user confirmed" from "the user cancelled" by registering
-both `onCompleted` and `onClosed` on its result channel.
+`ConfirmDelete` has no result type. The caller distinguishes a confirmed
+delete from a cancelled delete by registering `onCompleted` and `onClosed`
+on the result channel.
 
 ### Composite operations
 
-A few one-call shortcuts for common patterns:
-
 | Operation | Effect |
 |---|---|
-| `navigation.closeAndReplaceWith(otherKey)` | Closes this destination and opens `otherKey` in a single atomic operation. |
-| `navigation.completeFrom(anotherKey)` | Completes this destination by *delegating* to another key — opens `anotherKey`, and when *that* destination completes, this one also completes with the same result. Useful for screen "redirection". |
-| `navigation.closeAndCompleteFrom(otherKey)` | Combines the above — close this destination, then route completion through `otherKey`. |
+| `navigation.closeAndReplaceWith(otherKey)` | Closes the destination and opens `otherKey` as one operation. |
+| `navigation.completeFrom(otherKey)` | Opens `otherKey` and leaves the destination on the backstack. When the `otherKey` destination completes, the caller of the destination receives the result. |
+| `navigation.closeAndCompleteFrom(otherKey)` | Closes the destination and opens `otherKey` as one operation. When the `otherKey` destination completes, the caller of the closed destination receives the result. |
 
-Type constraints apply: a `NavigationKey.WithResult<R>` handle can only
-`completeFrom` another `NavigationKey.WithResult<R>` with the matching
-result type. The compiler enforces it.
+On a `NavigationHandle` for a `NavigationKey.WithResult<R>` key,
+`completeFrom` and `closeAndCompleteFrom` accept only a
+`NavigationKey.WithResult<R>` key with the same result type `R`. Any other
+key is a compile error.
 
 ## Reading and writing per-destination state
 
-The `savedStateHandle` on a `NavigationHandle` is scoped to that destination
-and survives process death. Use it the same way you'd use a
-`SavedStateHandle` on a regular Android ViewModel.
+The `savedStateHandle` of a `NavigationHandle` is scoped to one destination
+instance. Enro restores the `savedStateHandle` after process death. The
+`savedStateHandle` has the same API as the `SavedStateHandle` of an Android
+ViewModel.
 
-For Composable state that should survive process death, prefer
-`rememberSaveable` — the navigation container's `NavigationSavedStateHolder`
-takes care of scoping it correctly per destination.
+For Composable state, use `rememberSaveable`. The container's
+`NavigationSavedStateHolder` scopes `rememberSaveable` state to each
+destination instance.
 
-## A note on lifetime
+## Handle lifetime
 
-A handle is bound to one *instance* on the backstack. If your screen appears
-twice in the backstack (different `Instance`s of the same key), there are
-two handles in flight — one for each instance, each with its own
-`savedStateHandle`.
+A `NavigationHandle` is bound to one `Instance` on the backstack. When a
+backstack contains two `Instance`s of the same key, each `Instance` has a
+separate `NavigationHandle` and a separate `savedStateHandle`.
 
-If you've pushed your destination and then pushed something on top of it,
-your handle is still valid; the destination is composed but not visible.
-When the user navigates back, the same handle resumes.
+A `NavigationHandle` stays valid while another destination is open above
+the handle's destination. With the default scenes, the covered destination
+leaves the composition and Enro keeps the covered destination's saved
+state. When the user navigates back, Enro composes the destination again
+with the same `NavigationHandle` and the saved state.
 
 ## See also
 
-- [Navigation Keys](navigation-keys.md) — what a handle is parameterised by.
-- [Navigation Destinations](navigation-destinations.md) — where handles come from.
-- [Results](../advanced/results.md) — `complete` and `registerForNavigationResult` in depth.
-- [View Models](../advanced/view-models.md) — `by navigationHandle<T>()` inside a ViewModel.
-- [Request-close confirmation recipe][requestclose-recipe] — full unsaved-changes example.
+- [Navigation Keys](navigation-keys.md): the key type that a `NavigationHandle` is typed with.
+- [Navigation Destinations](navigation-destinations.md): declaring the destination that a `NavigationHandle` belongs to.
+- [Results](../advanced/results.md): `complete` and `registerForNavigationResult`.
+- [View Models](../advanced/view-models.md): `by navigationHandle<T>()` inside a ViewModel.
+- [Request-close confirmation recipe][requestclose-recipe]: an unsaved-changes confirmation.
 
 [requestclose-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/requestclose/RequestCloseConfirmation.kt

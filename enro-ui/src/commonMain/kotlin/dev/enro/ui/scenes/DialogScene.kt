@@ -39,10 +39,10 @@ internal data class DialogScene(
 }
 
 /**
- * A [NavigationSceneStrategy] that displays entries that have added [dialog] to their metadata
- * within a [Dialog] instance.
+ * A [NavigationSceneStrategy] that displays the last entry in a [Dialog] when the metadata
+ * of the last entry contains [dialog].
  *
- * This strategy should always be added before any non-overlay scene strategies.
+ * Add DialogSceneStrategy before every non-overlay scene strategy.
  */
 public class DialogSceneStrategy : NavigationSceneStrategy {
     @Composable
@@ -61,9 +61,8 @@ public class DialogSceneStrategy : NavigationSceneStrategy {
     }
 
     /**
-     * Metadata key under which a destination's [DialogProperties] are
-     * stored when it opts into being displayed inside a [Dialog].
-     * Mirrors Nav3's `DialogSceneStrategy.DialogKey: NavMetadataKey<DialogProperties>`.
+     * Metadata key for the [DialogProperties] of a destination that is displayed in a
+     * [Dialog]. Navigation 3 equivalent: `DialogSceneStrategy.DialogKey`.
      */
     @OptIn(ExperimentalObjCRefinement::class)
     @HiddenFromObjC

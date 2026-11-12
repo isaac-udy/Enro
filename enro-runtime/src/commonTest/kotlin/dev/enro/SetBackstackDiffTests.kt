@@ -11,16 +11,10 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 /**
- * Tests that lock down [NavigationOperation.SetBackstack] diff semantics.
- *
- * SetBackstack desugars to an `AggregateOperation` of `Open` + `Close`
- * operations based on a [NavigationTransition] diff. The key contract
- * the runtime depends on -- and that downstream destination tracking
- * relies on for state preservation -- is that retained instances pass
- * through `processOperations` as references to the original objects
- * (not copies, not new instances). Each test below asserts via
- * reference equality (`assertSame`) that retained backstack entries
- * survive a SetBackstack unchanged.
+ * [NavigationOperation.SetBackstack] builds an `AggregateOperation` of `Open` and `Close`
+ * operations from a [NavigationTransition]. A retained instance must pass through
+ * `processOperations` as the same object, not a copy: destination tracking preserves state
+ * by reference. The tests assert reference equality with `assertSame`.
  */
 class SetBackstackDiffTests {
 
@@ -137,10 +131,6 @@ class SetBackstackDiffTests {
 
     @Test
     fun `SetBackstack replacing the top entry retains the underlying entries and drops only the replaced one`() = runEnroTest {
-        // The common list-detail "swap detail" gesture: [list, oldDetail]
-        // becomes [list, newDetail]. The list entry must keep its reference
-        // identity so its ViewModel / scope is preserved; the old detail
-        // is dropped and the new detail appears in place.
         val rootContext = NavigationContextFixtures.createRootContext()
         val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
         val container = containerContext.container

@@ -22,8 +22,8 @@ import org.w3c.dom.Document
 import org.w3c.dom.events.Event
 
 /**
- * The root of an Enro app rendered with Compose HTML. Call it inside `renderComposable`, after
- * installing the navigation controller:
+ * The root of an Enro app rendered with Compose HTML. Call EnroHtmlContent inside
+ * `renderComposable`, after installing the navigation controller:
  *
  * ```kotlin
  * fun main() {
@@ -38,8 +38,8 @@ import org.w3c.dom.events.Event
  * ```
  *
  * `renderComposable` provides no lifecycle, ViewModelStore or SavedStateRegistry owner, so
- * [EnroHtmlContent] provides one for the page. The page lifecycle is RESUMED while the document
- * is visible and CREATED while it is hidden.
+ * [EnroHtmlContent] provides one owner of each type for the page. The page lifecycle is
+ * RESUMED while the document is visible and CREATED while the document is hidden.
  */
 @Composable
 public fun EnroHtmlContent(

@@ -14,8 +14,8 @@ internal fun Element.getElementName(processingEnv: ProcessingEnvironment): Strin
         is ExecutableElement -> {
             val kotlinMetadata = enclosingElement.getAnnotation(Metadata::class.java)
             when (kotlinMetadata?.kind) {
-                // metadata kind 1 is a "class" type, which means this method belongs to a
-                // class or object, rather than being a top-level file function (kind 2)
+                // Metadata kind 1 is a class: the method is a member of a class or object.
+                // Kind 2 is a file: the method is a top-level function.
                 1 -> "${enclosingElement.getElementName(processingEnv)}.$simpleName"
                 else -> "$packageName.$simpleName"
             }

@@ -4,45 +4,38 @@ import dev.enro.ui.NavigationDestination
 import dev.enro.ui.get
 
 /**
- * Metadata vocabulary for the Shell Scene recipe.
+ * The metadata keys of the Shell Scene recipe.
  *
- * Destinations declare what pane / overlay shape they support by adding
- * these tags in their `navigationDestination(metadata = { ... })` block.
- * The [ShellPaneSceneStrategy] reads them while resolving slots, and the
- * decorator reads [isFullScreen] / [isLeftPane] / [isRightPane] when deciding
- * whether to hide the mobile bottom chrome.
+ * A destination sets a key in the `navigationDestination(metadata = { ... })`
+ * block with [leftPane], [rightPane] or [fullScreen]. [ShellPaneSceneStrategy]
+ * reads the keys to assign slots. [ShellSceneDecorator] reads the keys to
+ * hide the bottom chrome on Mobile.
  *
- * `directOverlay()` is intentionally **not** redefined here — the recipe
- * reuses the existing builder from `dev.enro.ui.scenes` so destinations
- * already tagged for the built-in `DirectOverlaySceneStrategy` work
- * unchanged. The recipe just registers [ShellOverlaySceneStrategy] earlier
- * in the chain so it gets to render them with shell-specific positioning
- * (drawer on desktop, sheet on mobile).
- *
- * There is also intentionally no `primary()` tag — any untagged
- * destination occupies the main slot when it's the right one to do so.
+ * The recipe declares no overlay key: [ShellOverlaySceneStrategy] reads the
+ * `directOverlay()` metadata from `dev.enro.ui.scenes`. The recipe declares
+ * no key for the main slot: a destination with no pane metadata fills the
+ * main slot.
  */
 internal object ShellPaneMetadata {
-    // Explicit `internal` is needed (not implied by the enclosing internal
-    // object) for K/Native's ObjC export — NavigationDestination.MetadataKey
-    // is a generic type and gets auto-marked @HiddenFromObjC by the
-    // compiler, and public subtypes of a HiddenFromObjC type are rejected.
+    // The explicit `internal` is required for Kotlin/Native ObjC export: the
+    // compiler marks the generic NavigationDestination.MetadataKey as
+    // @HiddenFromObjC and rejects a public subtype of a @HiddenFromObjC type.
     internal object IsLeftPaneKey : NavigationDestination.MetadataKey<Boolean>(default = false)
     internal object IsRightPaneKey : NavigationDestination.MetadataKey<Boolean>(default = false)
     internal object IsFullScreenKey : NavigationDestination.MetadataKey<Boolean>(default = false)
 }
 
-/** "I can render as the **left companion** when something is pushed on top of me." */
+/** The destination can fill the left slot when the destination is directly below the main slot. */
 internal fun NavigationDestination.MetadataBuilder<*>.leftPane() {
     add(ShellPaneMetadata.IsLeftPaneKey, true)
 }
 
-/** "I can render as the **right companion** when I'm on top of the backstack." */
+/** The destination fills the right slot when the destination is the top entry. */
 internal fun NavigationDestination.MetadataBuilder<*>.rightPane() {
     add(ShellPaneMetadata.IsRightPaneKey, true)
 }
 
-/** "I claim the entire content area — no pane companions, and hide the mobile bottom chrome." */
+/** The destination fills the content area with no side panes, and hides the bottom chrome on Mobile. */
 internal fun NavigationDestination.MetadataBuilder<*>.fullScreen() {
     add(ShellPaneMetadata.IsFullScreenKey, true)
 }

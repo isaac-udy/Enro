@@ -3,13 +3,10 @@ package dev.enro.ui
 import androidx.compose.runtime.Composable
 
 /**
- * Scope passed into [SceneDecoratorStrategy.decorateScene]. Extends
- * [SceneStrategyScope] so a scene decorator strategy can plug its own
- * back-handling into the surrounding [NavigationDisplay] (e.g. a
- * navigation-drawer decorator that handles its own drawer-close
- * gesture).
+ * The receiver of [SceneDecoratorStrategy.decorateScene]. A scene decorator strategy calls
+ * [onBack] to send a back event to the enclosing [NavigationDisplay].
  *
- * Mirrors Nav3's `SceneDecoratorStrategyScope<T>`.
+ * Navigation 3 equivalent: `SceneDecoratorStrategyScope<T>`.
  */
 public class SceneDecoratorStrategyScope internal constructor(
     onBack: () -> Unit,
@@ -18,22 +15,19 @@ public class SceneDecoratorStrategyScope internal constructor(
 }
 
 /**
- * A strategy that wraps a [NavigationScene] in another [NavigationScene],
- * typically to layer chrome around it (navigation drawer, app bar, nav
- * rail, side sheet — anything that owns layout space but defers actual
- * entry rendering to the wrapped inner scene).
+ * Wraps a [NavigationScene] in another [NavigationScene], for example to render a navigation
+ * drawer, app bar or navigation rail around the wrapped scene.
  *
- * Decorator strategies are applied AFTER [NavigationSceneStrategy]
- * chains have selected the scene for the current entries, and ONLY to
- * non-overlay scenes. Overlays are animated separately from the main
- * scene so wrapping them in chrome wouldn't compose meaningfully.
+ * Scene decorator strategies run after the [NavigationSceneStrategy] has selected a scene, in
+ * list order: the first strategy produces the innermost wrapper. A [NavigationScene.Overlay] is
+ * never decorated.
  *
- * Mirrors Nav3's `SceneDecoratorStrategy<T>`.
+ * Navigation 3 equivalent: `SceneDecoratorStrategy<T>`.
  */
 public fun interface SceneDecoratorStrategy {
     /**
-     * Decorates [scene] and returns the (possibly wrapped) scene to
-     * render. Return [scene] unchanged to skip decoration.
+     * Returns the scene to render in place of [scene]. Return [scene] unchanged to skip
+     * decoration.
      */
     @Composable
     public fun SceneDecoratorStrategyScope.decorateScene(scene: NavigationScene): NavigationScene

@@ -59,7 +59,6 @@ fun LoginScreen() {
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     var showError by rememberSaveable { mutableStateOf(false) }
 
-    // Add some demo users on first launch
     LaunchedEffect(Unit) {
         TravelUserRepository.instance.registerUser("Demo", "User", "demo", "password")
         TravelUserRepository.instance.registerUser("Travel", "Explorer", "explorer", "password")
@@ -75,7 +74,6 @@ fun LoginScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Welcome header
             Text(
                 text = "🏝️",
                 fontSize = 72.sp,
@@ -89,7 +87,6 @@ fun LoginScreen() {
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Username field
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
@@ -102,7 +99,6 @@ fun LoginScreen() {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
 
-            // Password field
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -124,10 +120,8 @@ fun LoginScreen() {
                 }
             )
 
-            // Login button
             Button(
                 onClick = {
-                    // Attempt login
                     if (TravelUserRepository.instance.login(username, password)) {
                         navigation.closeAndReplaceWith(HomeDestination(user = username))
                     } else {
@@ -142,7 +136,6 @@ fun LoginScreen() {
                 Text("Start Exploring 🗺️", fontSize = 16.sp)
             }
 
-            // Error message
             if (showError && username.isNotBlank()) {
                 Text(
                     text = "Invalid username or password",
@@ -154,7 +147,6 @@ fun LoginScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Sign up section
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp)

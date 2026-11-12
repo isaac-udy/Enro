@@ -29,20 +29,16 @@ class NavigationContainerTests {
         val key2 = NavigationKeyFixtures.SimpleKey()
         val instance2 = key2.asInstance()
 
-        // Empty container should not accept close operations
         assertFalse(container.accepts(containerContext, NavigationOperation.Close(instance1)))
         assertFalse(container.accepts(containerContext, NavigationOperation.Complete(instance1)))
 
-        // Add instances to backstack
         container.setBackstackDirect(backstackOf(instance1, instance2))
 
-        // Container should accept operations for instances in backstack
         assertTrue(container.accepts(containerContext, NavigationOperation.Close(instance1)))
         assertTrue(container.accepts(containerContext, NavigationOperation.Close(instance2)))
         assertTrue(container.accepts(containerContext, NavigationOperation.Complete(instance1)))
         assertTrue(container.accepts(containerContext, NavigationOperation.Complete(instance2)))
 
-        // Container should not accept operations for instances not in backstack
         val key3 = NavigationKeyFixtures.SimpleKey()
         val instance3 = key3.asInstance()
         assertFalse(container.accepts(containerContext, NavigationOperation.Close(instance3)))
@@ -58,14 +54,12 @@ class NavigationContainerTests {
         val key1 = NavigationKeyFixtures.SimpleKey()
         val instance1 = key1.asInstance()
 
-        // By default, container accepts no open operations
+        // The default filter accepts no Open.
         assertFalse(container.accepts(containerContext, NavigationOperation.Open(instance1)))
 
-        // Set filter to accept all
         container.setFilter(acceptAll())
         assertTrue(container.accepts(containerContext, NavigationOperation.Open(instance1)))
 
-        // Set filter to accept none
         container.setFilter(acceptNone())
         assertFalse(container.accepts(containerContext, NavigationOperation.Open(instance1)))
     }
@@ -76,18 +70,15 @@ class NavigationContainerTests {
         val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
         val container = containerContext.container
 
-        // Create a child destination context under this container
         val key = NavigationKeyFixtures.SimpleKey()
         val destination = NavigationDestinationFixtures.create(key)
         val childDestinationContext = NavigationContextFixtures.createDestinationContext(containerContext, destination)
 
-        // Set filter with fromChildrenOnly = true
         val filter = NavigationContainerFilter(fromChildrenOnly = true) { true }
         container.setFilter(filter)
 
         val instance = NavigationKeyFixtures.SimpleKey().asInstance()
 
-        // Operation from child context should be accepted
         assertTrue(container.accepts(childDestinationContext, NavigationOperation.Open(instance)))
         assertTrue(container.accepts(containerContext, NavigationOperation.Open(instance)))
     }
@@ -98,20 +89,17 @@ class NavigationContainerTests {
         val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
         val container = containerContext.container
 
-        // Create another container and destination context (not a child of our container)
         val otherContainerContext = NavigationContextFixtures.createContainerContext(rootContext)
         val key = NavigationKeyFixtures.SimpleKey()
         val destination = NavigationDestinationFixtures.create(key)
         val nonChildDestinationContext =
             NavigationContextFixtures.createDestinationContext(otherContainerContext, destination)
 
-        // Set filter with fromChildrenOnly = true
         val filter = NavigationContainerFilter(fromChildrenOnly = true) { true }
         container.setFilter(filter)
 
         val instance = NavigationKeyFixtures.SimpleKey().asInstance()
 
-        // Operation from non-child context should be rejected
         assertFalse(container.accepts(nonChildDestinationContext, NavigationOperation.Open(instance)))
         assertFalse(container.accepts(otherContainerContext, NavigationOperation.Open(instance)))
         assertFalse(container.accepts(rootContext, NavigationOperation.Open(instance)))
@@ -123,7 +111,6 @@ class NavigationContainerTests {
         val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
         val container = containerContext.container
 
-        // Create contexts at different levels
         val key = NavigationKeyFixtures.SimpleKey()
         val destination = NavigationDestinationFixtures.create(key)
         val childDestinationContext = NavigationContextFixtures.createDestinationContext(containerContext, destination)
@@ -132,13 +119,11 @@ class NavigationContainerTests {
         val nonChildDestinationContext =
             NavigationContextFixtures.createDestinationContext(otherContainerContext, destination)
 
-        // Set filter with fromChildrenOnly = false (default)
         val filter = NavigationContainerFilter(fromChildrenOnly = false) { true }
         container.setFilter(filter)
 
         val instance = NavigationKeyFixtures.SimpleKey().asInstance()
 
-        // Operations from all contexts should be accepted
         assertTrue(container.accepts(childDestinationContext, NavigationOperation.Open(instance)))
         assertTrue(container.accepts(containerContext, NavigationOperation.Open(instance)))
         assertTrue(container.accepts(nonChildDestinationContext, NavigationOperation.Open(instance)))
@@ -163,23 +148,18 @@ class NavigationContainerTests {
         val acceptedKey = NavigationKeyFixtures.SimpleKey()
         val rejectedKey = NavigationKeyFixtures.SimpleKey()
 
-        // Set filter with fromChildrenOnly = true and a key predicate
         val filter = NavigationContainerFilter(fromChildrenOnly = true) { it.key == acceptedKey }
         container.setFilter(filter)
 
         val acceptedInstance = acceptedKey.asInstance()
         val rejectedInstance = rejectedKey.asInstance()
 
-        // Child context with accepted key should be accepted
         assertTrue(container.accepts(childDestinationContext, NavigationOperation.Open(acceptedInstance)))
 
-        // Child context with rejected key should be rejected
         assertFalse(container.accepts(childDestinationContext, NavigationOperation.Open(rejectedInstance)))
 
-        // Non-child context with accepted key should be rejected
         assertFalse(container.accepts(nonChildDestinationContext, NavigationOperation.Open(acceptedInstance)))
 
-        // Non-child context with rejected key should be rejected
         assertFalse(container.accepts(nonChildDestinationContext, NavigationOperation.Open(rejectedInstance)))
     }
 
@@ -398,12 +378,6 @@ class NavigationContainerTests {
 
     @Test
     fun `Multiple EmptyInterceptors any deny wins and side effects from every deny run`() = runEnroTest {
-        // The current logic is `emptyInterceptorResults.any { it is DenyEmpty }`
-        // — every DenyEmpty result has its side effect run via
-        // `filterIsInstance<DenyEmpty>().onEach { performSideEffect() }`. So if
-        // two interceptors register and only one denies (with a side effect),
-        // the deny wins and that side effect runs. If both deny with side
-        // effects, BOTH side effects run.
         val rootContext = NavigationContextFixtures.createRootContext()
         val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
         val container = containerContext.container
@@ -440,9 +414,6 @@ class NavigationContainerTests {
 
     @Test
     fun `Controller-level interceptors run after container-level interceptors`() = runEnroTest {
-        // Documented order: interceptors registered on the container run first,
-        // followed by interceptors from controller.interceptors.aggregateInterceptor.
-        // See NavigationContainer.execute -- `interceptors + controller.interceptors.aggregateInterceptor`.
         val rootContext = NavigationContextFixtures.createRootContext()
         val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
         val container = containerContext.container
@@ -477,9 +448,6 @@ class NavigationContainerTests {
 
     @Test
     fun `Open of an instance already in the backstack reorders without firing onOpened interceptor`() = runEnroTest {
-        // processOperations short-circuits the interceptor chain for Opens
-        // whose instance.id is already in backstackById — these are treated as
-        // reorders, not new entries. Asserts that contract.
         val rootContext = NavigationContextFixtures.createRootContext()
         val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
         val container = containerContext.container
@@ -593,13 +561,6 @@ class NavigationContainerTests {
 
     @Test
     fun `Interceptor returning AggregateOperation containing the original op does not recurse`() = runEnroTest {
-        // Regression test for the aggregate-handling branch in
-        // NavigationInterceptor.processOperations. When an interceptor returns
-        // an AggregateOperation that includes the operation it was just given
-        // (singleton-after-anchor pattern: "do the original Open, AND also
-        // close these other entries"), the original op must be counted once
-        // — feeding it back through the interceptor would loop indefinitely
-        // because the interceptor would keep returning the same aggregate.
         val rootContext = NavigationContextFixtures.createRootContext()
         val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
         val container = containerContext.container
@@ -617,8 +578,8 @@ class NavigationContainerTests {
         var interceptCount = 0
         val interceptor = navigationInterceptor {
             onOpened<NavigationKeyFixtures.SimpleKey> {
-                // Only react to the new detail Open — the recursion guard
-                // failure mode would manifest as this counter blowing past 1.
+                // The interceptor handles the Open of the new detail only. A second call for the
+                // Open of the new detail raises interceptCount above 1.
                 if (instance.id != newDetailInstance.id) continueWithOpen()
                 interceptCount++
                 replaceWith(
@@ -750,9 +711,6 @@ class NavigationContainerTests {
 
     @Test
     fun `replaceWith operation on OnNavigationKeyOpenedScope can rewrite Open into a SetBackstack`() = runEnroTest {
-        // Locks in the replaceWith(operation: NavigationOperation) overload on
-        // OnNavigationKeyOpenedScope by returning a full SetBackstack transition
-        // — i.e. swapping the entire backstack out from under the original Open.
         val rootContext = NavigationContextFixtures.createRootContext()
         val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
         val container = containerContext.container
@@ -771,9 +729,8 @@ class NavigationContainerTests {
 
         val interceptor = navigationInterceptor {
             onOpened<NavigationKeyFixtures.SimpleKey> {
-                // Only react to the trigger — anything else (including the
-                // SetBackstack-derived Opens of the replacements) should just
-                // continue, otherwise we'd loop on our own rewrite.
+                // The interceptor replaces the trigger only. The Opens produced by the
+                // SetBackstack continue, so the interceptor does not replace its own output.
                 if (instance.id != triggerInstance.id) continueWithOpen()
                 replaceWith(
                     NavigationOperation.SetBackstack(
@@ -794,10 +751,6 @@ class NavigationContainerTests {
 
     @Test
     fun `Re-entrant execute from within an interceptor throws IllegalStateException`() = runEnroTest {
-        // Exercises NavigationContainer.executionMutex's re-entry guard. If an
-        // interceptor tries to drive another navigation operation through the
-        // same container mid-execute, we want a fast, descriptive error rather
-        // than silent corruption.
         val rootContext = NavigationContextFixtures.createRootContext()
         val containerContext = NavigationContextFixtures.createContainerContext(rootContext)
         val container = containerContext.container
@@ -867,7 +820,6 @@ class NavigationContainerTests {
                 containerContext: ContainerContext,
                 operations: List<NavigationOperation.RootOperation>,
             ): List<NavigationOperation.RootOperation> {
-                // Add an extra operation
                 return operations + NavigationOperation.Open(key2.asInstance())
             }
         }
@@ -922,14 +874,12 @@ class NavigationContainerTests {
         val destination = NavigationDestinationFixtures.create(key)
         val destinationContext = NavigationContextFixtures.createDestinationContext(containerContext, destination)
 
-        // Create another container to verify active switching
         val otherContainer = NavigationContextFixtures.createContainerContext(rootContext)
         rootContext.registerChild(otherContainer)
         rootContext.setActiveContainer(otherContainer.id)
 
         assertEquals(otherContainer, rootContext.activeChild)
 
-        // Execute operation should make this container active
         container.execute(destinationContext, NavigationOperation.Open(key.asInstance()))
 
         assertEquals(containerContext, rootContext.activeChild)
@@ -950,17 +900,14 @@ class NavigationContainerTests {
         val instance2 = NavigationKeyFixtures.SimpleKey().asInstance()
         val instance3 = NavigationKeyFixtures.SimpleKey().asInstance()
 
-        // Set initial backstack
         container.setBackstackDirect(backstackOf(instance1, instance2, instance3))
         assertEquals(3, container.backstack.size)
         assertEquals(instance1, container.backstack[0])
         assertEquals(instance2, container.backstack[1])
         assertEquals(instance3, container.backstack[2])
 
-        // Open instance1 which is already at position 0
         container.execute(destinationContext, NavigationOperation.Open(instance1))
 
-        // Backstack should be reordered with instance1 moved to the top
         assertEquals(3, container.backstack.size)
         assertEquals(instance2, container.backstack[0])
         assertEquals(instance3, container.backstack[1])
@@ -982,13 +929,10 @@ class NavigationContainerTests {
         val instance2 = NavigationKeyFixtures.SimpleKey().asInstance()
         val instance3 = NavigationKeyFixtures.SimpleKey().asInstance()
 
-        // Set initial backstack
         container.setBackstackDirect(backstackOf(instance1, instance2, instance3))
 
-        // Open instance2 which is in the middle
         container.execute(destinationContext, NavigationOperation.Open(instance2))
 
-        // Backstack should be reordered with instance2 moved to the top
         assertEquals(3, container.backstack.size)
         assertEquals(instance1, container.backstack[0])
         assertEquals(instance3, container.backstack[1])
@@ -1010,13 +954,10 @@ class NavigationContainerTests {
         val instance2 = NavigationKeyFixtures.SimpleKey().asInstance()
         val instance3 = NavigationKeyFixtures.SimpleKey().asInstance()
 
-        // Set initial backstack
         container.setBackstackDirect(backstackOf(instance1, instance2, instance3))
 
-        // Open instance3 which is already at the top
         container.execute(destinationContext, NavigationOperation.Open(instance3))
 
-        // Backstack should remain unchanged
         assertEquals(3, container.backstack.size)
         assertEquals(instance1, container.backstack[0])
         assertEquals(instance2, container.backstack[1])
@@ -1039,7 +980,6 @@ class NavigationContainerTests {
         val instance3 = NavigationKeyFixtures.SimpleKey().asInstance()
         val instance4 = NavigationKeyFixtures.SimpleKey().asInstance()
 
-        // Set initial backstack
         container.setBackstackDirect(backstackOf(instance1, instance2, instance3))
 
         val aggregateOperation = NavigationOperation.AggregateOperation(
@@ -1052,7 +992,6 @@ class NavigationContainerTests {
 
         container.execute(destinationContext, aggregateOperation)
 
-        // Expected order: instance3, instance1, instance4, instance2
         assertEquals(4, container.backstack.size)
         assertEquals(instance3, container.backstack[0])
         assertEquals(instance1, container.backstack[1])
@@ -1073,13 +1012,10 @@ class NavigationContainerTests {
 
         val instance = NavigationKeyFixtures.SimpleKey().asInstance()
 
-        // Set backstack with single item
         container.setBackstackDirect(backstackOf(instance))
 
-        // Open the same instance
         container.execute(destinationContext, NavigationOperation.Open(instance))
 
-        // Backstack should remain unchanged
         assertEquals(1, container.backstack.size)
         assertEquals(instance, container.backstack[0])
     }

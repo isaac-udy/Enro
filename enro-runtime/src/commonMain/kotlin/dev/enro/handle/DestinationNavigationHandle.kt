@@ -31,11 +31,11 @@ internal class DestinationNavigationHandle<T : NavigationKey>(
             Lifecycle.Event.ON_RESUME -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
             Lifecycle.Event.ON_PAUSE -> lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
             Lifecycle.Event.ON_CREATE -> {
-                // No op: ON_CREATE is handled through the bindContext function
+                // bindContext handles ON_CREATE.
             }
 
             Lifecycle.Event.ON_DESTROY -> {
-                // No op: ON_DESTROY is handled through the onDestroy function
+                // onDestroy handles ON_DESTROY.
             }
 
             Lifecycle.Event.ON_ANY -> {
@@ -60,8 +60,9 @@ internal class DestinationNavigationHandle<T : NavigationKey>(
     }
 
     /**
-     * Marks [context] as registered in the navigation tree, along with any containers its content
-     * declares, and runs the operations that were held while no registered context was available.
+     * Marks [context], and the containers declared by the content of [context], as registered in
+     * the navigation tree. Runs the operations that were held while no registered context was
+     * available.
      */
     internal fun attachContext(context: DestinationContext<T>) {
         if (this.context !== context) return
@@ -88,8 +89,9 @@ internal class DestinationNavigationHandle<T : NavigationKey>(
     ) {
         if (lifecycle.currentState == Lifecycle.State.DESTROYED) return
         val context = context
-        // Held until attachContext while the first composition has not registered this context and its
-        // containers, or while the context's host is destroyed (e.g. an Activity being recreated).
+        // An operation is held until attachContext while the first composition has not registered
+        // the context and the containers of the context, or while the host of the context is
+        // destroyed (for example an Activity being recreated).
         val isContextUsable = context != null &&
             context === attachedContext &&
             context.root().lifecycle.currentState != Lifecycle.State.DESTROYED
@@ -99,11 +101,9 @@ internal class DestinationNavigationHandle<T : NavigationKey>(
         }
         val isInBackstack = context.parent.container.backstack.any { it.id == context.destination.instance.id }
         if (!isInBackstack) {
-            // Some destinations (particularly overlay destinations that have animations) may not enter the
-            // DESTROYED state immediately after being removed from their parent container, so they may still
-            // receive NavigationOperations. An example is a Dialog's scrim being tapped multiple times during the
-            // dismiss animation. In these cases, we want to ignore the operations. We print a warning here,
-            // so that it's visible to developers, but this should not necessarily raise concerns.
+            // A destination removed from the parent container can receive an operation before the
+            // destination is DESTROYED, for example when a Dialog scrim is tapped again during the
+            // dismiss animation. The operation is ignored with a warning.
             EnroLog.warn(
                 "NavigationHandle with instance $instance is not in its parent's backstack, ignoring operation: $operation. " +
                     "If this follows a close() from the same destination, use closeAndReplaceWith(...) to replace " +

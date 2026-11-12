@@ -6,11 +6,6 @@ import dev.enro.core.NavigationDirection
 import dev.enro.core.NavigationKey
 import kotlin.reflect.KClass
 
-/**
- * @deprecated NavigationAnimationOverrides are no longer supported to be set on containers
- * or at a global level. Instead, you should set a [dev.enro.ui.NavigationAnimations] object
- * on a NavigationDisplay object directly.
- */
 @Deprecated(
     message = "NavigationAnimationOverrides are no longer supported to be set on containers or at a global level. Instead, you should set a dev.enro.ui.NavigationAnimations object on a NavigationDisplay object directly.",
     level = DeprecationLevel.WARNING

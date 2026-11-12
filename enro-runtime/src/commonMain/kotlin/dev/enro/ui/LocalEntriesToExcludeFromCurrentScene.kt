@@ -4,15 +4,12 @@ import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.compositionLocalOf
 
 /**
- * The destination IDs that should be SKIPPED when rendering in the current
- * [NavigationScene]. This is used by [movableContentDecorator] to ensure that
- * an entry which appears in more than one scene during a transition is only
- * actually composed by the scene that "wins" it under the z-order rules in
- * [NavigationDisplay].
+ * The ids of the destinations that the current [NavigationScene] must not render. During a
+ * transition a destination can be in more than one scene; [NavigationDisplay] provides this
+ * set so that `movableContentDecorator` composes the destination's content in one scene only.
  *
- * Mirrors Nav3's `LocalEntriesToExcludeFromCurrentScene`. If nothing has been
- * provided (e.g. a destination is rendered outside a `NavigationDisplay`),
- * the empty default means "exclude nothing" — every destination renders.
+ * The default is an empty set, so a destination rendered outside a [NavigationDisplay] always
+ * renders. Navigation 3 equivalent: `LocalEntriesToExcludeFromCurrentScene`.
  */
 public val LocalEntriesToExcludeFromCurrentScene: ProvidableCompositionLocal<Set<String>> =
     compositionLocalOf { emptySet() }

@@ -43,15 +43,15 @@ internal class BindingRepository(
                 )
 
                 platformOverrideAlreadyBound -> {
-                    // If an existing binding is a platform override, and the new binding is not,
-                    // then we should not replace the existing binding.
+                    // The existing platform override is kept. The new binding is stored as the
+                    // original binding.
                     originalBindingsByKeyType[it.keyType] = it
                     return@forEach
                 }
 
                 isValidBinding -> {
-                    // If the existing binding is not a platform override, and the new binding is,
-                    // then we should replace the existing binding.
+                    // The new binding is stored. A binding replaced by a platform override is kept
+                    // as the original binding.
                     bindingsByKeyType[it.keyType] = it
                     if (existingBinding != null) {
                         originalBindingsByKeyType[existingBinding.keyType] = existingBinding
@@ -84,7 +84,6 @@ internal class BindingRepository(
     fun <K : NavigationKey> destinationFor(
         instance: NavigationKey.Instance<K>,
     ): NavigationDestination<K> {
-        // Create the destination, and allow plugins to intercept and add
         val binding = bindingFor(instance)
         val destination = binding.provider.create(instance)
 

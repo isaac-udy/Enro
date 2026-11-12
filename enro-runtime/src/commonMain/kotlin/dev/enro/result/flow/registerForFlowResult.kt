@@ -7,10 +7,11 @@ import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 
 /**
- * This method creates a NavigationFlow in the scope of a ViewModel. There can only be one NavigationFlow created within each
- * NavigationDestination. The [flow] lambda will be invoked multiple times over the lifecycle of the NavigationFlow, and should
- * generally not cause external side effects. The [onCompleted] lambda will be invoked when the flow completes and returns a
- * result.
+ * Creates a [NavigationFlow] scoped to this [ViewModel]. A destination can register one
+ * [NavigationFlow]: a registration from a second property throws [IllegalArgumentException].
+ *
+ * The [NavigationFlow] runs [flow] once for each update, so [flow] must not have side effects.
+ * The [NavigationFlow] calls [onCompleted] with the value [flow] returns.
  */
 public fun <T> ViewModel.registerForFlowResult(
     flow: NavigationFlowScope.() -> T,

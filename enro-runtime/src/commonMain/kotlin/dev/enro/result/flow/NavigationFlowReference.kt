@@ -8,9 +8,9 @@ import dev.enro.navigationHandle
 import kotlinx.serialization.Serializable
 
 /**
- * NavigationFlowReference is a reference to a NavigationFlow, and is available in NavigationFlowScope when building a
- * NavigationFlow. It can be passed to a NavigationKey to allow the screen that the NavigationKey represents to interact
- * with the navigation flow and perform actions such as returning to previous steps within the flow to edit items.
+ * A serializable reference to a [NavigationFlow]. [NavigationFlowScope.navigationFlowReference]
+ * provides the reference while the flow is built. Pass the reference in the [NavigationKey] of
+ * a step, and the destination of the step resolves the [NavigationFlow] with [getNavigationFlow].
  */
 @Serializable
 public class NavigationFlowReference internal constructor(
@@ -23,14 +23,10 @@ public class NavigationFlowReference internal constructor(
 }
 
 /**
- * Resolves [reference] back to the live [NavigationFlow] from this
- * destination's metadata. The reference is the serialisation-safe handle
- * you pass into a destination's [NavigationKey] when you want that
- * destination to be able to call back into the flow (e.g. to jump back
- * to an earlier step for editing).
+ * Returns the [NavigationFlow] that opened this destination as a step.
  *
- * Throws if the destination wasn't opened as part of a flow, or if the
- * reference's id doesn't match the attached flow.
+ * Throws [IllegalArgumentException] if this destination was not opened as a step of a flow, or
+ * if [reference] refers to a different flow.
  */
 public fun NavigationHandle<*>.getNavigationFlow(reference: NavigationFlowReference): NavigationFlow<*> {
     val flow = instance.metadata.get(NavigationFlowReference.MetadataKey)

@@ -1,24 +1,23 @@
 /**
  * Enro Recipe: List-Detail Navigation (scene-strategy)
  *
- * Demonstrates a list-detail adaptive layout using a single
- * `NavigationContainer` and a custom `NavigationSceneStrategy` that
- * inspects destination metadata to decide which pane each destination
- * belongs in.
+ * Shows an adaptive list-detail layout with one `NavigationContainer` and a
+ * custom `NavigationSceneStrategy`. The strategy reads destination metadata
+ * to select the pane for each destination.
  *
- * Modelled on the Nav3 Material list-detail recipe:
+ * `ListDetailScene.kt` declares `ListDetailSceneStrategy` and the metadata
+ * functions `listPane(detailPlaceholder = { ... })` and `detailPane()`. When
+ * the window is at least 600dp wide and the backstack contains a `listPane()`
+ * destination, the strategy renders the list on the left. The right pane
+ * shows the top destination when the top destination has `detailPane()`, and
+ * the placeholder when the list is the top destination. In every other case
+ * `SinglePaneSceneStrategy` renders the top destination.
+ *
+ * The 600dp threshold is hard-coded. Material 3 Adaptive provides
+ * `WindowSizeClass` for the same decision.
+ *
+ * Nav3 equivalent: the Material list-detail recipe,
  * https://developer.android.com/guide/navigation/navigation-3/recipes/material-listdetail
- *
- * The strategy itself lives in [ListDetailScene.kt] alongside the
- * `listPane(detailPlaceholder = { ... })` and `detailPane()` metadata
- * helpers. When the window is at least 600dp wide and the backstack
- * contains a destination tagged with `listPane()`, the strategy
- * renders the list on the left and the topmost `detailPane()`
- * destination (or the placeholder) on the right. On narrower windows
- * the default single-pane strategy takes over.
- *
- * In a real app, prefer Material 3 Adaptive's `WindowSizeClass` APIs
- * over the hard-coded 600dp threshold used here.
  */
 package dev.enro.recipes.listdetail
 
@@ -43,12 +42,8 @@ import dev.enro.ui.scenes.DirectOverlaySceneStrategy
 import dev.enro.ui.scenes.SinglePaneSceneStrategy
 import kotlinx.serialization.Serializable
 
-// -- Recipe root --
-
 @Serializable
 object ListDetailRecipe : NavigationKey
-
-// -- Demo destination keys --
 
 @Serializable
 data object ConversationList : NavigationKey
@@ -67,10 +62,6 @@ private val sampleConversations = listOf(
     Conversation("C", "Cam", "👍"),
 )
 
-// ─────────────────────────────────────────────────────────────────────
-// Recipe root
-// ─────────────────────────────────────────────────────────────────────
-
 @Composable
 @NavigationDestination(ListDetailRecipe::class)
 fun ListDetailRecipeScreen() {
@@ -85,6 +76,8 @@ fun ListDetailRecipeScreen() {
         NavigationDisplay(
             state = container,
             modifier = modifier,
+            // NavigationSceneStrategy.from uses the first strategy that returns a
+            // scene, so ListDetailSceneStrategy is listed before SinglePaneSceneStrategy.
             sceneStrategy = NavigationSceneStrategy.from(
                 DialogSceneStrategy(),
                 DirectOverlaySceneStrategy(),
@@ -94,10 +87,6 @@ fun ListDetailRecipeScreen() {
         )
     }
 }
-
-// ─────────────────────────────────────────────────────────────────────
-// Destinations
-// ─────────────────────────────────────────────────────────────────────
 
 @NavigationDestination(ConversationList::class)
 val conversationListDestination: NavigationDestinationProvider<ConversationList> =
@@ -168,9 +157,9 @@ val conversationDetailDestination: NavigationDestinationProvider<ConversationDet
 @Composable
 @NavigationDestination(ConversationProfile::class)
 fun ConversationProfileDestination() {
-    // No pane metadata — when this destination is on top, the scene
-    // strategy returns null and the single-pane strategy takes over,
-    // rendering this destination full-screen even on wide windows.
+    // This destination has no pane metadata. While this destination is on
+    // top, ListDetailSceneStrategy returns null and SinglePaneSceneStrategy
+    // renders this destination full-screen at every window width.
     val navigation = navigationHandle<ConversationProfile>()
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),

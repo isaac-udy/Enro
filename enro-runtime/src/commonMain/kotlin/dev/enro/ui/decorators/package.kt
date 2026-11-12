@@ -1,55 +1,41 @@
 /**
- * Navigation destination decorators provide a composable and extensible way to add functionality
- * to navigation destinations without modifying their implementation.
- *
- * ## Overview
- *
- * Decorators wrap navigation destinations to provide additional functionality such as:
- * - State preservation ([savedStateDecorator])
- * - ViewModel scoping ([viewModelStoreDecorator])
- * - Lifecycle management ([navigationLifecycleDecorator])
- * - Navigation context ([navigationContextDecorator])
- * - Content optimization ([movableContentDecorator])
- *
- * ## Usage
- *
- * Decorators are typically applied automatically by `NavigationDisplay`, but can also be
- * applied manually when creating custom navigation displays:
+ * A [NavigationDestinationDecorator] wraps the content of each navigation destination.
+ * `rememberNavigationContainer` applies the decorators below. A custom renderer that does not
+ * call `rememberNavigationContainer` applies the decorators with [decorateNavigationDestination]:
  *
  * ```kotlin
  * val decoratedDestination = decorateNavigationDestination(
  *     destination = originalDestination,
  *     decorators = listOf(
  *         rememberMovableContentDecorator(),
- *         rememberSavedStateDecorator(),
+ *         rememberSavedStateDecorator(navigationSavedStateHolder),
  *         rememberViewModelStoreDecorator(),
  *         rememberLifecycleDecorator(backstack, isSettled),
- *         rememberNavigationContextDecorator()
+ *         rememberNavigationContextDecorator(),
  *     )
  * )
  * ```
  *
- * ## Order of Application
+ * The first decorator in the list is the outermost wrapper. The order above is required:
+ * 1. [movableContentDecorator] is before every decorator that remembers state for the
+ *    destination.
+ * 2. [savedStateDecorator] is before [viewModelStoreDecorator], which requires the
+ *    `SavedStateRegistryOwner` for `SavedStateHandle` support.
+ * 3. [viewModelStoreDecorator] and [navigationLifecycleDecorator] are before
+ *    [navigationContextDecorator], which reads the `ViewModelStoreOwner` and the
+ *    `LifecycleOwner` that the two decorators provide.
  *
- * The order in which decorators are applied is important:
- * 1. **movableContentDecorator** - Should be first to ensure other decorators are moved properly
- * 2. **savedStateDecorator** - Required by ViewModelStore decorator for SavedStateHandle support
- * 3. **viewModelStoreDecorator** - Provides ViewModel scoping
- * 4. **lifecycleDecorator** - Manages lifecycle states based on navigation state
- * 5. **navigationContextDecorator** - Should be last as it depends on the others
+ * [decorateNavigationDestination] does not call a decorator's `onPop`.
  *
- * ## Creating Custom Decorators
- *
- * To create a custom decorator, use the [navigationDestinationDecorator] function:
+ * Create a decorator with [navigationDestinationDecorator]:
  *
  * ```kotlin
  * fun myCustomDecorator(): NavigationDestinationDecorator<NavigationKey> {
  *     return navigationDestinationDecorator(
  *         onPop = { instance ->
- *             // Clean up when destination is popped from the backstack
+ *             // Called once the instance is in neither the backstack nor the composition.
  *         },
  *         decorate = { destination ->
- *             // Wrap the destination content
  *             MyCustomWrapper {
  *                 destination.Content()
  *             }

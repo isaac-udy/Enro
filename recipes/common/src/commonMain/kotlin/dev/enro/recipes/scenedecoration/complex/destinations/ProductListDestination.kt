@@ -22,10 +22,10 @@ import dev.enro.ui.navigationDestination
 import kotlinx.serialization.Serializable
 
 /**
- * Shop section's root destination. Tagged `leftPane()` — when a detail
- * destination is pushed on top, this list collapses into the left companion
- * slot on Wide / Medium windows. On Mobile, the top destination fills the
- * content area and this list is only visible after a pop.
+ * The root destination of the Shop section. The destination sets
+ * `leftPane()`: when a destination opens on top, `ShellPaneSceneStrategy`
+ * renders the list in the left slot on Wide and Medium. On Mobile only the
+ * top destination is rendered.
  */
 @Serializable
 data object ProductList : NavigationKey

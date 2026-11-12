@@ -11,9 +11,8 @@ import dev.enro.path.getPathFromNavigationKey
 import kotlin.reflect.KClass
 
 /**
- * Asserts [path] resolves to a [NavigationKey] of type [keyType] via the
- * controller's registered path bindings, optionally matching [predicate].
- * Returns the resolved key for further assertions.
+ * Asserts that the controller's path bindings resolve [path] to a [NavigationKey] of type
+ * [keyType] that matches [predicate]. Returns the resolved key.
  */
 public fun <T : NavigationKey> EnroController.assertPathResolvesTo(
     path: String,
@@ -46,8 +45,8 @@ public inline fun <reified T : NavigationKey> NavigationContext.assertPathResolv
 ): T = controller.assertPathResolvesTo(path, T::class, predicate)
 
 /**
- * Asserts [path] does NOT resolve to any [NavigationKey] via the controller's
- * registered path bindings.
+ * Asserts that the controller's path bindings do not resolve [path] to a [NavigationKey].
+ * The assertion also passes when resolving [path] throws.
  */
 public fun EnroController.assertPathDoesNotResolve(path: String) {
     val resolved = runCatching { getNavigationKeyFromPath(path) }.getOrNull()
@@ -60,9 +59,8 @@ public fun NavigationContext.assertPathDoesNotResolve(path: String): Unit =
     controller.assertPathDoesNotResolve(path)
 
 /**
- * Asserts that serialising [key] via the controller's registered path bindings
- * produces exactly [expectedPath]. Tests the reverse direction of
- * `assertPathResolvesTo`.
+ * Asserts that the controller's path bindings serialize [key] to exactly [expectedPath].
+ * `assertPathResolvesTo` asserts the opposite direction.
  */
 public fun EnroController.assertPathFor(
     key: NavigationKey,

@@ -22,15 +22,14 @@ public sealed class NavigationContext<Parent, Child : NavigationContextBase>() :
     public abstract val id: String
     public abstract val controller: EnroController
 
-    // Returns true if this NavigationContext can be considered active within the scope of it's parent
+    // True if this context is the active child of the parent context, or has no parent context.
     public val isActive: Boolean by derivedStateOf {
         val parentContext = parent as? NavigationContext<*, *>
         if (parentContext == null) return@derivedStateOf true
         return@derivedStateOf parentContext.activeChild == this
     }
 
-    // Returns true if this NavigationContext can be considered to be active globally,
-    // in other words, is this context and its parent context considered active
+    // True if this context and each ancestor context is active.
     public val isActiveInRoot: Boolean by derivedStateOf {
         val parentContext = parent as? NavigationContext<*, *>
         isActive && (parentContext == null || parentContext.isActiveInRoot)
@@ -49,9 +48,8 @@ public sealed class NavigationContext<Parent, Child : NavigationContextBase>() :
 
     public abstract fun registerVisibility(child: Child, isVisible: Boolean)
 
-    // requests that the current container becomes active
-    // For NavigationContainer contexts, this will cause the NavigationContainer to become
-    // active in its parent context (but not active globally)
+    // Makes a ContainerContext the active container of the parent context. The parent context
+    // is not made active. A DestinationContext forwards the request to the parent container.
     public fun requestActive() {
         when (this) {
             is ContainerContext -> {
@@ -59,20 +57,16 @@ public sealed class NavigationContext<Parent, Child : NavigationContextBase>() :
             }
 
             is DestinationContext<*> -> {
-                // if a destination is requested to become active, we request that the parent container
-                // becomes active
                 parent.requestActive()
             }
 
             is RootContext -> {
-                // RootContext does not have ability to request active
+                // A RootContext cannot be made active.
             }
         }
     }
 
-    // requests that the current container becomes active globally, which is to say
-    // that this container is requested to become active, and then
-    // all parent containers are requested to become active recursively up until the root
+    // Calls requestActive on this context and on each ancestor context up to the root.
     public fun requestActiveInRoot() {
         requestActive()
         when (this) {
@@ -85,7 +79,7 @@ public sealed class NavigationContext<Parent, Child : NavigationContextBase>() :
             }
 
             is RootContext -> {
-                // RootContext does not have ability to request active
+                // A RootContext cannot be made active.
             }
         }
     }

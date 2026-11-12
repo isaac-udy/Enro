@@ -12,9 +12,9 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 
 /**
- * Locks down the push-versus-replace line the web history plugin draws between two recorded
- * states, and the equality that decides whether a state is one it has already seen. Both are
- * pure functions of [ContainerNode], so they are tested without a browser.
+ * Tests how the web history plugin decides between a pushed and a replaced history entry for
+ * two recorded states, and the [ContainerNode] equality that the plugin uses to find an
+ * existing entry. Both depend only on [ContainerNode], so the tests require no browser.
  */
 class HistoryTransitionTests {
 

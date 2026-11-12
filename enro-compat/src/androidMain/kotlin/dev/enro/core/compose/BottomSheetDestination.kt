@@ -43,9 +43,8 @@ public fun ModalBottomSheetState.bindToNavigationHandle(): ModalBottomSheetState
     LaunchedEffect(isInBackstack, isInitialised, isActive, isVisible) {
         when {
             !isInitialised -> {
-                // In some cases, full screen dialogs and other things that don't necessarily render immediately
-                // can cause the show animation to be cancelled, so when we're initialising, we're going to
-                // force the show by looping until isVisible is true
+                // Content that does not render immediately, such as a full screen dialog, can
+                // cancel the show animation. The loop calls show() until isVisible is true.
                 while(!isVisible && this@LaunchedEffect.isActive) { runCatching { show() } }
                 isInitialised = true
             }

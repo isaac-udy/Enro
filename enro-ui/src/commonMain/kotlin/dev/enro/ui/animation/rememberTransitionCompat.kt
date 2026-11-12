@@ -23,20 +23,18 @@ import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.resume
 
 /**
- * For some reason, it appears that rememberTransition does not correctly work in Compose for Web,
- * and will call the "remember" function multiple times, even though the key is the same. This
- * appears to be a bug in Compose for Web, and not in Enro. This function is a workaround for that,
- * and is copied from the implementation of rememberTransition in the Compose libraries, but uses
- * the hashCode of the TransitionState as the key, rather than the TransitionState itself.
+ * A copy of androidx.compose.animation.core.rememberTransition (Compose Multiplatform 1.12.2)
+ * that keys `remember` on `transitionState.hashCode()` instead of `transitionState`.
  *
- * Copied from androidx.compose.animation.core.rememberTransition (Compose Multiplatform 1.12.2)
+ * Workaround: on Compose for Web, rememberTransition runs the `remember` block again when
+ * the `transitionState` key is unchanged. The root cause in Compose for Web is not known.
  */
 @Composable
 internal fun <T> rememberTransitionCompat(
     transitionState: TransitionState<T>,
     label: String? = null
 ): Transition<T> {
-    // ! USING transitionState.hashCode() AS KEY TO AVOID BUG IN COMPOSE FOR WEB !
+    // The hashCode() key is the only difference from the upstream rememberTransition.
     val transition = remember(transitionState.hashCode()) {
         Snapshot.withoutReadObservation {
             if (transitionState is DeferredTransitionState) {

@@ -27,6 +27,9 @@
                 <data android:scheme="enrorecipes" android:host="app" />
             </intent-filter>
         </activity>
+
+        <!-- The Activity destination in the Fragment and Activity recipe. -->
+        <activity android:name="dev.enro.recipes.interop.PickNameActivity" />
     </application>
 
 </manifest>

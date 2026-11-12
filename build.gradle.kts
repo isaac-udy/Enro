@@ -15,15 +15,14 @@ buildscript {
         classpath(libs.emulator.wtf.gradle)
         classpath(libs.maven.publish.gradle)
         classpath(libs.dokka.gradle)
+        // Used only by :recipes:metro.
+        classpath(libs.metro.gradle)
     }
 }
 
-// Aggregate API reference site: each published module is registered as
-// a `dokka(...)` dependency below, and the root `dokkaGenerate` task
-// combines their per-module outputs into one multi-module HTML site at
-// `build/dokka/html`. Per-module Dokka is wired up in
-// `ConfigurePublishing` — anything that doesn't apply
-// `configure-publishing` is excluded from the API reference.
+// The root `dokkaGenerate` task combines the Dokka output of each `dokka(...)` dependency
+// below into one HTML site at `build/dokka/html`. `ConfigurePublishing` applies Dokka to a
+// module, so a module that does not apply `configure-publishing` is not in the API reference.
 apply(plugin = "org.jetbrains.dokka")
 
 dependencies {
@@ -91,26 +90,28 @@ subprojects {
             // Fails when the public API differs from the dump committed under `api/`.
             // Run `./gradlew updateKotlinAbi` to record an intended change.
             tasks.findByName("checkKotlinAbi")?.let { continuousIntegration.dependsOn(it) }
-            // Compile-only fallbacks so modules without tests (e.g. recipes)
-            // are still build-checked by CI. For modules with tests, these are
-            // no-ops — the test tasks above already depend on compilation.
+            // Fails when a docs code sample differs from the compiled snippet.
+            // Run `./gradlew updateDocsSnippets` to rewrite the docs from the snippets.
+            tasks.findByName("checkDocsSnippets")?.let { continuousIntegration.dependsOn(it) }
+            // The compile tasks make CI compile the modules without tests (for example, the
+            // recipes). For a module with tests, the test tasks above already depend on
+            // the compile tasks.
             tasks.findByName("compileKotlinDesktop")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("compileAndroidMain")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("compileKotlinWasmJs")?.let { continuousIntegration.dependsOn(it) }
             tasks.findByName("compileKotlinJs")?.let { continuousIntegration.dependsOn(it) }
         }
 
-        // Separate aggregate task for the macOS CI runner — runs only the
-        // iOS-platform tests (the rest already runs on Linux via
-        // continuousIntegration). Keeps the macOS minutes spend tight.
+        // The macOS CI runner runs only the iOS tests, to limit macOS runner minutes.
+        // continuousIntegration runs every other test on Linux.
         tasks.register("continuousIntegrationMacOs") {
             val ci = this
             tasks.findByName("iosSimulatorArm64Test")?.let { ci.dependsOn(it) }
-            // Compile-only fallback for modules without iOS tests, so a
-            // K/Native compile failure still shows up.
+            // The compile task makes a Kotlin/Native compile failure fail CI for a module
+            // without iOS tests.
             tasks.findByName("compileKotlinIosSimulatorArm64")?.let { ci.dependsOn(it) }
-            // The device target is published but has no tests, so compile it here
-            // rather than for the first time inside the release job.
+            // The device target is published and has no tests. Without this compile task,
+            // the release job is the first job that compiles the device target.
             tasks.findByName("compileKotlinIosArm64")?.let { ci.dependsOn(it) }
         }
     }
@@ -132,14 +133,11 @@ tasks.register("updateVersion") {
             error("The versionName '$versionName' is the current versionName")
         }
 
-        // ------------------------------------------------------------------
-        // Changelog: changes stack under a standing "## Unreleased" header.
-        // Releasing stamps that header with the version (and date), inserts a
-        // fresh empty "## Unreleased" above it, and writes the released
-        // section's body to build/release-notes.md for the release workflow
-        // to attach to the GitHub release. All validation happens before any
-        // file is written, so a failed release leaves the repo untouched.
-        // ------------------------------------------------------------------
+        // CHANGELOG.md lists changes under a standing "## Unreleased" header. A release adds
+        // a header with the version and date below "## Unreleased", and writes the released
+        // section to build/release-notes.md, which the release workflow attaches to the
+        // GitHub release. Every validation runs before the first file write, so a failed
+        // validation changes no file.
         val changelogFile = rootProject.file("CHANGELOG.md")
         val changelog = changelogFile.readText()
         val unreleasedHeader = "## Unreleased"
@@ -188,7 +186,6 @@ tasks.register<Exec>("publishEnroLocal") {
         "publishKotlinMultiplatformPublicationToMavenLocal",
         "publishAndroidPublicationToMavenLocal",
         "publishDesktopPublicationToMavenLocal",
-//                "publishFrontendJsPublicationToMavenLocal",
         "publishIosArm64PublicationToMavenLocal",
         "publishIosSimulatorArm64PublicationToMavenLocal",
 

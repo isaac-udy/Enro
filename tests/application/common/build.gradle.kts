@@ -13,14 +13,14 @@ configureEmulatorWtf()
 kotlin {
     explicitApi = ExplicitApiMode.Disabled
 
-    // The test-app content is a KMP library. Its Android host (unit) and device
-    // (instrumented) test components are enabled here so the instrumented tests keep
-    // same-module visibility to the content/destinations they exercise. The runnable
-    // APK / desktop / web / iOS entry points live in the sibling :app:* modules.
+    // The test application content is a KMP library. The Android host (unit) and
+    // device (instrumented) test components are enabled in this module so that the
+    // instrumented tests can access the internal destinations under test. The runnable
+    // APK, desktop, web and iOS entry points are in the sibling :app:* modules.
     androidLibrary {
-        // Override the convention's path-derived namespace (which would become
-        // dev.enro.tests.application.common) so the generated R class stays at
-        // dev.enro.tests.application.R, matching the existing source imports.
+        // The convention plugin derives the namespace dev.enro.tests.application.common
+        // from the module path. The sources import dev.enro.tests.application.R, so the
+        // namespace is set explicitly.
         namespace = "dev.enro.tests.application"
 
         withHostTest {}
@@ -37,8 +37,8 @@ kotlin {
             implementation(libs.androidx.savedState)
         }
         commonMain.dependencies {
-            // `api` so the :app:* modules get the Enro APIs (incl. platform entry points)
-            // and the test-app content transitively from :common.
+            // `api` exposes the Enro APIs, including the platform entry points, to the
+            // :app:* modules.
             api("dev.enro:enro:${project.enroVersionName}")
             api("dev.enro:enro-compat:${project.enroVersionName}")
             implementation(libs.kotlinx.serialization)
@@ -82,9 +82,9 @@ dependencies {
 
     lintChecks(project(":enro-lint"))
 
-    // Android host (unit) + device (instrumented) test dependencies. Declared via
-    // configuration names because the KMP library plugin creates the androidHostTest /
-    // androidDeviceTest source sets dynamically (no DSL accessor).
+    // Android host (unit) and device (instrumented) test dependencies. Declared by
+    // configuration name because the KMP library plugin creates the androidHostTest
+    // and androidDeviceTest source sets dynamically, without a DSL accessor.
     "androidHostTestImplementation"(libs.testing.junit)
 
     "androidDeviceTestImplementation"("dev.enro:enro-test:${project.enroVersionName}")

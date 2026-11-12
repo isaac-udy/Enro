@@ -14,7 +14,7 @@ import org.junit.Assert.assertTrue
 class ComposeAsyncManagedResultFlowRobot(
     private val composeRule: ComposeTestRule
 ) {
-    // Increased maximum timeout because the async actions on the screen can take up to 2_500 ms
+    // The async actions on the screen take up to 2_500 ms.
     private val maximumTimeout = 5_000L
 
     val viewModel = composeRule

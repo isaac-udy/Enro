@@ -13,18 +13,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * Tests that lock down the saved-state round-trip path used by
- * [dev.enro.ui.rememberNavigationContainer]'s Saver and by
- * [dev.enro.ui.NavigationContainerState.saveState]. Both call sites
- * encode each [NavigationKey.Instance] in the backstack via
- * `NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class))`
- * and the controller's `savedStateConfiguration`. If that path breaks,
- * backstacks won't survive process death — these tests are the cheapest
- * regression catcher for that class of bug.
+ * The Saver of [dev.enro.ui.rememberNavigationContainer] and
+ * [dev.enro.ui.NavigationContainerState.saveState] encode each [NavigationKey.Instance] of the
+ * backstack with `NavigationKey.Instance.serializer(PolymorphicSerializer(NavigationKey::class))`
+ * and the controller's `savedStateConfiguration`. The tests encode and decode the same way.
  *
- * commonTest doesn't go through navigation binding registration, so the
- * test helper explicitly registers [NavigationKeyFixtures.SimpleKey] with
- * the controller's polymorphic `NavigationKey` resolver.
+ * commonTest registers no navigation bindings, so `runWithSimpleKeySerializer` registers
+ * [NavigationKeyFixtures.SimpleKey] as a polymorphic `NavigationKey` subclass.
  */
 class BackstackSavedStateTests {
 

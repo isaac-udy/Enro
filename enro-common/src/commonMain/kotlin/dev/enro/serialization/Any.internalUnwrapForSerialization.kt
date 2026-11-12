@@ -2,7 +2,6 @@ package dev.enro.serialization
 
 internal fun Any?.internalUnwrapForSerialization(): Any {
     return when (this) {
-        // primitives
         null -> WrappedNull
         is WrappedBoolean -> value
         is WrappedDouble -> value
@@ -14,7 +13,6 @@ internal fun Any?.internalUnwrapForSerialization(): Any {
         is WrappedByte -> value
         is WrappedChar -> value
 
-        // collections
         is WrappedList -> value.map { it?.internalUnwrapForSerialization() }.toMutableList()
         is WrappedSet -> value.map { it?.internalUnwrapForSerialization() }.toMutableSet()
         is WrappedMap -> value.mapValues { it.value?.internalUnwrapForSerialization() }

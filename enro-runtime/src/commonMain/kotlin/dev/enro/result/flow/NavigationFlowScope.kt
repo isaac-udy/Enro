@@ -68,7 +68,7 @@ public open class NavigationFlowScope internal constructor(
     }
 
     /**
-     * See documentation on the other [async] function for more information on how this function works.
+     * Vararg form of [async]. A single [List] argument is used as the list of dependencies.
      */
     @Suppress("NOTHING_TO_INLINE") // required for using block's name as an identifier
     public inline fun <T> async(
@@ -82,23 +82,17 @@ public open class NavigationFlowScope internal constructor(
     }
 
     /**
-     * [async] allows the execution of suspending functions during a Navigation Flow. This is a delicate API and should be used
-     * with care. In many cases, it would likely provide a  better user experience to implement a NavigationDestination that provides
-     * UI to the user (such as a loading spinner) while the suspending function is executing, and then pushing or presenting
-     * that Navigation Destination into the flow, rather than using [async], which provides no UI.
+     * Runs [block] as a step of the flow. The flow stops at the [async] call until [block]
+     * returns, then runs the flow lambda again with the result of [block].
      *
-     * Suspending steps are never saved when application process death occurs, and will always be re-executed.
+     * [async] shows no UI while [block] runs. Use [async] for a fast [block], or when the
+     * screen that hosts the flow shows a loading state. Otherwise open a destination that
+     * runs the suspending work and shows a loading state.
      *
-     * Examples of when to use [async] include:
-     * - Small and fast suspending functions that are known to be quick to execute. For example, fetching a value from a local database.
-     * - Waiting for external state, where there is UI provided by the screen that is hosting the flow. For example, using an
-     *   [async] call as the first step of a flow, to delay starting the flow while some external state is loaded, where the
-     *   screen hosting the flow shows a loading spinner.
+     * The result of [block] is not saved. After process death the flow runs [block] again.
      *
-     * @param dependsOn A list of objects that this suspending step depends on. If any of these objects change, the suspending
-     * function will be re-executed. This is used to ensure that the result of the suspending function is valid.
-     *
-     * @param block The suspending function to execute.
+     * @param dependsOn When the hash of [dependsOn] changes, the flow cancels the running or
+     * completed [block] and runs [block] again.
      */
     @AdvancedEnroApi
     @Suppress("NOTHING_TO_INLINE") // required for using block's name as an identifier

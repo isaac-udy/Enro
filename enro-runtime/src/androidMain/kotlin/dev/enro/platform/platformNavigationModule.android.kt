@@ -20,21 +20,9 @@ internal actual val platformNavigationModule: NavigationModule = createNavigatio
     })
 }
 
-/**
- * Attempts to load and apply the optional enro-compat module if it is present on the classpath.
- *
- * This function uses reflection to check for the presence of the `dev.enro.compat.EnroCompat` class
- * at runtime. If found, it instantiates the class and retrieves its `compatModule` field, which
- * contains compatibility-related navigation functionality.
- *
- * The enro-compat module is optional and provides backward compatibility support for applications
- * migrating from older versions of Enro. By loading it dynamically at runtime, applications can
- * include the compatibility module as a dependency only when needed, without requiring it as a
- * compile-time dependency of the core module.
- *
- * If the compat module is successfully loaded, a warning log is emitted to inform developers that
- * the compatibility layer is active.
- */
+// Applies the optional enro-compat module when `dev.enro.compat.EnroCompat` is on the classpath.
+// enro-runtime has no compile-time dependency on enro-compat, so the class is loaded by
+// reflection: the class name and the `compatModule` field name must match enro-compat.
 private fun NavigationModule.BuilderScope.applyCompatModule() {
     val compatClass = runCatching { Class.forName("dev.enro.compat.EnroCompat") }
         .getOrNull() ?: return

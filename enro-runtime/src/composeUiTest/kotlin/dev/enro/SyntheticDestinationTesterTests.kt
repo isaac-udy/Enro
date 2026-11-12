@@ -24,15 +24,11 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 /**
- * Tests for the `testSyntheticDestination` helpers in enro-test. Covers each
- * outcome path through both entry points: looking up the synthetic via the
- * controller's bindings (the "registered" path), and providing the
- * NavigationDestinationProvider directly (the "direct" path that doesn't
- * need a controller install).
+ * Tests `testSyntheticDestination` in enro-test through both entry points: a synthetic
+ * destination registered on the controller, and a NavigationDestinationProvider passed
+ * directly, which requires no installed controller.
  */
 class SyntheticDestinationTesterTests {
-
-    // ---- Registered-path tests ----
 
     @Test
     fun `testSyntheticDestination by key finds the synthetic via controller bindings`() = runEnroTest {
@@ -111,7 +107,7 @@ class SyntheticDestinationTesterTests {
             createNavigationModule {
                 destination<SyntheticTesterOpenKey>(
                     syntheticDestination<SyntheticTesterOpenKey> {
-                        // no outcome method
+                        // The block calls no outcome function.
                     }
                 )
             }
@@ -152,11 +148,9 @@ class SyntheticDestinationTesterTests {
         )
     }
 
-    // ---- Direct-path (no controller install) tests ----
-
     @Test
     fun `testSyntheticDestination by key and provider works without installing the synthetic on the controller`() = runEnroTest {
-        // No addModule call — the synthetic provider is passed directly.
+        // The test calls no addModule: the synthetic provider is passed directly.
         val provider = syntheticDestination<SyntheticTesterOpenKey> { open(SyntheticTesterTargetKey()) }
 
         val outcome = testSyntheticDestination(SyntheticTesterOpenKey, provider)
@@ -191,8 +185,6 @@ class SyntheticDestinationTesterTests {
             message = "Error should explain the provider isn't synthetic; was: ${error.message}",
         )
     }
-
-    // ---- Side-effect tests ----
 
     @Test
     fun `SideEffect runWith default fixtures executes the block`() = runEnroTest {
