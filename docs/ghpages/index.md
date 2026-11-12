@@ -53,12 +53,18 @@ Compose destinations, so you can adopt Enro incrementally.
 - [Results](docs/advanced/results.md)
     - [Embedded Result Flows](docs/advanced/results/embedded-result-flows.md)
     - [Managed Result Flows](docs/advanced/results/managed-result-flows.md)
+    - [Flows in a ViewModel](docs/advanced/results/navigation-flows.md)
 - [View Models](docs/advanced/view-models.md)
 - [Animations](docs/advanced/animations.md)
 - [Testing](docs/advanced/testing.md)
 - [Plugins](docs/advanced/plugins.md)
 - [Synthetic Destinations](docs/advanced/synthetic-destinations.md)
 - [Path Bindings](docs/advanced/path-bindings.md)
+- [Interceptors](docs/advanced/interceptors.md)
+- [Deep Links](docs/advanced/deep-links.md)
+- [Saved State](docs/advanced/saved-state.md)
+- [Dependency Injection](docs/advanced/dependency-injection.md)
+- [Multi-Module Projects](docs/advanced/multi-module.md)
 
 ## Platform-Specific Guides
 
@@ -74,9 +80,15 @@ for the API delta and a step-by-step conversion.
 
 ## Recipes
 
-The [recipes module](https://github.com/isaac-udy/Enro/tree/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes)
-in the source repo is a set of small, runnable examples — one per concept. Many
+The recipes app is a set of small, runnable examples — one per concept. See
+[Recipes](docs/recipes.md) for the full list and how to run it. Many
 documentation pages link to the recipe for their topic.
+
+## Sample apps
+
+Three larger samples combine several features: a branching loan application
+form, a recipe browser, and a travel planner with login. See
+[Sample Apps](docs/samples.md).
 
 ## Troubleshooting
 

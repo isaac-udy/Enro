@@ -68,6 +68,7 @@ class UserRepository {
     fun nameFor(userId: String): String = names[userId] ?: "Unknown user"
 }
 
+// region docs:di/koin-view-model
 class KoinUserDetailViewModel(
     repository: UserRepository,
 ) : ViewModel() {
@@ -84,6 +85,7 @@ val koinRecipeModule = module {
     // factory, not viewModel: the AndroidX viewModel() call stores the instance.
     factory { KoinUserDetailViewModel(repository = get()) }
 }
+// endregion
 
 private val recipeKoin = koinApplication { modules(koinRecipeModule) }
 
@@ -91,11 +93,13 @@ private val recipeKoin = koinApplication { modules(koinRecipeModule) }
  * Creates [T] with Koin, inside `createEnroViewModel` so that
  * `by navigationHandle()` works in the ViewModel.
  */
+// region docs:di/koin-helper
 @Composable
 inline fun <reified T : ViewModel> koinEnroViewModel(): T {
     val koin = getKoin()
     return viewModel<T> { createEnroViewModel { koin.get<T>() } }
 }
+// endregion
 
 @Composable
 @NavigationDestination(KoinViewModelRecipe::class)
@@ -135,6 +139,7 @@ fun KoinUserListDestination() {
     }
 }
 
+// region docs:di/koin-usage
 @Composable
 @NavigationDestination(KoinUserDetail::class)
 fun KoinUserDetailDestination() {
@@ -147,3 +152,4 @@ fun KoinUserDetailDestination() {
         Button(onClick = { viewModel.onBackClicked() }) { Text("Back") }
     }
 }
+// endregion

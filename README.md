@@ -111,7 +111,8 @@ That's the whole flow. See [enro.dev](https://enro.dev) for the full guide.
 ## Learn Enro
 
 - **Documentation:** [enro.dev](https://enro.dev) — installation, concepts, results, animations, testing, platform guides, and the migration guide from Enro 2.
-- **Recipes:** [`recipes/`](./recipes/common/src/commonMain/kotlin/dev/enro/recipes) — every concept (dialogs, bottom sheets, list-detail, tabs, deep links, managed flows, shared view models, custom animations) is a small runnable sample.
+- **Recipes:** [`recipes/`](./recipes/common/src/commonMain/kotlin/dev/enro/recipes) — small runnable examples, one per concept. [enro.dev/docs/recipes.html](https://enro.dev/docs/recipes.html) lists them. Run the app with `./gradlew :recipes:app:desktop:run`.
+- **Sample apps:** three larger samples in [`tests/application`](./tests/application/common/src/commonMain/kotlin/dev/enro/tests/application/samples). Run them with `./gradlew :tests:application:app:desktop:run`, then choose "Samples".
 - **API reference:** generate with `./gradlew dokkaGenerate`; the multi-module site lands at `build/dokka/html/index.html`. Also published as a `-javadoc.jar` alongside each artifact on Maven Central.
 - **Changelog:** [CHANGELOG.md](./CHANGELOG.md).
 
@@ -127,7 +128,7 @@ covers the API delta in detail. Highlights:
 - `push()` / `present()` → `open(key)`; dialog/overlay behaviour now lives in destination metadata
 - `closeWithResult(r)` → `complete(r)`
 - `NavigationApplication` interface is gone; install the component directly from `Application.onCreate`
-- Fragments and Activities continue to work via the `enro-compat` module
+- Fragments and Activities can still be destinations; the `enro-compat` module keeps Enro 2 call sites compiling while you migrate
 
 ## Applications using Enro
 

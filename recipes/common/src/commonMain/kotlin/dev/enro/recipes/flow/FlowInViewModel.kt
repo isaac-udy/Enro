@@ -79,6 +79,7 @@ data class ChooseNights(val destination: String) : NavigationKey.WithResult<Int>
 @Serializable
 data object ChooseBreakfast : NavigationKey.WithResult<Boolean>
 
+// region docs:flows/view-model
 class CreateBookingViewModel : ViewModel() {
     private val navigation by navigationHandle<CreateBooking>()
 
@@ -95,6 +96,7 @@ class CreateBookingViewModel : ViewModel() {
         },
     )
 }
+// endregion
 
 @Composable
 @NavigationDestination(FlowInViewModelRecipe::class)
@@ -137,6 +139,7 @@ fun FlowStartDestination() {
     }
 }
 
+// region docs:flows/host
 @Composable
 @NavigationDestination(CreateBooking::class)
 fun CreateBookingDestination() {
@@ -165,6 +168,7 @@ fun CreateBookingDestination() {
         }
     }
 }
+// endregion
 
 @Composable
 @NavigationDestination(ChooseDestination::class)

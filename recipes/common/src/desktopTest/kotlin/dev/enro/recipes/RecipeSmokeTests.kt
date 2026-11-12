@@ -134,6 +134,25 @@ class RecipeSmokeTests {
     }
 
     @Test
+    fun `flow in a view model lets an earlier answer change`() = runRecipeTest(FlowInViewModelRecipe) {
+        click("Create a booking")
+        click("Kyoto")
+        click("2")
+        see("Add breakfast?")
+
+        // Back to the nights step, then back to the destination step.
+        click("Back")
+        see("How many nights in Kyoto?")
+        click("Back")
+        see("Where to?")
+
+        // With a one-night stay the breakfast step is no longer asked.
+        click("Wellington")
+        click("1")
+        see("Wellington, 1 night(s), no breakfast")
+    }
+
+    @Test
     fun `module interceptor observes and blocks`() = runRecipeTest(ModuleInterceptorRecipe) {
         click("Open 'report'")
         see("Document: report")

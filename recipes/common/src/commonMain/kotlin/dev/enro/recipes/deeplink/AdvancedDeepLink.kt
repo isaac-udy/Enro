@@ -101,6 +101,7 @@ fun AdvancedDeepLinkRecipeScreen() {
                     // A deep link to an article. Put the screens the user would
                     // have passed through underneath it, so Back goes to the
                     // category and then home.
+                    // region docs:deep-links/synthetic-backstack
                     container.updateBackstack {
                         backstackOf(
                             AppHome.asInstance(),
@@ -108,6 +109,7 @@ fun AdvancedDeepLinkRecipeScreen() {
                             Article("deep-link-article", "tech").asInstance(),
                         )
                     }
+                    // endregion
                 }) {
                     Text("Deep link to /categories/tech/articles/deep-link-article")
                 }

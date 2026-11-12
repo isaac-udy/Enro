@@ -44,6 +44,12 @@ class ConfigureDocsSnippets : Plugin<Project> {
             snippetSources.from(
                 root.fileTree("docs/snippets/src") { include("**/*.kt") },
                 root.fileTree("docs/snippets-html/src") { include("**/*.kt") },
+                // Docs pages can also show regions of the recipes, which are
+                // compiled and run by the recipes' own tests.
+                root.fileTree("recipes") {
+                    include("**/src/**/*.kt")
+                    exclude("**/build/**")
+                },
             )
             docsDirectory.set(root.layout.projectDirectory.dir("docs/ghpages"))
             this.update.set(update)

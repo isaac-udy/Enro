@@ -89,6 +89,7 @@ fun NestedContainersRecipeScreen() {
 @Composable
 @NavigationDestination(ContainersHost::class)
 fun ContainersHostDestination() {
+    // region docs:containers/filters
     val notes = rememberNavigationContainer(
         key = NavigationContainer.Key("notes"),
         backstack = backstackOf(Note(1).asInstance()),
@@ -102,6 +103,7 @@ fun ContainersHostDestination() {
         filter = accept { key<Task>() },
         emptyBehavior = EmptyBehavior.preventEmpty(),
     )
+    // endregion
     Row(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
             NavigationDisplay(state = notes)

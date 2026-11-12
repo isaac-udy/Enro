@@ -33,3 +33,17 @@ Patterns that build on the core concepts.
 - [Path Bindings](path-bindings.md) — `@NavigationPath` and
   `NavigationPathBinding`: map URL paths to `NavigationKey`s for deep
   links and web URLs.
+- [Interceptors](interceptors.md) — run code before an open, close or
+  result, and continue, cancel or replace the operation.
+- [Deep Links](deep-links.md) — open a destination from a URL, on Android
+  and the web, with a backstack underneath it.
+- [Saved State](saved-state.md) — what `remember`, `rememberSaveable`, a
+  ViewModel and `SavedStateHandle` each survive.
+- [Dependency Injection](dependency-injection.md) — ViewModels created by a
+  DI framework, with Koin as the example.
+- [Multi-Module Projects](multi-module.md) — feature modules that open each
+  other's screens without depending on each other.
+
+The Results page has a third sub-page, [Flows in a
+ViewModel](results/navigation-flows.md), for a multi-step flow that needs
+its own UI around the steps.

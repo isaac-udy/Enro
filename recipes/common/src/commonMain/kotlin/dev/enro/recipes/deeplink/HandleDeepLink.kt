@@ -61,6 +61,7 @@ import kotlinx.serialization.Serializable
  * [path] is the path and query of the URL, for example `/users/alice` or
  * `/products/shoe-1?source=email`.
  */
+// region docs:deep-links/open-deep-link
 fun NavigationContainerState.openDeepLink(
     context: NavigationContext,
     path: String,
@@ -69,6 +70,7 @@ fun NavigationContainerState.openDeepLink(
     updateBackstack { backstack -> (backstack + key.asInstance()).asBackstack() }
     return true
 }
+// endregion
 
 @Serializable
 object HandleDeepLinkRecipe : NavigationKey

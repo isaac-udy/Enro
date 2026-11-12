@@ -115,36 +115,86 @@ Reading `state.backstack` from a Composable is a normal Compose state read —
 the surrounding scope recomposes when the backstack changes. You can use this
 to drive a bottom bar, breadcrumbs, or any UI element that mirrors the stack.
 
-`updateBackstack { it.drop(1) }` programmatically reduces the stack;
-`updateBackstack { backstackOf(NewRoot.asInstance()) }` resets it entirely.
+The block receives the current backstack and returns the new one. A
+`NavigationBackstack` is a list, so list operations work on it; call
+`asBackstack()` on the result:
+
+- `updateBackstack { it.dropLast(1).asBackstack() }` removes the top entry.
+- `updateBackstack { it.take(1).asBackstack() }` goes back to the root.
+- `updateBackstack { backstackOf(NewRoot.asInstance()) }` replaces the whole
+  stack.
+
+Inside a destination, `LocalNavigationContainer.current` is the container
+the destination is displayed in. The [back stack operations
+recipe][backstack-recipe] shows back to root, back to a specific screen, and
+clearing the stack.
+
 Most navigation goes through `NavigationHandle` operations, not direct
 backstack edits — see [Navigation Handles](navigation-handles.md).
 
 ## Filters
 
-A `NavigationContainerFilter` decides whether a given key is accepted by this
-container. By default a container accepts everything (`acceptAll()`).
+A `NavigationContainerFilter` decides which keys a container accepts from
+`navigation.open(key)`. By default a container accepts every key
+(`acceptAll()`).
 
-Filters are how you steer navigation to the *right* container in an app with
-several of them. A common pattern: a "details" container in a list-detail
-layout accepts only detail-type keys; navigation to detail keys gets routed
-there automatically.
+| Filter | Accepts |
+|---|---|
+| `acceptAll()` | every key |
+| `acceptNone()` | no key; the backstack only changes when you update it directly |
+| `accept { key<T>() }` | keys of type `T` |
+| `accept { key { it is T && ... } }` | keys that match the predicate |
+| `doNotAccept { key<T>() }` | every key except those of type `T` |
+| `accept { ... }.fromChildrenOnly()` | matching keys, and only when opened from a destination inside this container |
 
-See the [list-detail recipe][listdetail-recipe] for a working example.
+Two containers hosted by the same destination, each accepting one type of
+key:
+
+<!-- snippet: containers/filters -->
+```kotlin
+val notes = rememberNavigationContainer(
+    key = NavigationContainer.Key("notes"),
+    backstack = backstackOf(Note(1).asInstance()),
+    filter = accept { key<Note>() },
+    // Keep the first note: Back on it is not handled by this container.
+    emptyBehavior = EmptyBehavior.preventEmpty(),
+)
+val tasks = rememberNavigationContainer(
+    key = NavigationContainer.Key("tasks"),
+    backstack = backstackOf(Task(1).asInstance()),
+    filter = accept { key<Task>() },
+    emptyBehavior = EmptyBehavior.preventEmpty(),
+)
+```
+
+## Which container receives a key
+
+When a destination calls `navigation.open(key)`, Enro looks for a container
+that accepts the key. It checks containers in this order and uses the first
+one that accepts:
+
+1. Containers hosted by the calling destination: the active one first, then
+   the others.
+2. Containers hosted by the other destinations on the caller's backstack.
+3. Containers hosted by the destination that hosts the caller's container:
+   the active one first, then the others. This includes the caller's own
+   container and its siblings.
+4. Steps 2 and 3 again, one level further up each time, until the root.
+
+So a key is opened as close to the caller as a filter allows. In the example
+above, opening a `Task` from a note finds the tasks container, and a key that
+neither accepts goes up to the container that hosts both.
+
+The [nested containers recipe][nested-recipe] shows each of these cases.
 
 ## Interceptors
 
-A `NavigationInterceptor` observes (and optionally vetos or rewrites) every
-operation before it applies to the container's backstack. Use cases:
+A `NavigationInterceptor` runs before an operation is applied to the
+container's backstack, and can let it continue, cancel it, or run a
+different operation. Pass one to `rememberNavigationContainer` for one
+container, or register it on the `NavigationComponent` for all of them.
 
-- Confirming "unsaved changes will be lost" before allowing a close.
-- Logging or analytics on navigation events.
-- Redirecting one key to another based on app state.
-
-Interceptors are built either from a `NavigationInterceptor` implementation
-or from the `navigationInterceptor { }` builder. They can also be registered
-globally on the `NavigationComponent` (see
-[Installation](../getting-started/installation.md)).
+See [Interceptors](../advanced/interceptors.md).
 
 ## Nested containers
 
@@ -189,6 +239,8 @@ Two recipes go deeper on this pattern:
 - [Animations](../advanced/animations.md) — `NavigationAnimations` and per-element animation.
 - Recipes: [list-detail][listdetail-recipe], [tabs][tabs-recipe], [multiple back stacks][multistack-recipe].
 
+[backstack-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/backstack/BackStackOperations.kt
+[nested-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/containers/NestedContainers.kt
 [listdetail-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/listdetail/ListDetailNavigation.kt
 [tabs-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/tabs/TabNavigation.kt
 [multistack-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/multiplestacks/MultipleBackStacks.kt

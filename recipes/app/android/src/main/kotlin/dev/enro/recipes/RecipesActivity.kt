@@ -21,12 +21,13 @@ import dev.enro.ui.LocalNavigationContext
 import dev.enro.ui.NavigationDisplay
 import dev.enro.ui.rememberNavigationContainer
 
+// region docs:deep-links/android-activity
 class RecipesActivity : AppCompatActivity() {
     // The path of an `enrorecipes://app/...` link that has not been opened yet.
     private var pendingDeepLink by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
+        enableEdgeToEdge() // docs:hide
         super.onCreate(savedInstanceState)
         // After a configuration change the launch intent is delivered again;
         // the link it carries has already been handled.
@@ -48,7 +49,7 @@ class RecipesActivity : AppCompatActivity() {
                 NavigationDisplay(state = container)
             }
         }
-        applyInsetsForContentView()
+        applyInsetsForContentView() // docs:hide
     }
 
     // A link that arrives while the Activity is already running.
@@ -64,6 +65,7 @@ private fun Intent.deepLinkPath(): String? {
     val path = uri.path?.takeIf { it.isNotEmpty() } ?: "/"
     return uri.query?.let { "$path?$it" } ?: path
 }
+// endregion
 
 private fun AppCompatActivity.applyInsetsForContentView() {
     ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { v, windowInsets ->

@@ -65,6 +65,7 @@ data object AuditedSignature : NavigationKey.WithResult<String>
 private val auditLog = mutableStateListOf<String>()
 
 /** Installed in `RecipesComponent`. */
+// region docs:interceptors/events
 val auditInterceptor = navigationInterceptor {
     onOpened<AuditedDocument> {
         if (key.name == "restricted") {
@@ -86,6 +87,7 @@ val auditInterceptor = navigationInterceptor {
         continueWithComplete()
     }
 }
+// endregion
 
 @Composable
 @NavigationDestination(ModuleInterceptorRecipe::class)

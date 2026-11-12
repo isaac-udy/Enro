@@ -74,6 +74,7 @@ data object Counters : NavigationKey
 @Serializable
 data object CoveringScreen : NavigationKey
 
+// region docs:saved-state/view-model
 class CountersViewModel(
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -89,6 +90,7 @@ class CountersViewModel(
         savedStateHandle["saved"] = saved.value + 1
     }
 }
+// endregion
 
 @Composable
 @NavigationDestination(SavedStateRecipe::class)
@@ -112,12 +114,14 @@ fun SavedStateRecipeScreen() {
 @NavigationDestination(Counters::class)
 fun CountersDestination() {
     val navigation = navigationHandle<Counters>()
+    // region docs:saved-state/destination
     var remembered by remember { mutableIntStateOf(0) }
     var saveable by rememberSaveable { mutableIntStateOf(0) }
     // createSavedStateHandle() gives the ViewModel a handle scoped to this destination.
     val viewModel = viewModel<CountersViewModel> {
         createEnroViewModel { CountersViewModel(createSavedStateHandle()) }
     }
+    // endregion
     val inMemory by viewModel.inMemory.collectAsState()
     val saved by viewModel.saved.collectAsState()
 

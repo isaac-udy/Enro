@@ -21,6 +21,7 @@ import dev.enro.recipes.modular.navigation.ProfileKey
 import dev.enro.ui.NavigationDestinationProvider
 import dev.enro.ui.navigationDestination
 
+// region docs:multi-module/destination
 @Composable
 @NavigationDestination(ProfileKey::class)
 fun ProfileScreen() {
@@ -34,6 +35,7 @@ fun ProfileScreen() {
         Button(onClick = { navigation.close() }) { Text("Back") }
     }
 }
+// endregion
 
 @Composable
 @NavigationDestination(ModularSettingsKey::class)
