@@ -37,7 +37,20 @@ import dev.enro.recipes.deeplink.AdvancedDeepLinkRecipe
 import dev.enro.recipes.deeplink.BasicDeepLinkRecipe
 import dev.enro.recipes.dialog.DialogRecipe
 import dev.enro.recipes.entryprovider.DestinationRegistrationRecipe
+import dev.enro.recipes.animations.PerDestinationTransitionsRecipe
+import dev.enro.recipes.backstack.BackStackOperationsRecipe
+import dev.enro.recipes.containers.NestedContainersRecipe
+import dev.enro.recipes.deeplink.HandleDeepLinkRecipe
+import dev.enro.recipes.dialog.NavigatingFromDialogRecipe
+import dev.enro.recipes.flow.FlowInViewModelRecipe
+import dev.enro.recipes.interceptor.ModuleInterceptorRecipe
 import dev.enro.recipes.interop.NativeInteropRecipe
+import dev.enro.recipes.koin.KoinViewModelRecipe
+import dev.enro.recipes.material.MaterialListDetailRecipe
+import dev.enro.recipes.material.MaterialSupportingPaneRecipe
+import dev.enro.recipes.results.ViewModelResultsRecipe
+import dev.enro.recipes.saveable.SavedStateRecipe
+import dev.enro.recipes.viewmodel.SharedViewModelRecipe
 import dev.enro.recipes.listdetail.ListDetailRecipe
 import dev.enro.recipes.listdetail.ListDetailWithContainersRecipe
 import dev.enro.recipes.managedflow.ManagedFlowRecipe
@@ -89,15 +102,33 @@ private val recipeGroups: List<RecipeGroup> = listOf(
                 description = "Backstack and rememberSaveable state survives configuration changes.",
             ),
             RecipeEntry(
+                key = SavedStateRecipe,
+                title = "Saved State",
+                description = "Four places to keep state (remember, rememberSaveable, a " +
+                    "ViewModel, SavedStateHandle) and what each one survives.",
+            ),
+            RecipeEntry(
                 key = DestinationRegistrationRecipe,
                 title = "Destination Registration",
                 description = "Annotation- and provider-based destination registration.",
+            ),
+            RecipeEntry(
+                key = BackStackOperationsRecipe,
+                title = "Back Stack Operations",
+                description = "Back to root, back to a specific screen, replace the current " +
+                    "screen, and clear the stack.",
             ),
             RecipeEntry(
                 key = BasicDeepLinkRecipe,
                 title = "Basic Deep Link",
                 description = "Map URL patterns to NavigationKeys with NavigationPathBinding, " +
                     "and resolve a URL to a key.",
+            ),
+            RecipeEntry(
+                key = HandleDeepLinkRecipe,
+                title = "Handling a Deep Link",
+                description = "Open a destination from a URL that arrives from outside the " +
+                    "app. The Android app handles enrorecipes://app/... links this way.",
             ),
             RecipeEntry(
                 key = AdvancedDeepLinkRecipe,
@@ -113,6 +144,12 @@ private val recipeGroups: List<RecipeGroup> = listOf(
                 key = DialogRecipe,
                 title = "Dialog Navigation",
                 description = "Dialog destinations using dialog() and directOverlay() metadata.",
+            ),
+            RecipeEntry(
+                key = NavigatingFromDialogRecipe,
+                title = "Navigating From a Dialog",
+                description = "Open a screen on top of a dialog, replace a dialog with a " +
+                    "screen, and stack dialogs.",
             ),
             RecipeEntry(
                 key = BottomSheetRecipe,
@@ -137,6 +174,24 @@ private val recipeGroups: List<RecipeGroup> = listOf(
                 description = "List-detail built from two NavigationContainers. Prefer the " +
                     "scene-based recipe above; this one is for when you need independent " +
                     "container filters and backstacks per pane.",
+            ),
+            RecipeEntry(
+                key = MaterialListDetailRecipe,
+                title = "Material List-Detail",
+                description = "The Material 3 Adaptive ListDetailPaneScaffold as a scene " +
+                    "strategy. Material decides when two panes fit.",
+            ),
+            RecipeEntry(
+                key = MaterialSupportingPaneRecipe,
+                title = "Material Supporting Pane",
+                description = "The Material 3 Adaptive SupportingPaneScaffold as a scene " +
+                    "strategy, driven by supportingPane() metadata.",
+            ),
+            RecipeEntry(
+                key = NestedContainersRecipe,
+                title = "Nested Containers",
+                description = "Two containers side by side with accept { } filters. Shows " +
+                    "which container open() sends a key to.",
             ),
             RecipeEntry(
                 key = TabsRecipe,
@@ -175,6 +230,12 @@ private val recipeGroups: List<RecipeGroup> = listOf(
                 description = "Customise transitions with NavigationAnimations.",
             ),
             RecipeEntry(
+                key = PerDestinationTransitionsRecipe,
+                title = "Per-Destination Transitions",
+                description = "Override open, close and predictive back transitions for one " +
+                    "destination, and customise the predictive back gesture for a container.",
+            ),
+            RecipeEntry(
                 key = StaggeredAnimationsRecipe,
                 title = "Staggered Animations",
                 description = "Animate parts of a destination on their own timing with " +
@@ -201,9 +262,33 @@ private val recipeGroups: List<RecipeGroup> = listOf(
                 description = "Pass a value to a child in its key and get the edited value back as a result.",
             ),
             RecipeEntry(
+                key = KoinViewModelRecipe,
+                title = "Koin ViewModel",
+                description = "A ViewModel with dependencies from Koin and arguments from " +
+                    "its NavigationKey.",
+            ),
+            RecipeEntry(
+                key = SharedViewModelRecipe,
+                title = "Shared ViewModel",
+                description = "One ViewModel, owned by a parent destination, used by the " +
+                    "destinations in its nested container.",
+            ),
+            RecipeEntry(
                 key = ResultsRecipe,
                 title = "Returning Results",
                 description = "Type-safe results with NavigationKey.WithResult.",
+            ),
+            RecipeEntry(
+                key = ViewModelResultsRecipe,
+                title = "Results in a ViewModel",
+                description = "Request and receive a result from a ViewModel with " +
+                    "registerForNavigationResult.",
+            ),
+            RecipeEntry(
+                key = FlowInViewModelRecipe,
+                title = "Flow in a ViewModel",
+                description = "A branching multi-step flow owned by a ViewModel with " +
+                    "registerForFlowResult, shown inside the host's own UI.",
             ),
             RecipeEntry(
                 key = ManagedFlowRecipe,
@@ -225,6 +310,12 @@ private val recipeGroups: List<RecipeGroup> = listOf(
                 title = "Conditional Navigation",
                 description = "An auth gate built with a NavigationInterceptor on the container. " +
                     "See Auth Gate under Synthetic Destinations for the other approach.",
+            ),
+            RecipeEntry(
+                key = ModuleInterceptorRecipe,
+                title = "Module Interceptor",
+                description = "An interceptor registered on the NavigationComponent that " +
+                    "observes opens, closes and results in every container, and blocks one open.",
             ),
             RecipeEntry(
                 key = ModularNavigationRecipe,

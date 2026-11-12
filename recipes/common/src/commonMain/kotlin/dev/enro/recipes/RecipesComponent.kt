@@ -8,6 +8,7 @@ import dev.enro.annotations.NavigationComponent
 import dev.enro.controller.NavigationComponentConfiguration
 import dev.enro.controller.createNavigationModule
 import dev.enro.recipes.deeplink.deepLinkModule
+import dev.enro.recipes.interceptor.auditInterceptor
 import dev.enro.recipes.plugins.OpenedTimestampPlugin
 import dev.enro.ui.contains
 import dev.enro.ui.decorators.navigationDestinationDecorator
@@ -21,6 +22,9 @@ object RecipesComponent : NavigationComponentConfiguration(
 
         // Path bindings for the Basic Deep Link recipe.
         module(deepLinkModule)
+
+        // Sees navigation in every container; see the Module Interceptor recipe.
+        interceptor(auditInterceptor)
 
         // Wrap every regular destination in a Material-themed surface so that
         // transitions (slide, fade, shared elements) animate over an opaque
