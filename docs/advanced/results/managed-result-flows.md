@@ -7,17 +7,16 @@ nav_order: 2
 
 # Managed Result Flows
 
-A managed flow lets you define a multi-step navigation sequence as
-**straight-line code**. Each step is a result-producing destination; the
-flow scope's `open(key)` looks like a suspending function call that returns
-the destination's result. Under the hood, Enro runs the steps, persists
-intermediate state, and re-evaluates the flow on every result so the code
-reads top-to-bottom.
+`managedFlowDestination` declares a multi-step flow as sequential code.
+Each step is a destination. Inside the `flow` block, `open(key)` returns
+the result of the step's destination. Enro displays the steps, saves each
+step's result, and runs the `flow` block again after each result.
 
-This is the pattern to reach for when an [embedded result
-flow](embedded-result-flows.md) would have too many nested callbacks or too
-much manual intermediate state.
+Use a managed result flow when an
+[embedded result flow](embedded-result-flows.md) would require nested
+callbacks or several pieces of intermediate state.
 
+<!-- snippet: managed-result-flows/flow -->
 ```kotlin
 @NavigationDestination(BookingFlow::class)
 val bookingFlowDestination: NavigationDestinationProvider<BookingFlow> =
@@ -35,38 +34,38 @@ val bookingFlowDestination: NavigationDestinationProvider<BookingFlow> =
 
             BookingDetails(destination, date, passengers, seat)
         },
-        onCompleted = { details -> /* ... */ },
     )
 ```
 
-The complete worked version is the [managed flow recipe][managedflow-recipe].
+The [managed flow recipe][managedflow-recipe] is a complete, runnable flow.
 
-## The mental model
+## How the `flow` block runs
 
-Inside the `flow = { }` block:
+- Enro runs the `flow` block from the top after each step's result.
+  `open(key)` returns the saved result of a step that has a result, and
+  stops the block at the first step that has no result.
+- `open(key)` returns a value of the result type of a
+  `NavigationKey.WithResult<R>` key.
+- `open(key)` also accepts a key that does not implement `WithResult`. The
+  step has a result when the step's destination completes.
+- Each key passed to `open` is a step of the flow. Enro displays the steps
+  in a container that belongs to the flow's destination.
+- The value that the `flow` block returns is the result of the flow. The
+  flow's destination completes with that value.
+- Closing a step clears that step's result and displays the previous step.
+  The results of the earlier steps are kept.
 
-- `open(key)` returns the value of `key`'s `WithResult<R>` type. The block
-  is re-evaluated each time a result comes in, so by the time `open` "returns,"
-  Enro has the value.
-- The block's *return value* is the flow's overall result, delivered to
-  whoever opened the flow.
-- The keys you `open` are registered as steps of the flow. Enro renders each
-  one in the flow's own container as the user reaches it.
-- If the user backs up the flow, Enro re-evaluates from the top with the
-  preserved results for the earlier steps still in scope.
-- `open(NavigationKey)` (without a `WithResult`) is also supported for
-  non-result destinations you want to step through.
-
-The flow is the destination — `managedFlowDestination<KeyType, ResultType>`
-produces a `NavigationDestinationProvider<KeyType>` that you bind to a
-`NavigationKey.WithResult<ResultType>`. Callers open it like any other
-result-producing destination through `registerForNavigationResult`.
+`managedFlowDestination<KeyType, ResultType>` returns a
+`NavigationDestinationProvider<KeyType>`. Bind the provider to a
+`NavigationKey.WithResult<ResultType>` key with `@NavigationDestination`.
+A caller opens the flow through `registerForNavigationResult`, as for any
+other destination with a result.
 
 ## Branching
 
-Because the flow body is plain Kotlin, branches and loops are exactly what
-they look like:
+The `flow` block is Kotlin code and can contain `if`, `when` and loops:
 
+<!-- snippet: managed-result-flows/branching -->
 ```kotlin
 flow = {
     val name = open(EnterName)
@@ -79,30 +78,32 @@ flow = {
 }
 ```
 
-When a branch is taken, only the keys actually opened in that branch become
-steps of the flow. If the user backs up and re-evaluates into the other
-branch, the steps for the abandoned branch are discarded.
+Only the keys opened by the branch that runs become steps of the flow. When
+the user returns to an earlier step and the new result selects the other
+branch, Enro removes the steps of the first branch from the flow's
+backstack.
 
-## When `open` returns
+## `open` and `try` / `catch`
 
-`open(KeyWithResult)` participates in the flow's state machine — it doesn't
-"suspend" in the coroutine sense. When the flow scope encounters an `open`
-for a step that hasn't produced a result yet, it throws a sentinel that the
-flow infrastructure catches; this is how the flow knows where to pause and
-wait. **Don't** put `open` calls inside `try / catch` blocks that catch
-`Throwable` — you'll break the flow's control flow. Catch specific
-exceptions only.
+`open(key)` is not a suspending function. For a step that has no result,
+`open` throws an internal `RuntimeException`. The flow catches that
+exception and waits for the step's result. A `try` / `catch` around an
+`open` call that catches `RuntimeException`, `Exception` or `Throwable`
+stops the flow from waiting at the step. Catch specific exception types
+only.
 
-## Persistence
+## Saved state
 
-Each managed-flow step's result is persisted with the flow's saved state.
-If the process is killed and restored, the flow resumes at the same step
-with all previous results intact.
+Enro saves each step's result in the saved state of the flow's destination.
+After process death, the flow is restored at the same step with the results
+of the earlier steps.
 
 ## See also
 
-- [Embedded result flows](embedded-result-flows.md) — when callbacks are
-  enough.
-- [Managed flow recipe][managedflow-recipe] — full runnable example.
+- [Embedded result flows](embedded-result-flows.md) — a short sequence of
+  result destinations opened from callbacks.
+- [Flows in a ViewModel](navigation-flows.md) — a flow displayed inside a
+  screen's own UI.
+- [Managed flow recipe][managedflow-recipe].
 
 [managedflow-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/managedflow/ManagedFlow.kt

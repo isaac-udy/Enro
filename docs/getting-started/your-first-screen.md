@@ -6,18 +6,21 @@ nav_order: 3
 
 # Your First Screen
 
-This page walks through a complete, working example: two screens that navigate
-to each other, plus a third screen that returns a result. By the end you'll
-have touched every concept covered in [Basic Concepts](basic-concepts.md).
+This page builds an example app with three screens: a `Home` screen, a
+`Profile` screen that `Home` opens, and a `PickName` screen that returns a
+result to `Home`. The example uses each term defined in
+[Basic Concepts](basic-concepts.md).
 
-If you'd rather read the finished code, the equivalent runnable example lives in
-[`recipes/basic/BasicNavigation.kt`][basic-recipe] and
-[`recipes/results/ReturningResults.kt`][results-recipe].
+The recipes [`recipes/basic/BasicNavigation.kt`][basic-recipe] and
+[`recipes/results/ReturningResults.kt`][results-recipe] are runnable versions
+of the same example.
 
 ## 1. Define the keys
 
-A key is a contract — what does this screen need, and what does it produce?
+Each key declares the inputs of one screen and, optionally, the type of the
+screen's result.
 
+<!-- snippet: your-first-screen/keys -->
 ```kotlin
 @Serializable
 data object Home : NavigationKey
@@ -29,14 +32,15 @@ data class Profile(val userId: String) : NavigationKey
 data object PickName : NavigationKey.WithResult<String>
 ```
 
-`Home` takes no inputs. `Profile` requires a `userId`. `PickName` produces a
-`String` back to whoever opened it.
+`Home` has no inputs. `Profile` requires a `userId`. `PickName` returns a
+`String` to the caller.
 
 ## 2. Implement the destinations
 
-Each destination is annotated with `@NavigationDestination(KeyClass::class)`.
-The simplest form is a `@Composable` function.
+Each destination is a `@Composable` function annotated with
+`@NavigationDestination(KeyClass::class)`.
 
+<!-- snippet: your-first-screen/destinations -->
 ```kotlin
 @Composable
 @NavigationDestination(Home::class)
@@ -44,7 +48,7 @@ fun HomeScreen() {
     val navigation = navigationHandle<Home>()
 
     val askForName = registerForNavigationResult<String>(
-        onCompleted = { name -> /* we'll use it in a moment */ },
+        onCompleted = { name -> /* use name */ },
     )
 
     Column {
@@ -90,22 +94,26 @@ fun PickNameScreen() {
 }
 ```
 
-A few things worth noticing:
+The destinations call these functions:
 
-- `navigationHandle<T>()` returns a `NavigationHandle` that knows the type of the
-  current key — `navigation.key` is typed `Profile` inside `ProfileScreen`.
-- `navigation.open(otherKey)` adds another destination on top of this one.
-- `navigation.close()` removes the current destination.
-- `navigation.complete(value)` is the result-returning form of `close()` — only
-  callable on a destination whose key implements `NavigationKey.WithResult<T>`.
-- `registerForNavigationResult<T>` returns a channel; `open` it with a key and
-  `onCompleted` is called with the result. There's also `onClosed` for when the
-  user dismisses without producing a result.
+- `navigationHandle<T>()` returns a `NavigationHandle<T>`. `navigation.key` has
+  type `Profile` inside `ProfileScreen`.
+- `navigation.open(otherKey)` opens the destination for `otherKey` on top of
+  the current destination.
+- `navigation.close()` closes the current destination.
+- `navigation.complete(value)` closes the current destination and returns
+  `value` to the caller. `complete(value)` compiles only when the key
+  implements `NavigationKey.WithResult<T>`.
+- `registerForNavigationResult<T>` returns a result channel. `open(key)` on the
+  result channel opens `key`. Enro calls `onCompleted` with the result when the
+  opened destination calls `complete(value)`, and calls `onClosed` when the
+  opened destination closes without a result.
 
-## 3. Wire up the NavigationComponent
+## 3. Declare and install the NavigationComponent
 
-Declare a `NavigationComponent` once for your application:
+Declare one `NavigationComponent` for the application:
 
+<!-- snippet: your-first-screen/component -->
 ```kotlin
 @NavigationComponent
 object MyComponent : NavigationComponentConfiguration(
@@ -113,9 +121,11 @@ object MyComponent : NavigationComponentConfiguration(
 )
 ```
 
-KSP generates an `installNavigationController` extension on this object for
-each platform you target. On Android, install it in your `Application`:
+KSP generates an `installNavigationController` extension on `MyComponent` for
+each target. On Android, call `installNavigationController` from
+`Application.onCreate`:
 
+<!-- snippet: your-first-screen/application -->
 ```kotlin
 class MyApp : Application() {
     override fun onCreate() {
@@ -125,14 +135,14 @@ class MyApp : Application() {
 }
 ```
 
-See [Installation](installation.md) for the equivalent on iOS, Desktop and
+[Installation](installation.md) shows the install call for iOS, Desktop and
 Web.
 
-## 4. Host the backstack
+## 4. Create a navigation container
 
-Decide where your navigation lives in the UI. The minimal pattern is a single
-container at the root of your Compose tree:
+Create one container at the root of the Compose tree:
 
+<!-- snippet: your-first-screen/activity -->
 ```kotlin
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -147,31 +157,29 @@ class MainActivity : ComponentActivity() {
 }
 ```
 
-`backstackOf(Home.asInstance())` says "start with `Home` on the stack".
-`NavigationDisplay` watches the container's backstack and renders the current
-destination, animating transitions for you.
+`backstackOf(Home.asInstance())` is the container's initial backstack: one
+`Home` instance. `NavigationDisplay` renders the container's backstack and
+animates each change to the backstack.
 
-## 5. Run it
+## 5. Run the app
 
-Open the app. You're on `Home`. Tap **View profile** — the backstack pushes
-`Profile`, and `NavigationDisplay` animates the transition. Tap **Back** —
-`Profile` closes and you're back on `Home`.
+1. Open the app. The app shows `Home`.
+2. Tap **View profile**. Enro adds `Profile` to the backstack and
+   `NavigationDisplay` animates the transition.
+3. Tap **Back**. `Profile` closes and the app shows `Home`.
+4. Tap **Pick a name**. `PickName` opens.
+5. Type a name and tap **Done**. Enro calls `onCompleted` in `HomeScreen` with
+   the typed name.
 
-Tap **Pick a name** — `PickName` opens. Type something and tap **Done**. The
-`onCompleted` callback fires on `Home` with the string you typed.
+## Next steps
 
-## What's next
-
-That's a working app. From here:
-
-- For different presentation styles (dialogs, bottom sheets, custom overlays),
-  see [Navigation Destinations](../core-concepts/navigation-destinations.md).
-- For multiple containers, tabs, or nested back stacks, see
+- Dialogs, bottom sheets and overlays:
+  [Navigation Destinations](../core-concepts/navigation-destinations.md).
+- Multiple containers, tabs and nested back stacks:
   [Navigation Containers](../core-concepts/navigation-containers.md).
-- For richer result handling, see [Results](../advanced/results.md).
-- For custom transitions and per-element animations, see
-  [Animations](../advanced/animations.md).
-- For testing, see [Testing](../advanced/testing.md).
+- Results: [Results](../advanced/results.md).
+- Transitions and shared elements: [Animations](../advanced/animations.md).
+- Tests: [Testing](../advanced/testing.md).
 
 [basic-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/basic/BasicNavigation.kt
 [results-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/results/ReturningResults.kt

@@ -6,20 +6,20 @@ nav_order: 2
 
 # Basic Concepts
 
-This page is the short vocabulary tour. Each concept here gets its own page
-under *Core Concepts* — read this one first so the rest of the docs make
-sense.
+This page defines each Enro term. The pages under *Core Concepts* describe each
+term in detail.
 
-The central idea is that **screens behave like functions**. A screen has a
-contract (its inputs and an optional return value); calling code invokes the
-contract without knowing how the screen is implemented.
+In Enro, **a screen is declared like a function**. A screen has a contract: the
+screen's inputs and an optional result. Code that opens a screen depends on the
+contract, not on the screen's implementation.
 
 ## Navigation Keys
 
-A `NavigationKey` is the contract for a screen — its function signature. The
-properties of the key are the inputs to the screen. If the screen produces a
-value, the key implements `NavigationKey.WithResult<T>`.
+A `NavigationKey` is the contract for a screen. The properties of the
+`NavigationKey` are the screen's inputs. A key for a screen that returns a
+result implements `NavigationKey.WithResult<T>`.
 
+<!-- snippet: basic-concepts/keys -->
 ```kotlin
 @Serializable
 data class ShowProfile(val userId: String) : NavigationKey
@@ -31,20 +31,23 @@ data class SelectDate(
 ) : NavigationKey.WithResult<LocalDate>
 ```
 
-Keys are `@Serializable` (kotlinx.serialization) so Enro can persist the
-backstack across process death and across platforms.
+A `NavigationKey` must be `@Serializable` (kotlinx.serialization). Enro
+serializes each `NavigationKey` to save and restore the backstack. Every
+property of a `NavigationKey` must also be serializable. `LocalDate` in the
+sample is `kotlinx.datetime.LocalDate`.
 
-A key on its own doesn't do anything — it's a value. The system that *invokes*
-the contract is the navigation handle (below).
+A `NavigationKey` is a value and performs no navigation. A
+[`NavigationHandle`](#navigation-handle) opens a `NavigationKey`.
 
 ## Navigation Destinations
 
-A `NavigationDestination` is the *implementation* of a contract — the screen
-itself. It's bound to a key with the `@NavigationDestination(KeyClass::class)`
-annotation. Two styles are supported:
+A `NavigationDestination` is the screen that implements a contract. The
+`@NavigationDestination(KeyClass::class)` annotation binds a destination to a
+key. A destination has one of two forms.
 
-A regular Composable function:
+A Composable function:
 
+<!-- snippet: basic-concepts/composable-destination -->
 ```kotlin
 @Composable
 @NavigationDestination(ShowProfile::class)
@@ -54,9 +57,9 @@ fun ProfileScreen() {
 }
 ```
 
-Or a destination provider, when the destination needs metadata (for example,
-to behave like a dialog or an overlay):
+A destination provider, created with `navigationDestination<K> { }`:
 
+<!-- snippet: basic-concepts/provider-destination -->
 ```kotlin
 @NavigationDestination(ShowProfile::class)
 val profileDestination = navigationDestination<ShowProfile> {
@@ -64,34 +67,37 @@ val profileDestination = navigationDestination<ShowProfile> {
 }
 ```
 
-The provider form is also what you use to declare a dialog, bottom sheet, or
-custom overlay — through the `metadata = { dialog() }` or
-`metadata = { directOverlay() }` builders. See
+A destination provider can declare metadata. `metadata = { dialog() }` and
+`metadata = { directOverlay() }` declare a dialog, bottom sheet or overlay
+destination. See
 [Navigation Destinations](../core-concepts/navigation-destinations.md).
 
 ## Navigation Handle
 
-A `NavigationHandle` is the control surface inside a screen — the variable
-you call `open`, `close`, or `complete` on.
+A `NavigationHandle` is the object a screen calls to navigate. A
+`NavigationHandle` has `open`, `close` and `complete` functions.
 
+<!-- snippet: basic-concepts/handle -->
 ```kotlin
-val navigation = navigationHandle<ShowProfile>()
+val navigation = navigationHandle<SelectDate>()
 
-navigation.open(SelectDate(maxDate = LocalDate.now())) // open another screen
-navigation.close()                                     // close this screen
-navigation.complete(result)                            // close with a result
+navigation.open(ShowProfile("user-123"))
+navigation.close()
+navigation.complete(today) // closes SelectDate and returns `today` to the caller
 ```
 
-The typed parameter (`<ShowProfile>` above) gives you access to the key the
-screen was opened with via `navigation.key`.
+`navigation.key` is the key that opened the screen, typed as the type parameter
+of `navigationHandle` (`SelectDate` in the sample). `complete(result)` compiles
+only when the key type implements `NavigationKey.WithResult`.
 
 ## Navigation Container
 
-A `NavigationContainer` is a location in your UI that hosts a backstack of
-destinations. You create one inside a Composable with
-`rememberNavigationContainer`, give it an initial backstack, and render it with
-`NavigationDisplay`.
+A `NavigationContainer` contains a backstack of destinations.
+`rememberNavigationContainer` creates a `NavigationContainer` in a Composable
+with an initial backstack. `NavigationDisplay` renders the
+`NavigationContainer`.
 
+<!-- snippet: basic-concepts/container -->
 ```kotlin
 val container = rememberNavigationContainer(
     backstack = backstackOf(Home.asInstance()),
@@ -99,16 +105,18 @@ val container = rememberNavigationContainer(
 NavigationDisplay(state = container)
 ```
 
-A typical app has one root container; nested containers are supported and are
-how features like tabs, list-detail layouts, and multiple back stacks are built.
+An app usually has one root container. A destination can contain nested
+containers. Tabs, list-detail layouts and multiple back stacks use nested
+containers. See [Navigation Containers](../core-concepts/navigation-containers.md).
 
 ## NavigationKey.Instance
 
-When a key is added to a backstack, Enro wraps it in a
-`NavigationKey.Instance` — the same key may appear in the backstack more than
-once, so each appearance gets a unique `id`. You'll mostly see `Instance` when
-building a backstack:
+A backstack contains `NavigationKey.Instance` values. A
+`NavigationKey.Instance` is a key and a unique `id`, so a backstack can contain
+the same key more than once. `asInstance()` creates a `NavigationKey.Instance`
+from a key:
 
+<!-- snippet: basic-concepts/instance -->
 ```kotlin
 val initial = backstackOf(
     Home.asInstance(),
@@ -116,33 +124,36 @@ val initial = backstackOf(
 )
 ```
 
-You can also attach `Metadata` to an instance to influence how that particular
-appearance behaves (animations, scene treatment, etc.).
+A `NavigationKey.Instance` also has `metadata`. Metadata set on one instance
+applies to that instance only.
 
 ## Results
 
-A `NavigationKey.WithResult<T>` screen returns a value to its caller. Callers
-register a result channel and call `open` on it.
+A screen with a `NavigationKey.WithResult<T>` key returns a value to the
+caller. The caller registers a result channel with
+`registerForNavigationResult` and calls `open` on the result channel.
 
+<!-- snippet: basic-concepts/results -->
 ```kotlin
 val getDate = registerForNavigationResult<LocalDate>(
     onCompleted = { date -> /* use date */ },
 )
 
-Button(onClick = { getDate.open(SelectDate(maxDate = LocalDate.now())) }) {
+Button(onClick = { getDate.open(SelectDate(maxDate = today)) }) {
     Text("Pick a date")
 }
 ```
 
-The screen returns its value with `navigation.complete(date)`. See
+The `SelectDate` screen returns the value with `navigation.complete(date)`. See
 [Results](../advanced/results.md).
 
 ## NavigationComponent
 
-A `NavigationComponent` is the configuration object for Enro in your
-application. It's declared once, annotated with `@NavigationComponent`, and
-installed at app startup.
+A `NavigationComponent` configures Enro for an application. An application
+declares one `NavigationComponent`, annotated with `@NavigationComponent`, and
+installs the `NavigationComponent` when the application starts.
 
+<!-- snippet: basic-concepts/component -->
 ```kotlin
 @NavigationComponent
 object MyComponent : NavigationComponentConfiguration(
@@ -152,11 +163,11 @@ object MyComponent : NavigationComponentConfiguration(
 
 See [Installation](installation.md).
 
-## Where everything fits
+## Structure of an Enro app
 
 ```
 Application starts
-  └── MyComponent.installNavigationController(this)        ← happens once
+  └── MyComponent.installNavigationController(this)        ← called once
 
 Compose tree
   └── rememberNavigationContainer(backstack = ...)         ← NavigationContainer
@@ -168,5 +179,5 @@ Compose tree
 
 ## Next steps
 
-- Walk through [Your First Screen](your-first-screen.md) for a complete end-to-end example.
-- Then read the [Core Concepts](../../index.md#core-concepts) pages in order — they go into each of the above in depth.
+- [Your First Screen](your-first-screen.md) builds an example with three screens.
+- The [Core Concepts](../../index.md#core-concepts) pages describe each term on this page in detail.

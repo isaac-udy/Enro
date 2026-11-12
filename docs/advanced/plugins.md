@@ -6,30 +6,25 @@ nav_order: 5
 
 # Plugins
 
-A `NavigationPlugin` is a way to attach behaviour to *every* destination in
-your app, without touching the destinations themselves. Plugins observe
-navigation events as they happen — instances being opened, becoming active,
-being closed — and can react by tagging metadata, dispatching analytics,
-running diagnostics, or modifying the way destinations are rendered.
+A `NavigationPlugin` receives a callback when any destination in the app is
+opened, becomes active or is closed. A plugin can set instance metadata,
+send analytics events, or change the metadata that controls how a
+destination is rendered. The destinations do not reference the plugin.
 
-Plugins are the right tool when:
+Use a plugin for behaviour that applies to every destination, or to every
+destination of one type. Examples:
 
-- You want to do something for **every** destination (or every destination
-  that matches a type), uniformly.
-- The behaviour is cross-cutting — it doesn't belong inside a specific
-  screen.
-- You want the destinations themselves to stay unaware that the behaviour
-  exists.
+- Analytics: log a screen view for each opened destination.
+- Metadata: store the time each instance was opened.
+- Diagnostics: log a warning when a destination stays open longer than a
+  limit.
 
-Examples include analytics ("log a screen-view for every opened
-destination"), origin tagging ("stamp every instance with the timestamp it
-was opened at"), or diagnostics ("warn if a screen stays composed for more
-than N seconds").
+## The NavigationPlugin class
 
-## The NavigationPlugin interface
+Subclass `NavigationPlugin` and override the callbacks that the plugin
+uses:
 
-Subclass `NavigationPlugin` and override whichever hooks you care about:
-
+<!-- snippet: skip (API outline) -->
 ```kotlin
 abstract class NavigationPlugin {
     open fun onAttached(controller: EnroController) {}
@@ -47,23 +42,23 @@ abstract class NavigationPlugin {
 }
 ```
 
-| Hook | Fires when |
+| Callback | Called when |
 |---|---|
-| `onAttached(controller)` | The plugin is installed on a controller. Typical setup point. |
-| `onDetached(controller)` | The plugin is removed from a controller. Typical teardown point. |
-| `onOpened(handle)` | A new destination instance has just been opened. The handle's lifecycle is at `CREATED` or later. |
-| `onActive(handle)` | A destination instance has become the active (visible/top) destination. |
-| `onClosed(handle)` | A destination instance is closed and about to be removed from the backstack. |
-| `onDestinationCreated(destination, additionalMetadata)` | (Advanced) A destination is being assembled for rendering. You can add or override rendering metadata here — for example, to force a key to render as an overlay without modifying its destination definition. |
+| `onAttached(controller)` | The plugin is installed on a controller. Set up the plugin here. |
+| `onDetached(controller)` | The plugin is removed from a controller. Release the plugin's resources here. |
+| `onOpened(handle)` | A destination instance is composed for the first time. The handle's lifecycle is `CREATED` or later. |
+| `onActive(handle)` | A destination instance becomes the active destination. |
+| `onClosed(handle)` | A destination instance has been closed and the destination's ViewModels are cleared. The handle's lifecycle is `DESTROYED`. |
+| `onDestinationCreated(destination, additionalMetadata)` | A destination is created for rendering. A value added to `additionalMetadata` replaces the destination metadata with the same key, and a `null` value removes the key. For example, a plugin can render a key as an overlay without a change to the destination declaration. |
 
-`onOpened`, `onActive`, and `onClosed` are the common hooks. `onDestinationCreated`
-is marked `@AdvancedEnroApi` because changing rendering metadata can break
-how destinations are presented.
+`onDestinationCreated` is marked `@AdvancedEnroApi`, because a change to
+rendering metadata can break how a destination is rendered.
 
 ## Installing a plugin
 
-Plugins are installed in the `NavigationComponent`'s module DSL:
+Install a plugin with `plugin(...)` in the `NavigationComponent`'s module:
 
+<!-- snippet: plugins/install -->
 ```kotlin
 @NavigationComponent
 object MyComponent : NavigationComponentConfiguration(
@@ -74,15 +69,15 @@ object MyComponent : NavigationComponentConfiguration(
 )
 ```
 
-A plugin is installed once per controller. Multiple plugins can be
-installed; their hooks fire in installation order.
+A controller can have more than one plugin. Enro does not guarantee the
+order in which the plugins receive a callback.
 
-## A worked example
+## Example: `OpenedTimestampPlugin`
 
-Below is `OpenedTimestampPlugin` — a small plugin that stamps every
-instance with the epoch-millisecond time it was first opened, via the
-instance's `Metadata`.
+`OpenedTimestampPlugin` stores the time each instance was first opened, in
+epoch milliseconds, in the instance's metadata.
 
+<!-- snippet: plugins/opened-timestamp -->
 ```kotlin
 object OpenedAt : NavigationKey.MetadataKey<Long?>(default = null)
 
@@ -96,42 +91,40 @@ class OpenedTimestampPlugin : NavigationPlugin() {
 }
 ```
 
-Any destination can then read its own opened-at timestamp:
+A destination reads the `OpenedAt` value from the instance metadata:
 
+<!-- snippet: plugins/read -->
 ```kotlin
 val openedAt = navigation.instance.metadata.get(OpenedAt)
 ```
 
-Installed in `RecipesComponent`, the plugin stamps every destination in the
-recipes app, regardless of where the key lives or who opens it. The runnable
-version is the [OpenedTimestampPlugin recipe][timestamp-recipe].
+The recipes app installs `OpenedTimestampPlugin` in `RecipesComponent`, and
+the plugin sets `OpenedAt` on every destination instance in the recipes
+app. The [OpenedTimestampPlugin recipe][timestamp-recipe] is the runnable
+version.
 
-This is the canonical example of using **[instance
-metadata](../core-concepts/navigation-keys.md#instance-metadata)** to carry
-data that any destination might want but that isn't part of any key's
-contract.
+`OpenedAt` is [instance
+metadata](../core-concepts/navigation-keys.md#instance-metadata): data on
+an instance that is not a property of the `NavigationKey`.
 
-## A note on what plugins shouldn't do
+## What a plugin should not do
 
-- **Plugins shouldn't perform navigation.** If you find yourself wanting to
-  call `open` or `close` from a plugin hook, you probably want an
-  [interceptor](../core-concepts/navigation-containers.md#interceptors)
-  instead — those are designed to observe and rewrite operations as they
-  flow.
-- **Don't put per-destination behaviour in a plugin.** If the behaviour
-  applies to one specific destination, put it on the destination itself
-  (or in its ViewModel). Plugins are for cross-cutting concerns.
-- **Don't rely on hook ordering across plugins.** If two plugins both
-  modify the same instance metadata, decide on a clear ownership rule —
-  installation order is not a stable contract.
+- **Do not navigate from a plugin.** To call `open` or `close` in response
+  to an operation, or to change an operation, use an
+  [interceptor](../core-concepts/navigation-containers.md#interceptors).
+- **Do not put behaviour for one destination in a plugin.** Put behaviour
+  for one destination in the destination or in the destination's
+  ViewModel.
+- **Do not depend on the order of plugins.** When two plugins set the same
+  instance metadata key, choose one plugin to own the key.
 
 ## See also
 
 - [Navigation Keys → Instance metadata](../core-concepts/navigation-keys.md#instance-metadata)
-  for what `Metadata` is and isn't.
+  — the instance metadata API.
 - [Navigation Containers → Interceptors](../core-concepts/navigation-containers.md#interceptors)
-  for the close cousin of plugins, used for rewriting operations.
-- [OpenedTimestampPlugin recipe][timestamp-recipe] — the worked example
-  above.
+  — interceptors change or cancel navigation operations.
+- [OpenedTimestampPlugin recipe][timestamp-recipe] — the runnable
+  `OpenedTimestampPlugin`.
 
 [timestamp-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/plugins/OpenedTimestampPlugin.kt
