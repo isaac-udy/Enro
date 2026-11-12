@@ -11,18 +11,20 @@ you call `open`, `close`, and `complete` on to drive navigation. Every
 destination has one. You read the current key off it; you execute operations
 through it.
 
+<!-- snippet: basic-concepts/handle -->
 ```kotlin
-val navigation = navigationHandle<ShowProfile>()
+val navigation = navigationHandle<SelectDate>()
 
-navigation.open(SelectDate(maxDate = LocalDate.now())) // open another screen
-navigation.close()                                     // close this screen
-navigation.complete(result)                            // close with a result (WithResult keys only)
+navigation.open(ShowProfile("user-123")) // open another screen
+navigation.close()                       // close this screen
+navigation.complete(today)               // close with a result
 ```
 
 ## Getting a handle
 
 ### In a Composable
 
+<!-- snippet: navigation-handles/composable -->
 ```kotlin
 @Composable
 @NavigationDestination(ShowProfile::class)
@@ -38,6 +40,7 @@ makes `navigation.key` typed.
 If you don't care about the key's type (because you're writing reusable
 logic that doesn't depend on it), use the untyped form:
 
+<!-- snippet: navigation-handles/untyped -->
 ```kotlin
 val navigation = navigationHandle<NavigationKey>()
 ```
@@ -46,6 +49,7 @@ val navigation = navigationHandle<NavigationKey>()
 
 Use the property delegate:
 
+<!-- snippet: navigation-handles/view-model -->
 ```kotlin
 class ProfileViewModel : ViewModel() {
     val navigation by navigationHandle<ShowProfile>()
@@ -58,8 +62,9 @@ factory — see [View Models](../advanced/view-models.md).
 ### Inside a `navigationDestination { }` provider
 
 The provider's content lambda has a `NavigationDestinationScope<T>` receiver,
-which exposes `navigation` and `key` directly:
+which has a `navigation` property:
 
+<!-- snippet: navigation-handles/provider -->
 ```kotlin
 @NavigationDestination(ConfirmDialog::class)
 val confirmDialogDestination = navigationDestination<ConfirmDialog>(
@@ -69,13 +74,14 @@ val confirmDialogDestination = navigationDestination<ConfirmDialog>(
         onDismissRequest = { navigation.close() },
         confirmButton = { Button(onClick = { navigation.close() }) { Text("OK") } },
         title = { Text("Confirm") },
-        text = { Text("Item: ${key /* same as navigation.key */}") },
+        text = { Text("Opened with ${navigation.key}") },
     )
 }
 ```
 
 ## What's on a handle
 
+<!-- snippet: skip (API outline) -->
 ```kotlin
 abstract class NavigationHandle<out T : NavigationKey> : LifecycleOwner {
     val key: T                                      // shorthand for instance.key
@@ -103,8 +109,9 @@ All operations live in the `dev.enro` package as extension functions on
 
 ### Opening another destination
 
+<!-- snippet: navigation-handles/open -->
 ```kotlin
-navigation.open(SelectDate(maxDate = LocalDate.now()))
+navigation.open(SelectDate(maxDate = today))
 navigation.open(ShowProfile("user-123").withMetadata(IsExpanded, true))
 ```
 
@@ -117,6 +124,7 @@ For result-producing keys, prefer a result channel
 
 ### Closing the current destination
 
+<!-- snippet: navigation-handles/close -->
 ```kotlin
 navigation.close()             // close this destination
 navigation.requestClose()      // ask this destination to close
@@ -145,6 +153,7 @@ In a Composable destination, configure the callback with
 is a `DisposableEffect`, so the callback is automatically cleaned up when
 the destination leaves the composition.
 
+<!-- snippet: navigation-handles/configure -->
 ```kotlin
 @Composable
 @NavigationDestination(EditProfile::class)
@@ -173,6 +182,7 @@ fun EditProfileScreen() {
 In a `ViewModel`, pass a `config` block to the `by navigationHandle<T>`
 delegate:
 
+<!-- snippet: navigation-handles/configure-view-model -->
 ```kotlin
 class EditProfileViewModel : ViewModel() {
     val draft = MutableStateFlow("")
@@ -245,8 +255,9 @@ The distinction is delivered to whoever opened the destination through a
 For destinations whose key implements `NavigationKey.WithResult<R>`,
 `complete` requires the result value:
 
+<!-- snippet: navigation-handles/complete-with-result -->
 ```kotlin
-navigation.complete(LocalDate.now())
+navigation.complete(today)
 ```
 
 Calling `complete()` with no argument on a `WithResult<R>` handle is a
@@ -258,6 +269,7 @@ the result.
 For destinations whose key has no result, both `close()` and `complete()`
 are valid. The choice is semantic:
 
+<!-- snippet: navigation-handles/complete-without-result -->
 ```kotlin
 @Composable
 @NavigationDestination(ConfirmDelete::class)

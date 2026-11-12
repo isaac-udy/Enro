@@ -17,6 +17,7 @@ Composable.
 Inside a `ViewModel`, use the `by navigationHandle<MyKey>()` property
 delegate:
 
+<!-- snippet: view-models/handle -->
 ```kotlin
 class ProfileViewModel : ViewModel() {
     val navigation by navigationHandle<ShowProfile>()
@@ -38,6 +39,7 @@ construction time — usable from `init { }` and any method.
 The delegate accepts a `config` block, same as the Composable
 `configure { }`:
 
+<!-- snippet: view-models/config -->
 ```kotlin
 class EditProfileViewModel : ViewModel() {
     private val draft = MutableStateFlow("")
@@ -61,6 +63,7 @@ See [Navigation Handles → Overriding the close-requested callback](../core-con
 In Compose, use the standard `viewModel { }` builder with the
 `createEnroViewModel { }` helper:
 
+<!-- snippet: view-models/create -->
 ```kotlin
 @Composable
 @NavigationDestination(ShowProfile::class)
@@ -80,6 +83,7 @@ same instance the lambda produces, so you can also use it with constructor
 parameters, dependency-injection containers, or whatever your project
 already uses:
 
+<!-- snippet: view-models/create-with-dependencies -->
 ```kotlin
 val viewModel = viewModel<ProfileViewModel> {
     createEnroViewModel {
@@ -113,16 +117,19 @@ go to whichever instance registered them.
 `registerForNavigationResult` is available as a `ViewModel` extension and
 uses a property delegate:
 
+<!-- snippet: results/view-model -->
 ```kotlin
 class HomeViewModel : ViewModel() {
     val navigation by navigationHandle<Home>()
 
     val pickDate by registerForNavigationResult<LocalDate>(
-        onCompleted = { date -> /* update StateFlow, call use case, etc. */ },
+        onCompleted = { date ->
+            // update your StateFlow / call a use case / etc.
+        },
     )
 
     fun onPickDateClicked() {
-        pickDate.open(SelectDate(maxDate = LocalDate.now()))
+        pickDate.open(SelectDate(maxDate = today))
     }
 }
 ```

@@ -15,6 +15,7 @@ compiling while you adopt the new API.
 
 Install in your `Application.onCreate`:
 
+<!-- snippet: android/install -->
 ```kotlin
 @NavigationComponent
 object MyComponent : NavigationComponentConfiguration(
@@ -37,6 +38,7 @@ interface to implement, no property to expose.
 
 The typical pattern is one root container at the top of your Compose tree:
 
+<!-- snippet: your-first-screen/activity -->
 ```kotlin
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,6 +65,7 @@ so existing Fragment- and Activity-backed destinations keep working
 alongside new Composable destinations; you can migrate screens one at a
 time.
 
+<!-- snippet: skip (gradle) -->
 ```kotlin
 dependencies {
     implementation("dev.enro:enro:3.0.0")
@@ -88,6 +91,7 @@ the classpath is detected during controller initialisation.
 
 ### Annotating a Fragment
 
+<!-- snippet: android/fragment -->
 ```kotlin
 @NavigationDestination(ShowProfile::class)
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
@@ -106,6 +110,7 @@ behave the same way.
 
 ### Annotating an Activity
 
+<!-- snippet: android/activity -->
 ```kotlin
 @NavigationDestination(EditProfile::class)
 class EditProfileActivity : AppCompatActivity() {
@@ -117,6 +122,47 @@ class EditProfileActivity : AppCompatActivity() {
 Activities and Fragments live in the same backstack as Composable
 destinations, so a Composable can `navigation.open(EditProfile(...))` and
 have an Activity launched — and vice versa.
+
+### Returning a result from an Activity
+
+An Activity bound to a `NavigationKey.WithResult<T>` key returns its result
+with `navigation.complete(value)`. The Activity finishes and the caller's
+`registerForNavigationResult` receives the value. The Activity must be
+declared in the manifest.
+
+<!-- snippet: android/activity-result -->
+```kotlin
+// Declared in the recipes app's AndroidManifest.xml.
+@NavigationDestination(PickNameActivityKey::class)
+class PickNameActivity : ComponentActivity() {
+    private val navigation by navigationHandle<PickNameActivityKey>()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            MaterialTheme {
+                Surface(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text("Pick a name, in an Activity", style = MaterialTheme.typography.titleLarge)
+                        listOf("Ada", "Grace").forEach { name ->
+                            // Finishes the Activity and delivers the result to the caller.
+                            Button(onClick = { navigation.complete(name) }) { Text(name) }
+                        }
+                        Button(onClick = { navigation.close() }) { Text("Cancel") }
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+The [Fragment and Activity recipe][fragment-activity-recipe] has a Fragment
+destination and this Activity in one container with Composable
+destinations.
 
 ### Bridging individual destinations
 
@@ -158,4 +204,5 @@ their keys.
   inside an Enro destination.
 
 [recipes]: https://github.com/isaac-udy/Enro/tree/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes
+[fragment-activity-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/androidMain/kotlin/dev/enro/recipes/interop/FragmentAndActivity.kt
 [interop-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/interop/NativeInterop.kt

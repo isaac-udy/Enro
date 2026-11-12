@@ -78,11 +78,13 @@ class CheckoutViewModel : ViewModel() {
  * The ViewModelStoreOwner of the destination that hosts the container this
  * destination is displayed in.
  */
+// region docs:contexts/parent-owner
 @Composable
 private fun hostViewModelStoreOwner(): ViewModelStoreOwner {
     val context = LocalNavigationContext.current as DestinationContext<*>
     return context.parent
 }
+// endregion
 
 @Composable
 @NavigationDestination(SharedViewModelRecipe::class)

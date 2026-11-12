@@ -69,6 +69,9 @@ Clone the repository, then run one of these from its root:
 |---|---|---|
 | [Basic ViewModel][viewmodel] | A NavigationHandle inside a ViewModel | Basic ViewModel |
 | [Koin ViewModel][koin] | A ViewModel with dependencies from Koin and arguments from its key | Koin injected ViewModel |
+| [Koin Modular][koin-modular] | Features that each provide a Koin module and open each other's screens by key | Koin modular |
+| [Metro ViewModel][metro] | A ViewModel with dependencies from a Metro graph and arguments from its key | Metro injected ViewModel |
+| [Metro Modular][metro-modular] | Features that contribute to one Metro graph and open each other's screens by key | Metro modular |
 | [Shared ViewModel][shared-viewmodel] | One ViewModel used by several destinations | Shared ViewModel |
 | [Sharing State with Results][shared-state] | Passing a value to a child and getting the edited value back | — |
 | [Returning Results][results] | `NavigationKey.WithResult` and `registerForNavigationResult` | Results as Events |
@@ -147,6 +150,9 @@ through each recipe. Run it with `./gradlew :recipes:common:desktopTest`.
 [shared-elements]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/sharedelements/SharedElementAnimations.kt
 [viewmodel]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/viewmodel/BasicViewModel.kt
 [koin]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/koin/KoinViewModel.kt
+[koin-modular]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/koin/modular/KoinModularApp.kt
+[metro]: https://github.com/isaac-udy/Enro/blob/main/recipes/metro/src/commonMain/kotlin/dev/enro/recipes/metro/MetroViewModel.kt
+[metro-modular]: https://github.com/isaac-udy/Enro/blob/main/recipes/metro/src/commonMain/kotlin/dev/enro/recipes/metro/modular/MetroModularApp.kt
 [shared-viewmodel]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/viewmodel/SharedViewModel.kt
 [shared-state]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/viewmodel/SharedStateWithResults.kt
 [results]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/results/ReturningResults.kt

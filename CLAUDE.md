@@ -19,6 +19,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - To change a bound sample, edit the Kotlin and run `updateDocsSnippets`; do not edit the Markdown block.
 - A line ending in `// docs:hide` is compiled but left out of the docs.
 - Mark a block that cannot be compiled (Gradle scripts, Enro 2 code) `<!-- snippet: skip (reason) -->`.
+- `checkDocsSnippets` fails on a Kotlin block that has neither marker.
 
 ## Code Style
 - Follow Kotlin official code style with explicit API mode

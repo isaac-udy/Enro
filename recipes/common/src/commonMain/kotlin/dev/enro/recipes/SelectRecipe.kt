@@ -46,6 +46,9 @@ import dev.enro.recipes.flow.FlowInViewModelRecipe
 import dev.enro.recipes.interceptor.ModuleInterceptorRecipe
 import dev.enro.recipes.interop.NativeInteropRecipe
 import dev.enro.recipes.koin.KoinViewModelRecipe
+import dev.enro.recipes.koin.modular.KoinModularRecipe
+import dev.enro.recipes.metro.MetroModularRecipe
+import dev.enro.recipes.metro.MetroViewModelRecipe
 import dev.enro.recipes.material.MaterialListDetailRecipe
 import dev.enro.recipes.material.MaterialSupportingPaneRecipe
 import dev.enro.recipes.results.ViewModelResultsRecipe
@@ -278,6 +281,24 @@ private val commonRecipeGroups: List<RecipeGroup> = listOf(
                 title = "Koin ViewModel",
                 description = "A ViewModel with dependencies from Koin and arguments from " +
                     "its NavigationKey.",
+            ),
+            RecipeEntry(
+                key = KoinModularRecipe,
+                title = "Koin Modular",
+                description = "Features that each provide a Koin module and open each " +
+                    "other's screens by key.",
+            ),
+            RecipeEntry(
+                key = MetroViewModelRecipe,
+                title = "Metro ViewModel",
+                description = "A ViewModel with dependencies from a Metro graph and " +
+                    "arguments from its NavigationKey.",
+            ),
+            RecipeEntry(
+                key = MetroModularRecipe,
+                title = "Metro Modular",
+                description = "Features that contribute to one Metro graph and open each " +
+                    "other's screens by key.",
             ),
             RecipeEntry(
                 key = SharedViewModelRecipe,

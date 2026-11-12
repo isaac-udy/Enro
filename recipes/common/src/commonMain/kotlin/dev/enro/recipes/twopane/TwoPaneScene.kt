@@ -32,6 +32,7 @@ import dev.enro.ui.get
  * Recipe code accesses this via [twoPane] / [isTwoPane] anyway, both of
  * which live in this module.
  */
+// region docs:scenes/metadata
 internal object IsTwoPaneKey : NavigationDestination.MetadataKey<Boolean>(default = false)
 
 /**
@@ -45,6 +46,7 @@ fun NavigationDestination.MetadataBuilder<*>.twoPane() {
 
 internal fun NavigationDestination<*>.isTwoPane(): Boolean =
     metadata[IsTwoPaneKey]
+// endregion
 
 // ─────────────────────────────────────────────────────────────────────
 // The scene strategy
@@ -59,6 +61,7 @@ internal fun NavigationDestination<*>.isTwoPane(): Boolean =
  * returns `null` so the surrounding scene-strategy chain falls
  * through.
  */
+// region docs:scenes/strategy
 class TwoPaneSceneStrategy(
     private val widthBreakpointDp: Int = 600,
 ) : NavigationSceneStrategy {
@@ -105,3 +108,4 @@ class TwoPaneSceneStrategy(
         }
     }
 }
+// endregion

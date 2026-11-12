@@ -25,10 +25,12 @@ class NavigationContainerGroup internal constructor(
 ) {
     val activeContainer: NavigationContainerState by activeContainerState
 
+    // region docs:contexts/request-active
     fun setActive(container: NavigationContainerState) {
         activeContainerState.value = container
         container.context.requestActive()
     }
+    // endregion
 }
 
 @Composable

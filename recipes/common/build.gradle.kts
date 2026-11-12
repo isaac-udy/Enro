@@ -30,6 +30,8 @@ kotlin {
             implementation(project(":recipes:modular:navigation"))
             implementation(project(":recipes:modular:feature-home"))
             implementation(project(":recipes:modular:feature-profile"))
+            // The Metro recipes, in their own module for the Metro compiler plugin.
+            implementation(project(":recipes:metro"))
             // For the Material list-detail and supporting pane recipes.
             implementation(libs.compose.material3.adaptive)
             implementation(libs.compose.material3.adaptive.layout)

@@ -21,6 +21,7 @@ the binding code at build time.
 
 The simplest form. Use this whenever the screen doesn't need special metadata.
 
+<!-- snippet: navigation-destinations/composable -->
 ```kotlin
 @Composable
 @NavigationDestination(ShowProfile::class)
@@ -35,6 +36,7 @@ fun ProfileScreen() {
 Use this when the destination needs metadata — to be rendered as a dialog, as
 an overlay, or with any other behaviour controlled by a scene strategy.
 
+<!-- snippet: navigation-destinations/provider -->
 ```kotlin
 @NavigationDestination(ConfirmDialog::class)
 val confirmDialogDestination: NavigationDestinationProvider<ConfirmDialog> = navigationDestination(
@@ -58,8 +60,8 @@ val confirmDialogDestination: NavigationDestinationProvider<ConfirmDialog> = nav
 ```
 
 Inside the `navigationDestination { }` content block you have a
-`NavigationDestinationScope<T>` receiver — `navigation` and `key` are
-properties on the scope. You also get `AnimatedVisibilityScope` and
+`NavigationDestinationScope<T>` receiver — `navigation` is a property on
+the scope. You also get `AnimatedVisibilityScope` and
 `SharedTransitionScope` members for free, so you can use
 `Modifier.animateEnterExit(...)`, shared elements, etc., directly.
 
@@ -87,12 +89,13 @@ The built-in metadata helpers are:
 | `directOverlay(enter, exit)` | Same as `directOverlay()` but with explicit `EnterTransition` / `ExitTransition`. |
 | `directOverlayWithFade(durationMillis = 128)` | Shortcut for symmetric fade in/out. |
 
+<!-- snippet: navigation-destinations/direct-overlay -->
 ```kotlin
 @NavigationDestination(InfoSheet::class)
 val infoSheetDestination = navigationDestination<InfoSheet>(
     metadata = { directOverlay() }
 ) {
-    AlertDialog(/* ... */)
+    Surface { Text("Info") }
 }
 ```
 
@@ -100,6 +103,7 @@ val infoSheetDestination = navigationDestination<InfoSheet>(
 
 The `metadata = { }` block runs per *instance*, so it can read the key:
 
+<!-- snippet: navigation-destinations/conditional-metadata -->
 ```kotlin
 @Serializable
 data class ItemDetail(val itemId: String, val showAsDialog: Boolean = false) : NavigationKey
@@ -125,6 +129,7 @@ of code instead of a UI. The key still exposes the same `open(...)` /
 `complete(...)` API to callers, but when opened the synthetic runs its
 block and never lands on a backstack:
 
+<!-- snippet: navigation-destinations/synthetic -->
 ```kotlin
 @Serializable
 object Logout : NavigationKey
@@ -152,6 +157,7 @@ visually. Enro composes a chain of strategies; the first one that wants to
 handle the current backstack wins. The default chain in `NavigationDisplay`
 is:
 
+<!-- snippet: navigation-destinations/default-chain -->
 ```kotlin
 NavigationSceneStrategy.from(
     DialogSceneStrategy(),
@@ -168,6 +174,7 @@ it like a normal screen.
 You can replace the chain (or add to it) when you create a
 `NavigationDisplay`:
 
+<!-- snippet: navigation-destinations/custom-chain -->
 ```kotlin
 NavigationDisplay(
     state = container,
@@ -188,6 +195,7 @@ The list-detail recipe shows a real adaptive scene strategy:
 For overlay destinations, the simplest way to animate them in and out is the
 `directOverlay(enter, exit)` overload:
 
+<!-- snippet: navigation-destinations/overlay-transitions -->
 ```kotlin
 @NavigationDestination(Toast::class)
 val toastDestination = navigationDestination<Toast>(
@@ -211,6 +219,7 @@ of a dialog at different rates — see the
 If you'd rather not use KSP, you can register a `NavigationDestinationProvider`
 manually in the module DSL:
 
+<!-- snippet: navigation-destinations/manual-registration -->
 ```kotlin
 @NavigationComponent
 object MyComponent : NavigationComponentConfiguration(

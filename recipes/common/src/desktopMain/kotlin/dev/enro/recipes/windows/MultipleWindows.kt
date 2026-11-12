@@ -106,6 +106,7 @@ fun WindowsMenuDestination() {
     }
 }
 
+// region docs:desktop/window-destination
 @NavigationDestination(NoteWindow::class)
 val noteWindowDestination = rootWindowDestination<NoteWindow>(
     windowConfiguration = {
@@ -132,3 +133,4 @@ val noteWindowDestination = rootWindowDestination<NoteWindow>(
         }
     }
 }
+// endregion

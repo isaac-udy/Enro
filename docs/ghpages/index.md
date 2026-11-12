@@ -13,6 +13,7 @@ A `NavigationKey` is the signature of a screen. It declares the screen's inputs,
 and optionally a typed result. Calling code never needs to know how the screen
 is implemented; it just invokes the contract.
 
+<!-- snippet: basic-concepts/keys -->
 ```kotlin
 @Serializable
 data class ShowProfile(val userId: String) : NavigationKey
@@ -26,6 +27,7 @@ data class SelectDate(
 
 If you read those as function signatures:
 
+<!-- snippet: index/signatures -->
 ```kotlin
 fun showProfile(userId: String): Unit
 fun selectDate(minDate: LocalDate? = null, maxDate: LocalDate? = null): LocalDate

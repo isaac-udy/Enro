@@ -27,6 +27,7 @@ turns it into a key you can `open()`.)
 
 Annotate the key with `@NavigationPath("/pattern/with/{placeholders}")`:
 
+<!-- snippet: path-bindings/simple -->
 ```kotlin
 @Serializable
 @NavigationPath("/products/{productId}")
@@ -50,6 +51,7 @@ deserialiser to plug into them.
 Append `?key={value}` (or `&key={value}`) for query parameters. Mark
 optional parameters with a trailing `?` inside the braces:
 
+<!-- snippet: path-bindings/query -->
 ```kotlin
 @Serializable
 @NavigationPath("/products/{productId}?source={source?}&campaign={campaign?}")
@@ -70,6 +72,7 @@ Inline value classes serialise through their backing field, so they
 work as path properties as long as the underlying type is supported
 (`String`, primitive numerics, `Boolean`):
 
+<!-- snippet: path-bindings/value-class -->
 ```kotlin
 @JvmInline
 @Serializable
@@ -93,6 +96,7 @@ property from another, or hand-write the serialiser — declare a
 `NavigationKey.PathBinding<T>` and point at it with
 `@NavigationPath.FromBinding`:
 
+<!-- snippet: path-bindings/from-binding -->
 ```kotlin
 @Serializable
 @NavigationPath("/items/{id}?name={name}&title={title?}")
@@ -138,6 +142,7 @@ When you can't (or don't want to) annotate the key — typically because
 the key is defined in a module you don't control — register the binding
 directly through `NavigationPathBinding.createPathBinding(…)`:
 
+<!-- snippet: path-bindings/programmatic -->
 ```kotlin
 val productDetailBinding: NavigationPathBinding<ProductDetail> =
     NavigationPathBinding.createPathBinding(
@@ -160,6 +165,7 @@ on the component.
 
 Two functions, mirror images of each other:
 
+<!-- snippet: skip (API outline) -->
 ```kotlin
 // String → Key
 fun EnroController.getNavigationKeyFromPath(path: String): NavigationKey?
@@ -178,6 +184,7 @@ Typical use — handling an inbound Android deep link. The Activity keeps the
 URL in state, and the composition resolves it and opens the key on the root
 container:
 
+<!-- snippet: path-bindings/android-deep-link -->
 ```kotlin
 class MainActivity : ComponentActivity() {
     private var pendingDeepLink by mutableStateOf<String?>(null)

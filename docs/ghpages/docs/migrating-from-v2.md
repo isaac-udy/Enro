@@ -71,6 +71,7 @@ Fragment/Activity story working alongside new Compose destinations. See
 
 Enro 2 keys carried their presentation intent on the type:
 
+<!-- snippet: skip (v2) -->
 ```kotlin
 @Parcelize data class ShowProfile(val userId: String) : NavigationKey.SupportsPush
 @Parcelize data class SelectDate(val min: LocalDate?) : NavigationKey.SupportsPresent.WithResult<LocalDate>
@@ -79,6 +80,7 @@ Enro 2 keys carried their presentation intent on the type:
 Enro 3 keys are flat — the type only describes inputs (and optionally a
 return value):
 
+<!-- snippet: migrating/keys -->
 ```kotlin
 @Serializable data class ShowProfile(val userId: String) : NavigationKey
 @Serializable data class SelectDate(val min: LocalDate?) : NavigationKey.WithResult<LocalDate>
@@ -89,6 +91,7 @@ If you previously distinguished "push" and "present" at the call site
 *metadata* instead. A destination is rendered as a dialog or overlay when its
 metadata says so:
 
+<!-- snippet: migrating/dialog-metadata -->
 ```kotlin
 @NavigationDestination(SelectDate::class)
 val selectDateDestination = navigationDestination<SelectDate>(
@@ -120,6 +123,7 @@ that is no longer in its container ignores further operations. The Enro 2 patter
 `close()` and then `open(key)` from the same destination therefore drops the `open`. Use
 `closeAndReplaceWith(key)`, which performs both in one operation:
 
+<!-- snippet: skip (v2) -->
 ```kotlin
 // Enro 2
 navigation.close()
@@ -133,6 +137,7 @@ navigation.closeAndReplaceWith(NextScreen())
 
 Enro 2:
 
+<!-- snippet: skip (v2) -->
 ```kotlin
 @NavigationComponent
 class MyApp : Application(), NavigationApplication {
@@ -144,12 +149,11 @@ class MyApp : Application(), NavigationApplication {
 
 Enro 3:
 
+<!-- snippet: android/install -->
 ```kotlin
 @NavigationComponent
 object MyComponent : NavigationComponentConfiguration(
-    module = createNavigationModule {
-        // optional configuration: plugins, interceptors, decorators, etc.
-    }
+    module = createNavigationModule { /* optional config */ }
 )
 
 class MyApp : Application() {
@@ -171,6 +175,7 @@ The module DSL used by Enro 2 (`override fun NavigationModuleScope.configure()`)
 is replaced by `createNavigationModule { }`, passed into the
 `NavigationComponentConfiguration` constructor. Common entries:
 
+<!-- snippet: migrating/module -->
 ```kotlin
 createNavigationModule {
     plugin(MyPlugin())
@@ -190,6 +195,7 @@ instead.
 
 Enro 2 created containers like:
 
+<!-- snippet: skip (v2) -->
 ```kotlin
 val container = rememberNavigationContainer(
     root = HomeKey,
@@ -199,6 +205,7 @@ val container = rememberNavigationContainer(
 
 Enro 3:
 
+<!-- snippet: navigation-containers/container -->
 ```kotlin
 val container = rememberNavigationContainer(
     backstack = backstackOf(Home.asInstance()),
@@ -215,6 +222,7 @@ It replaces the v2 `Container { }` Composable.
 With `enro-compat` on Android, v2 code that calls `container.Render()` keeps
 compiling once the file imports the compat extension:
 
+<!-- snippet: skip (v2 API in enro-compat; an import and a statement) -->
 ```kotlin
 import dev.enro.core.compose.container.Render
 
@@ -231,6 +239,7 @@ the import is added. The extension is deprecated in favour of
 
 Enro 2:
 
+<!-- snippet: skip (v2) -->
 ```kotlin
 class HomeScreen : Fragment() {
     val getDate by registerForNavigationResult<LocalDate> { date -> /* use it */ }
@@ -247,6 +256,7 @@ class SelectDateScreen : Fragment() {
 
 Enro 3:
 
+<!-- snippet: migrating/results -->
 ```kotlin
 @Composable
 @NavigationDestination(Home::class)
@@ -264,7 +274,7 @@ fun HomeScreen() {
 fun SelectDateScreen() {
     val navigation = navigationHandle<SelectDate>()
     // ...
-    Button(onClick = { navigation.complete(LocalDate.now()) }) { Text("Use today") }
+    Button(onClick = { navigation.complete(today) }) { Text("Use today") }
 }
 ```
 
@@ -276,6 +286,7 @@ The Compose form of `registerForNavigationResult` returns a
 
 Enro 2 used a custom `enroViewModels` delegate:
 
+<!-- snippet: skip (v2) -->
 ```kotlin
 class ProfileViewModel : ViewModel() {
     val navigation by navigationHandle<ShowProfile>()
@@ -290,6 +301,7 @@ class ProfileFragment : Fragment() {
 Enro 3 uses the standard `viewModel { }` builder with a small helper that
 wires the `NavigationHandle` into the factory:
 
+<!-- snippet: migrating/view-model -->
 ```kotlin
 class ProfileViewModel : ViewModel() {
     val navigation by navigationHandle<ShowProfile>()
@@ -310,6 +322,7 @@ unchanged.
 
 Enro 2's `EnroTestRule` still works for JUnit-based tests on Android:
 
+<!-- snippet: migrating/enro-test-rule -->
 ```kotlin
 class ProfileTest {
     @get:Rule(order = 0) val enroRule = EnroTestRule()
@@ -322,10 +335,11 @@ class ProfileTest {
 For KMP tests (and as a more flexible alternative in any test), use the
 `runEnroTest { }` block:
 
+<!-- snippet: migrating/run-enro-test -->
 ```kotlin
 @Test fun example() = runEnroTest {
     val handle = createTestNavigationHandle(ShowProfile("user-123"))
-    handle.open(SelectDate())
+    handle.open(SelectDate(min = null))
     handle.assertOpened<SelectDate>()
 }
 ```
@@ -343,6 +357,7 @@ See [Testing](advanced/testing.md).
 
 Take this small Enro 2 screen:
 
+<!-- snippet: skip (v2) -->
 ```kotlin
 @Parcelize
 data class GreetUser(val name: String) : NavigationKey.SupportsPresent.WithResult<String>
@@ -369,6 +384,7 @@ class GreetUserFragment : Fragment() {
 In Enro 3 this becomes a Composable destination, with the dialog presentation
 moved to metadata:
 
+<!-- snippet: migrating/worked-example -->
 ```kotlin
 @Serializable
 data class GreetUser(val name: String) : NavigationKey.WithResult<String>

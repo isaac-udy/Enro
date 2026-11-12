@@ -126,6 +126,7 @@ fun UIViewControllerMenuDestination() {
     }
 }
 
+// region docs:ios/view-controller-destinations
 // Plain UIKit, embedded in the Enro container.
 @NavigationDestination(UIKitLabel::class)
 val uiKitLabelDestination = uiViewControllerDestination<UIKitLabel>(
@@ -175,6 +176,7 @@ val pushedViewControllerDestination = uiViewControllerDestination<PushedViewCont
         }
     },
 )
+// endregion
 
 @Composable
 private fun ViewControllerContent(

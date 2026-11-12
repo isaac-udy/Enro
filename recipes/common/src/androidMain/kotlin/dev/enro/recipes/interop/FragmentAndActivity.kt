@@ -166,6 +166,7 @@ fun GreetingDetailsDestination() {
     }
 }
 
+// region docs:android/activity-result
 // Declared in the recipes app's AndroidManifest.xml.
 @NavigationDestination(PickNameActivityKey::class)
 class PickNameActivity : ComponentActivity() {
@@ -192,3 +193,4 @@ class PickNameActivity : ComponentActivity() {
         }
     }
 }
+// endregion

@@ -18,6 +18,7 @@ This is the pattern to reach for when an [embedded result
 flow](embedded-result-flows.md) would have too many nested callbacks or too
 much manual intermediate state.
 
+<!-- snippet: managed-result-flows/flow -->
 ```kotlin
 @NavigationDestination(BookingFlow::class)
 val bookingFlowDestination: NavigationDestinationProvider<BookingFlow> =
@@ -35,7 +36,6 @@ val bookingFlowDestination: NavigationDestinationProvider<BookingFlow> =
 
             BookingDetails(destination, date, passengers, seat)
         },
-        onCompleted = { details -> /* ... */ },
     )
 ```
 
@@ -67,6 +67,7 @@ result-producing destination through `registerForNavigationResult`.
 Because the flow body is plain Kotlin, branches and loops are exactly what
 they look like:
 
+<!-- snippet: managed-result-flows/branching -->
 ```kotlin
 flow = {
     val name = open(EnterName)

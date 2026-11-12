@@ -14,6 +14,7 @@ Keys are values: declarative, serializable, and decoupled from the screen
 they identify. Callers refer to screens only through their keys, never
 through their implementations.
 
+<!-- snippet: navigation-keys/show-profile -->
 ```kotlin
 @Serializable
 data class ShowProfile(val userId: String) : NavigationKey
@@ -21,6 +22,7 @@ data class ShowProfile(val userId: String) : NavigationKey
 
 Read that as `fun showProfile(userId: String): Unit`.
 
+<!-- snippet: navigation-keys/select-date -->
 ```kotlin
 @Serializable
 data class SelectDate(
@@ -42,6 +44,7 @@ Every property on the key needs a serializer too. Built-in Kotlin types
 `kotlin.uuid.Uuid`, etc.) work without configuration. For domain types you
 own, annotate them with `@Serializable`:
 
+<!-- snippet: navigation-keys/domain-type -->
 ```kotlin
 @Serializable
 data class UserId(val value: String)
@@ -53,6 +56,7 @@ data class ShowProfile(val userId: UserId) : NavigationKey
 For types you don't own (or for polymorphic types in a sealed hierarchy),
 register a custom `SerializersModule` on your `NavigationComponent`:
 
+<!-- snippet: navigation-keys/serializers-module -->
 ```kotlin
 @NavigationComponent
 object MyComponent : NavigationComponentConfiguration(
@@ -71,6 +75,7 @@ produces a value of type `T` to its caller. The screen returns the value by
 calling `navigation.complete(value)`. The caller receives it through a
 `registerForNavigationResult` channel — see [Results](../advanced/results.md).
 
+<!-- snippet: navigation-keys/with-result -->
 ```kotlin
 @Serializable
 data class ConfirmDelete(val itemName: String) : NavigationKey.WithResult<Boolean>
@@ -91,6 +96,7 @@ unique `id` and its own `metadata`.
 
 You'll usually only see `Instance` when building the initial backstack:
 
+<!-- snippet: navigation-keys/instance -->
 ```kotlin
 val initial = backstackOf(
     Home.asInstance(),
@@ -130,12 +136,14 @@ parameters that any key might carry" than to anything in the key itself.
 
 Define a `MetadataKey<T>` to read and write a metadata value:
 
+<!-- snippet: navigation-keys/metadata-key -->
 ```kotlin
 object OpenedAt : NavigationKey.MetadataKey<Long?>(default = null)
 ```
 
 Attach a value to a key for a single open via `withMetadata`:
 
+<!-- snippet: navigation-keys/with-metadata -->
 ```kotlin
 navigation.open(
     ShowProfile("user-123").withMetadata(OpenedAt, Clock.System.now().toEpochMilliseconds())
@@ -173,6 +181,7 @@ For keys that produce results, the name often matches the result:
 
 A `data object` is the right choice for a key with no inputs:
 
+<!-- snippet: navigation-keys/data-object -->
 ```kotlin
 @Serializable
 data object Home : NavigationKey

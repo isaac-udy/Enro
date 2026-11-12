@@ -30,6 +30,7 @@ than N seconds").
 
 Subclass `NavigationPlugin` and override whichever hooks you care about:
 
+<!-- snippet: skip (API outline) -->
 ```kotlin
 abstract class NavigationPlugin {
     open fun onAttached(controller: EnroController) {}
@@ -64,6 +65,7 @@ how destinations are presented.
 
 Plugins are installed in the `NavigationComponent`'s module DSL:
 
+<!-- snippet: plugins/install -->
 ```kotlin
 @NavigationComponent
 object MyComponent : NavigationComponentConfiguration(
@@ -83,6 +85,7 @@ Below is `OpenedTimestampPlugin` — a small plugin that stamps every
 instance with the epoch-millisecond time it was first opened, via the
 instance's `Metadata`.
 
+<!-- snippet: plugins/opened-timestamp -->
 ```kotlin
 object OpenedAt : NavigationKey.MetadataKey<Long?>(default = null)
 
@@ -98,6 +101,7 @@ class OpenedTimestampPlugin : NavigationPlugin() {
 
 Any destination can then read its own opened-at timestamp:
 
+<!-- snippet: plugins/read -->
 ```kotlin
 val openedAt = navigation.instance.metadata.get(OpenedAt)
 ```

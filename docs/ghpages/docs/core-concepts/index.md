@@ -20,3 +20,5 @@ pages assume the vocabulary.
 - [Navigation Handles](navigation-handles.md) — the control surface
   inside a screen for `open`, `close`, `complete`, `requestClose`, and
   the result API.
+- [Navigation Contexts](navigation-contexts.md) — the tree of containers
+  and destinations on screen, and how to search it.

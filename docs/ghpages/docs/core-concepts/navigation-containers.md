@@ -14,6 +14,7 @@ The container is created with `rememberNavigationContainer` and rendered
 with `NavigationDisplay`. Together they're the smallest amount of navigation
 infrastructure your app needs.
 
+<!-- snippet: navigation-containers/container -->
 ```kotlin
 val container = rememberNavigationContainer(
     backstack = backstackOf(Home.asInstance()),
@@ -23,6 +24,7 @@ NavigationDisplay(state = container)
 
 ## rememberNavigationContainer
 
+<!-- snippet: skip (API outline) -->
 ```kotlin
 @Composable
 public fun rememberNavigationContainer(
@@ -51,6 +53,7 @@ The function returns a `NavigationContainerState` you pass to
 
 `backstackOf` is the canonical way to build one:
 
+<!-- snippet: navigation-containers/backstack -->
 ```kotlin
 val backstack = backstackOf(
     Home.asInstance(),
@@ -69,6 +72,7 @@ with an `emptyBehavior` other than the default — see below).
 
 `NavigationDisplay` is the Composable that renders a container.
 
+<!-- snippet: skip (API outline) -->
 ```kotlin
 NavigationDisplay(
     state = container,
@@ -105,6 +109,7 @@ For custom behaviour, build an `EmptyBehavior` from a lambda (see
 
 `NavigationContainerState` exposes a few useful members:
 
+<!-- snippet: skip (API outline) -->
 ```kotlin
 val backstack: NavigationBackstack          // current contents, observable
 fun updateBackstack(block: (NavigationBackstack) -> NavigationBackstack)
@@ -202,6 +207,7 @@ A container can be created inside a destination — the resulting container
 is a *child* of that destination's context. This is how features like tabs,
 list-detail layouts, and per-flow back stacks are built.
 
+<!-- snippet: navigation-containers/nested -->
 ```kotlin
 @Composable
 @NavigationDestination(MainTabs::class)

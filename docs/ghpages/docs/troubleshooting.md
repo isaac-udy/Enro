@@ -22,6 +22,7 @@ The controller wasn't installed before something tried to use it. Make
 sure you call `installNavigationController(...)` on your `NavigationComponent`
 before any composable that reads a navigation handle is composed.
 
+<!-- snippet: troubleshooting/install -->
 ```kotlin
 // Android
 class MyApp : Application() {
@@ -46,6 +47,7 @@ function annotated with `@NavigationDestination(...)` (or the body of a
 **inside** one. The typed parameter must match the destination's actual
 key type.
 
+<!-- snippet: troubleshooting/handle-scope -->
 ```kotlin
 @Composable
 @NavigationDestination(ShowProfile::class)
@@ -101,6 +103,7 @@ You called `navigation.complete()` (no arguments) on a destination whose
 key implements `NavigationKey.WithResult<R>`. A result-producing key
 must produce a result.
 
+<!-- snippet: skip (shows code that does not compile) -->
 ```kotlin
 // ❌ won't compile if the key implements WithResult<LocalDate>
 navigation.complete()
@@ -153,10 +156,11 @@ have nothing to do.
 
 The usual cause is launching a coroutine inside a synthetic block:
 
+<!-- snippet: troubleshooting/async-synthetic -->
 ```kotlin
 @NavigationDestination(BadSynthetic::class)
 val badSynthetic = syntheticDestination<BadSynthetic> {
-    context.lifecycleOwner.lifecycleScope.launch {
+    context.lifecycleScope.launch {
         someAsyncWork()
         complete()      // ← block has long since returned; throws "already finished"
     }
@@ -202,6 +206,7 @@ registered. Built-in Kotlin types are fine; custom types either need to
 be `@Serializable` or have a serializer registered on the
 `NavigationComponent`:
 
+<!-- snippet: troubleshooting/serializers-module -->
 ```kotlin
 @NavigationComponent
 object MyComponent : NavigationComponentConfiguration(
@@ -229,6 +234,7 @@ You're constructing a destination or ViewModel without setting up a
 test controller. Wrap the test in `runEnroTest { }`, or add an
 `EnroTestRule` to the test class.
 
+<!-- snippet: troubleshooting/test-controller -->
 ```kotlin
 @Test
 fun example() = runEnroTest {

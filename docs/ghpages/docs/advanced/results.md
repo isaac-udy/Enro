@@ -19,6 +19,7 @@ when the user backs out).
 A key signals "this screen returns a value" by implementing
 `NavigationKey.WithResult<R>`:
 
+<!-- snippet: navigation-keys/select-date -->
 ```kotlin
 @Serializable
 data class SelectDate(
@@ -29,18 +30,20 @@ data class SelectDate(
 
 The destination returns its value with `navigation.complete(value)`:
 
+<!-- snippet: results/complete -->
 ```kotlin
 @Composable
 @NavigationDestination(SelectDate::class)
 fun SelectDateScreen() {
     val navigation = navigationHandle<SelectDate>()
     // ...
-    Button(onClick = { navigation.complete(LocalDate.now()) }) { Text("Use today") }
+    Button(onClick = { navigation.complete(today) }) { Text("Use today") }
 }
 ```
 
 A caller receives the value through a `NavigationResultChannel<R>`:
 
+<!-- snippet: results/channel -->
 ```kotlin
 val getDate = registerForNavigationResult<LocalDate>(
     onCompleted = { date -> /* use it */ },
@@ -56,6 +59,7 @@ That's the whole pattern. The rest of this page covers the variations.
 `registerForNavigationResult<R>` is a Composable function. It returns a
 `NavigationResultChannel<R>` you call `.open(key)` on:
 
+<!-- snippet: results/composable -->
 ```kotlin
 @Composable
 @NavigationDestination(Home::class)
@@ -70,7 +74,7 @@ fun HomeScreen() {
         },
     )
 
-    Button(onClick = { pickDate.open(SelectDate(maxDate = LocalDate.now())) }) {
+    Button(onClick = { pickDate.open(SelectDate(maxDate = today)) }) {
         Text("Pick a date")
     }
 }
@@ -97,10 +101,14 @@ For destinations whose key does **not** implement `WithResult<R>`, there's a
 `Unit`-typed overload that lets you still distinguish "completed" from
 "closed":
 
+<!-- snippet: results/no-result-key -->
 ```kotlin
 @Serializable
 data class ConfirmDelete(val itemName: String) : NavigationKey
+```
 
+<!-- snippet: results/no-result-channel -->
+```kotlin
 val confirmDelete = registerForNavigationResult(
     onCompleted = { /* user confirmed */ },
     onClosed    = { /* user cancelled */ },
@@ -120,6 +128,7 @@ cancelled". See [close vs complete](../core-concepts/navigation-handles.md#closi
 `registerForNavigationResult` is also available as an extension on
 `ViewModel`. The form is a property delegate:
 
+<!-- snippet: results/view-model -->
 ```kotlin
 class HomeViewModel : ViewModel() {
     val navigation by navigationHandle<Home>()
@@ -131,7 +140,7 @@ class HomeViewModel : ViewModel() {
     )
 
     fun onPickDateClicked() {
-        pickDate.open(SelectDate(maxDate = LocalDate.now()))
+        pickDate.open(SelectDate(maxDate = today))
     }
 }
 ```
@@ -172,6 +181,7 @@ legacy and a redesigned edit-profile flow, an A/B test variant, a
 platform-specific picker — a synthetic destination can sit in front of
 them and pick at runtime, while callers see only the stable contract:
 
+<!-- snippet: results/decider -->
 ```kotlin
 @Serializable object EditProfile : NavigationKey.WithResult<ProfileUpdate>
 @Serializable object EditProfileLegacy : NavigationKey.WithResult<ProfileUpdate>

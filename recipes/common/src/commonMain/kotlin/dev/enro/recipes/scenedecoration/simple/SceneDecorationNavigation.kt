@@ -95,6 +95,7 @@ fun SceneDecorationRecipeScreen() {
         val container = rememberNavigationContainer(
             backstack = backstackOf(HomeSection.asInstance()),
         )
+        // region docs:scenes/decorator-display
         NavigationDisplay(
             state = container,
             modifier = modifier,
@@ -109,6 +110,7 @@ fun SceneDecorationRecipeScreen() {
                 remember { AdaptiveNavigationSceneDecorator(sections) },
             ),
         )
+        // endregion
     }
 }
 

@@ -10,8 +10,11 @@ import dev.enro.recipes.dialog.NavigatingFromDialogRecipe
 import dev.enro.recipes.flow.FlowInViewModelRecipe
 import dev.enro.recipes.interceptor.ModuleInterceptorRecipe
 import dev.enro.recipes.koin.KoinViewModelRecipe
+import dev.enro.recipes.koin.modular.KoinModularRecipe
 import dev.enro.recipes.material.MaterialListDetailRecipe
 import dev.enro.recipes.material.MaterialSupportingPaneRecipe
+import dev.enro.recipes.metro.MetroModularRecipe
+import dev.enro.recipes.metro.MetroViewModelRecipe
 import dev.enro.recipes.modular.ModularNavigationRecipe
 import dev.enro.recipes.results.ViewModelResultsRecipe
 import dev.enro.recipes.saveable.SavedStateRecipe
@@ -210,6 +213,33 @@ class RecipeSmokeTests {
         click("Back")
         click("Open alan")
         see("Alan Turing")
+    }
+
+    @Test
+    fun `koin modular features share one session`() = runRecipeTest(KoinModularRecipe) {
+        see("Orders for Guest")
+        click("Account")
+        see("Account: Guest")
+        click("Sign in as Ada")
+        see("Orders for Ada")
+    }
+
+    @Test
+    fun `metro view model reads its key`() = runRecipeTest(MetroViewModelRecipe) {
+        click("Open ada")
+        see("Ada Lovelace")
+        click("Back")
+        click("Open alan")
+        see("Alan Turing")
+    }
+
+    @Test
+    fun `metro modular features share one graph`() = runRecipeTest(MetroModularRecipe) {
+        see("Orders for Guest")
+        click("Account")
+        see("Account: Guest")
+        click("Sign in as Ada")
+        see("Orders for Ada")
     }
 
     // The test window is wide enough for two panes.

@@ -15,6 +15,8 @@ buildscript {
         classpath(libs.emulator.wtf.gradle)
         classpath(libs.maven.publish.gradle)
         classpath(libs.dokka.gradle)
+        // Used only by :recipes:metro.
+        classpath(libs.metro.gradle)
     }
 }
 

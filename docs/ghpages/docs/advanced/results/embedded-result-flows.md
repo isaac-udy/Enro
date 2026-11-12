@@ -15,6 +15,7 @@ sequence of result-producing steps.
 The pattern is just `registerForNavigationResult` callbacks calling
 `open` on each other.
 
+<!-- snippet: embedded-result-flows/flow -->
 ```kotlin
 @Composable
 @NavigationDestination(CreateAccount::class)
@@ -26,7 +27,7 @@ fun CreateAccountScreen() {
     val askForEmail = registerForNavigationResult<String>(
         onCompleted = { result ->
             email = result
-            navigation.complete(/* CreateAccountResult(name!!, email!!) */)
+            navigation.complete(CreateAccountResult(name!!, result))
         },
     )
 

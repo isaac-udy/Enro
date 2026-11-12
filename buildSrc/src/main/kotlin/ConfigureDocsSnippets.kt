@@ -33,8 +33,8 @@ import java.io.File
  * - `updateDocsSnippets` rewrites every bound block from its region.
  *
  * A source line that ends with `// docs:hide` is compiled but left out of the docs. A block
- * that cannot be compiled is marked `<!-- snippet: skip (reason) -->`. Kotlin blocks with no
- * marker are not checked; set `failOnUnmarked` once every page is migrated.
+ * that cannot be compiled is marked `<!-- snippet: skip (reason) -->`. A Kotlin block with
+ * neither marker fails the check.
  */
 class ConfigureDocsSnippets : Plugin<Project> {
     override fun apply(project: Project) {
@@ -53,7 +53,7 @@ class ConfigureDocsSnippets : Plugin<Project> {
             )
             docsDirectory.set(root.layout.projectDirectory.dir("docs/ghpages"))
             this.update.set(update)
-            failOnUnmarked.set(false)
+            failOnUnmarked.set(true)
             enroVersion.set(project.enroVersionName)
         }
         project.tasks.register("checkDocsSnippets", DocsSnippetsTask::class.java) {

@@ -12,6 +12,7 @@ controller.
 
 ## Minimal install
 
+<!-- snippet: installation/desktop -->
 ```kotlin
 fun main() {
     val controller = MyComponent.installNavigationController(Unit)
@@ -66,6 +67,48 @@ shortcuts, and the full window-configuration block — is the [desktop main
 file][desktop-main]. The patterns there generalise to any multi-window
 desktop app.
 
+### A destination in its own window
+
+`rootWindowDestination` binds a key to a window. `navigation.open(key)`
+opens the window. `navigation.close()` and `navigation.complete(value)`
+close it. A window destination can return a result.
+
+<!-- snippet: desktop/window-destination -->
+```kotlin
+@NavigationDestination(NoteWindow::class)
+val noteWindowDestination = rootWindowDestination<NoteWindow>(
+    windowConfiguration = {
+        RootWindow.WindowConfiguration(
+            title = "New note",
+            // The window's close button closes the destination without a result.
+            onCloseRequest = { navigation.close() },
+        )
+    },
+) {
+    var text by remember { mutableStateOf("") }
+    MaterialTheme {
+        Surface(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text("Note ${navigation.key.number}", style = MaterialTheme.typography.titleLarge)
+                TextField(value = text, onValueChange = { text = it })
+                // Completing closes the window and delivers the result.
+                Button(onClick = { navigation.complete(text) }) { Text("Save") }
+                Button(onClick = { navigation.close() }) { Text("Discard") }
+            }
+        }
+    }
+}
+```
+
+To open an existing common destination in a window on desktop only,
+annotate a `rootWindowDestination` with
+`@NavigationDestination.PlatformOverride(Key::class)`.
+
+See the [Multiple Windows recipe][windows-recipe].
+
 ## What Enro provides on desktop
 
 - Per-window navigation containers — each window can host its own
@@ -83,4 +126,5 @@ desktop app.
 - [Recipes desktop main][desktop-main] — full working example with
   multi-window, `MenuBar`, key shortcuts.
 
+[windows-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/desktopMain/kotlin/dev/enro/recipes/windows/MultipleWindows.kt
 [desktop-main]: https://github.com/isaac-udy/Enro/blob/main/recipes/app/desktop/src/desktopMain/kotlin/main.kt

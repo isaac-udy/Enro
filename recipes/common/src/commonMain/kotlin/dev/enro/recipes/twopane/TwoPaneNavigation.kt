@@ -72,6 +72,7 @@ fun TwoPaneRecipeScreen() {
         val container = rememberNavigationContainer(
             backstack = backstackOf(TwoPaneHome.asInstance()),
         )
+        // region docs:scenes/display
         NavigationDisplay(
             state = container,
             modifier = modifier,
@@ -82,6 +83,7 @@ fun TwoPaneRecipeScreen() {
                 SinglePaneSceneStrategy(),
             ),
         )
+        // endregion
     }
 }
 

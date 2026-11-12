@@ -21,9 +21,23 @@ kotlin {
             // Test samples live in main source sets: they are compiled, never run.
             implementation("dev.enro:enro-test:${project.enroVersionName}")
             implementation(libs.kotlinx.coroutines.test)
+            implementation(kotlin("test"))
             implementation(libs.kotlinx.serialization)
             implementation(libs.kotlinx.datetime)
             implementation(libs.compose.lifecycle)
+        }
+
+        // kotlin("test") only picks a test framework for test source sets.
+        desktopMain.dependencies {
+            implementation(kotlin("test-junit"))
+        }
+
+        androidMain.dependencies {
+            implementation(kotlin("test-junit"))
+            implementation(libs.testing.androidx.compose)
+            implementation(libs.androidx.activity)
+            implementation(libs.androidx.fragment)
+            implementation(libs.androidx.appcompat)
         }
     }
 }

@@ -74,6 +74,7 @@ fun DialogRecipeScreen() {
 
 // Style 1: dialog metadata
 
+// region docs:scenes/dialog
 @NavigationDestination(ConfirmDeleteDialog::class)
 val confirmDeleteDialogDestination: NavigationDestinationProvider<ConfirmDeleteDialog> = navigationDestination(
     metadata = {
@@ -101,6 +102,7 @@ val confirmDeleteDialogDestination: NavigationDestinationProvider<ConfirmDeleteD
         }
     }
 }
+// endregion
 
 // Style 2: custom dialog properties
 

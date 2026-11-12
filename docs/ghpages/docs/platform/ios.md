@@ -47,8 +47,8 @@ Expose a `UIViewController` for your Swift app to embed. The canonical
 pattern uses `EnroUIViewController { }`, which wires up a Compose host with
 the navigation context Enro needs:
 
+<!-- snippet: installation/ios -->
 ```kotlin
-@Suppress("unused") // called from Swift
 fun MainViewController(): UIViewController = EnroUIViewController {
     val container = rememberNavigationContainer(
         backstack = backstackOf(Home.asInstance()),
@@ -78,6 +78,76 @@ class ViewController: UIViewController {
 (SwiftUI users can wrap the Kotlin view controller in
 `UIViewControllerRepresentable` — same idea.)
 
+## UIViewController destinations
+
+`uiViewControllerDestination` binds a key to a `UIViewController`. The
+metadata says how the view controller is shown:
+
+| Flag | Shown |
+|---|---|
+| `SupportsCompose` | Embedded in the Enro container, like a Composable destination. |
+| `SupportsPresent()` | Presented modally over the app. |
+| `SupportsUINavigationView` | Pushed onto the `UINavigationController` that hosts the app. |
+
+<!-- snippet: ios/view-controller-destinations -->
+```kotlin
+// Plain UIKit, embedded in the Enro container.
+@NavigationDestination(UIKitLabel::class)
+val uiKitLabelDestination = uiViewControllerDestination<UIKitLabel>(
+    metadata = { listOf(UIViewControllerDestination.SupportsCompose) },
+    viewController = { instance ->
+        UIViewController().apply {
+            view.backgroundColor = UIColor.whiteColor
+            val label = UILabel().apply {
+                text = instance.key.text
+                textAlignment = NSTextAlignmentCenter
+                numberOfLines = 0
+                setFrame(view.bounds)
+                autoresizingMask = UIViewAutoresizingFlexibleWidth or UIViewAutoresizingFlexibleHeight
+            }
+            view.addSubview(label)
+        }
+    },
+)
+
+// Presented modally. The content is Compose, so it can close itself.
+@NavigationDestination(PresentedViewController::class)
+val presentedViewControllerDestination = uiViewControllerDestination<PresentedViewController>(
+    metadata = { listOf(UIViewControllerDestination.SupportsPresent()) },
+    viewController = {
+        EnroUIViewController {
+            val navigation = navigationHandle<PresentedViewController>()
+            ViewControllerContent(
+                title = "Presented modally",
+                onClose = { navigation.close() },
+            )
+        }
+    },
+)
+
+// Pushed onto the UINavigationController that hosts the app, so it gets the
+// system navigation bar and back button.
+@NavigationDestination(PushedViewController::class)
+val pushedViewControllerDestination = uiViewControllerDestination<PushedViewController>(
+    metadata = { listOf(UIViewControllerDestination.SupportsUINavigationView) },
+    viewController = {
+        EnroUIViewController {
+            val navigation = navigationHandle<PushedViewController>()
+            ViewControllerContent(
+                title = "Pushed onto the UINavigationController",
+                onClose = { navigation.close() },
+            )
+        }
+    },
+)
+```
+
+Pushing needs the app's root view controller to be in a
+`UINavigationController`. The [recipes Xcode project][ios-xcode] sets that
+up in `MainViewControllerView.swift`.
+
+See the [UIViewController recipe][uiviewcontroller-recipe].
+
 ## What Enro provides on iOS
 
 - A real backstack tied to the destination tree. The system back gesture
@@ -97,9 +167,9 @@ class ViewController: UIViewController {
   Material 3's `TopAppBar` everywhere) or wrap the
   `EnroUIViewController` inside a `UINavigationController` whose bar you
   drive in Swift.
-- The destination types you can use on iOS are the same Composable
-  destinations you use everywhere else. There is no Fragment/Activity
-  story to migrate — iOS has always been Compose Multiplatform-only.
+- Composable destinations work on iOS as they do everywhere else. A
+  `UIViewController` can also be a destination; see
+  [UIViewController destinations](#uiviewcontroller-destinations).
 
 ## See also
 
@@ -107,4 +177,6 @@ class ViewController: UIViewController {
 - [Recipes iOS entrypoint][ios-recipe] — the working
   `MainViewController()` Enro uses for its own runnable iOS recipes.
 
+[ios-xcode]: https://github.com/isaac-udy/Enro/tree/main/recipes/app/ios/xcode/EnroRecipes
+[uiviewcontroller-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/iosMain/kotlin/dev/enro/recipes/interop/UIViewControllerInterop.kt
 [ios-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/app/ios/src/iosMain/kotlin/dev/enro/recipes/MainViewController.kt

@@ -14,6 +14,7 @@ inside an `EnroBrowserContent` (Compose UI) or an `EnroHtmlContent`
 
 ## Minimal install
 
+<!-- snippet: web/install -->
 ```kotlin
 fun main() {
     MyComponent.installNavigationController(document)
@@ -59,6 +60,7 @@ The pieces:
 depends on `enro-runtime`, not on Compose UI, so the bundle contains no
 skiko.
 
+<!-- snippet: skip (enro-html, Kotlin/JS only) -->
 ```kotlin
 fun main() {
     MyComponent.installNavigationController(document)
@@ -96,6 +98,7 @@ fun main() {
 - A closed dialog or overlay stays in the DOM until its CSS transitions
   end, so a `dialog:not([open])` transition runs on close.
 
+<!-- snippet: skip (enro-html, Kotlin/JS only) -->
 ```kotlin
 @NavigationDestination.PlatformOverride(ConfirmDelete::class)
 val confirmDeleteDestination: NavigationDestinationProvider<ConfirmDelete> =
@@ -113,6 +116,7 @@ A module can keep its Compose UI screens in `commonMain` and add Compose
 HTML screens for the same keys in `jsMain`. Annotate each Compose HTML
 screen with `@NavigationDestination.PlatformOverride`:
 
+<!-- snippet: skip (two source sets; enro-html, Kotlin/JS only) -->
 ```kotlin
 // commonMain
 @Composable
@@ -173,6 +177,7 @@ in the app.
 A `NavigationKey` annotated with `@NavigationPath` participates in URL
 routing:
 
+<!-- snippet: web/path -->
 ```kotlin
 @Serializable
 @NavigationPath("/products/{productId}?source={source?}")

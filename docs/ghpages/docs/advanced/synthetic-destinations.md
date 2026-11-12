@@ -16,6 +16,7 @@ composing a multi-step action behind a single call site.
 
 A synthetic looks like any other destination from the caller's side:
 
+<!-- snippet: synthetic-destinations/callers -->
 ```kotlin
 navigation.open(Logout)        // synthetic
 navigation.open(EditProfile)   // synthetic — could be either of two screens
@@ -53,6 +54,7 @@ screen depends on runtime state.
 `syntheticDestination<K>` builds a `NavigationDestinationProvider<K>` that
 the KSP processor binds the same way as any other destination:
 
+<!-- snippet: navigation-destinations/synthetic -->
 ```kotlin
 @Serializable
 object Logout : NavigationKey
@@ -148,6 +150,7 @@ Your public-facing key has a `WithResult<R>` contract; the synthetic
 picks one of several concrete implementations at runtime and lets *that*
 implementation produce the result:
 
+<!-- snippet: synthetic-destinations/decider -->
 ```kotlin
 @Serializable
 object EditProfile : NavigationKey.WithResult<ProfileUpdate>
@@ -169,6 +172,7 @@ val editProfile = syntheticDestination<EditProfile> {
 The caller subscribes to `EditProfile` and never needs to know which
 underlying screen actually ran:
 
+<!-- snippet: synthetic-destinations/decider-caller -->
 ```kotlin
 val editProfile = registerForNavigationResult<ProfileUpdate>(
     onCompleted = { update -> /* one branch, regardless of which UI produced it */ },
@@ -239,6 +243,7 @@ exposes `context`, `container`, `instance`, and `key`. By the time the
 side-effect block runs, the mutex is released and the backstack has
 settled, so imperative work is safe:
 
+<!-- snippet: synthetic-destinations/side-effect-android -->
 ```kotlin
 @NavigationDestination(OpenExternalUrl::class)
 val openExternalUrl = syntheticDestination<OpenExternalUrl> {
@@ -248,7 +253,10 @@ val openExternalUrl = syntheticDestination<OpenExternalUrl> {
         activity.startActivity(Intent(ACTION_VIEW, Uri.parse(key.url)))
     }
 }
+```
 
+<!-- snippet: synthetic-destinations/side-effect-backstack -->
+```kotlin
 @NavigationDestination(DeepLinkResolver::class)
 val deepLinkResolver = syntheticDestination<DeepLinkResolver> {
     sideEffect {
@@ -281,6 +289,7 @@ Use this when the synthetic should be looked up by key, as it is in
 production. `runEnroTest` installs an empty controller, so register the
 synthetic with `installNavigationModule` first:
 
+<!-- snippet: synthetic-destinations/test-registered -->
 ```kotlin
 @Test
 fun `auth gate forwards to protected screen when logged in`() = runEnroTest {
@@ -302,6 +311,7 @@ fun `auth gate forwards to protected screen when logged in`() = runEnroTest {
 Use this for pure unit tests that don't need a controller installed. Pass
 the `NavigationDestinationProvider` value directly:
 
+<!-- snippet: synthetic-destinations/test-direct -->
 ```kotlin
 val authGate = syntheticDestination<RequireProtectedFeature> {
     if (sessionRepository.isLoggedIn) open(AuthGateProtectedFeature)
@@ -333,6 +343,7 @@ fun `auth gate redirects to login when logged out`() {
 A `SideEffect` outcome carries the block but doesn't auto-invoke it —
 the test gets to decide whether to run it, and with what scope:
 
+<!-- snippet: synthetic-destinations/test-side-effect -->
 ```kotlin
 @Test
 fun `external URL synthetic runs the launch side effect`() {
