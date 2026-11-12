@@ -12,6 +12,7 @@ import dev.enro.recipes.interceptor.ModuleInterceptorRecipe
 import dev.enro.recipes.koin.KoinViewModelRecipe
 import dev.enro.recipes.material.MaterialListDetailRecipe
 import dev.enro.recipes.material.MaterialSupportingPaneRecipe
+import dev.enro.recipes.modular.ModularNavigationRecipe
 import dev.enro.recipes.results.ViewModelResultsRecipe
 import dev.enro.recipes.saveable.SavedStateRecipe
 import dev.enro.recipes.viewmodel.SharedViewModelRecipe
@@ -166,6 +167,21 @@ class RecipeSmokeTests {
         see("rememberSaveable: 2")
         see("ViewModel property: 2")
         see("SavedStateHandle: 2")
+    }
+
+    // The destinations are in other Gradle modules; this passes only if
+    // RecipesComponent found their generated bindings.
+    @Test
+    fun `modular navigation crosses module boundaries`() = runRecipeTest(ModularNavigationRecipe) {
+        see("In :recipes:modular:feature-home")
+        click("View Profile")
+        see("Profile: user-123")
+        see("In :recipes:modular:feature-profile")
+        click("Back")
+
+        click("Login")
+        click("Log in and go home")
+        see("Home Screen")
     }
 
     @Test

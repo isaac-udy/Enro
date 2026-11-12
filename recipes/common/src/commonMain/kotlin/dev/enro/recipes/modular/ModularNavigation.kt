@@ -1,58 +1,42 @@
 /**
  * Enro Recipe: Modular Navigation
  *
- * Shows how keys and destinations are split across feature modules, without
- * requiring a DI framework. This recipe is a single file: comments mark where
- * each module boundary would be.
+ * Demonstrates navigation between feature modules that do not depend on each
+ * other, without a DI framework. The recipe is three Gradle modules:
  *
- * In a real app, the keys would live in a shared :core:navigation module while
- * destinations would live in :feature:home, :feature:profile, etc. Each module
- * generates a NavigationModule via KSP. The application module composes them.
+ *  - `:recipes:modular:navigation` holds the NavigationKeys. It depends on
+ *    `enro-common` only.
+ *  - `:recipes:modular:feature-home` has the home screen. It opens the
+ *    profile, settings and login screens by key.
+ *  - `:recipes:modular:feature-profile` has those three screens.
  *
- * For demonstration, this single file contains keys + multiple destinations that
- * would typically live in different modules.
+ * The two feature modules depend on the navigation module and not on each
+ * other. Each applies the `enro-processor` KSP dependency, which generates a
+ * binding for every `@NavigationDestination` in the module.
+ *
+ * This module (`:recipes:common`) is the app module. It depends on both
+ * feature modules, and its `@NavigationComponent` (`RecipesComponent`) picks
+ * up their generated bindings from the classpath. Nothing else registers the
+ * feature destinations.
+ *
+ * Nav3 equivalents: the Hilt, Koin and Metro modular recipes.
  */
 package dev.enro.recipes.modular
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
 import dev.enro.asInstance
 import dev.enro.backstackOf
-import dev.enro.close
 import dev.enro.navigationHandle
-import dev.enro.open
 import dev.enro.recipes.RecipeScaffold
-import dev.enro.ui.NavigationDestinationProvider
+import dev.enro.recipes.modular.navigation.HomeKey
 import dev.enro.ui.NavigationDisplay
-import dev.enro.ui.navigationDestination
 import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
 
 @Serializable
 object ModularNavigationRecipe : NavigationKey
-
-// :core:navigation - Shared NavigationKey definitions
-@Serializable
-data object HomeKey : NavigationKey
-
-@Serializable
-data class ProfileKey(val userId: String) : NavigationKey
-
-@Serializable
-data class ModularSettingsKey(val section: String = "general") : NavigationKey
-
-@Serializable
-data object LoginKey : NavigationKey
 
 @Composable
 @NavigationDestination(ModularNavigationRecipe::class)
@@ -62,6 +46,8 @@ fun ModularNavigationRecipeScreen() {
         title = "Modular Navigation",
         navigation = navigation,
     ) { modifier ->
+        // HomeKey comes from the navigation module. Its destination is in
+        // feature-home, which this file never references.
         val container = rememberNavigationContainer(
             backstack = backstackOf(HomeKey.asInstance()),
         )
@@ -69,75 +55,5 @@ fun ModularNavigationRecipeScreen() {
             state = container,
             modifier = modifier,
         )
-    }
-}
-
-// :feature:home - Home destination
-@Composable
-@NavigationDestination(HomeKey::class)
-fun HomeScreen() {
-    val navigation = navigationHandle<HomeKey>()
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Text("Home Screen", style = MaterialTheme.typography.titleLarge)
-        Text("(would live in :feature:home)", style = MaterialTheme.typography.bodySmall)
-
-        Button(onClick = { navigation.open(ProfileKey("user-123")) }) {
-            Text("View Profile")
-        }
-        Button(onClick = { navigation.open(ModularSettingsKey()) }) {
-            Text("Settings")
-        }
-        Button(onClick = { navigation.open(LoginKey) }) {
-            Text("Login (manually-registered destination)")
-        }
-    }
-}
-
-// :feature:profile - Profile destination
-@Composable
-@NavigationDestination(ProfileKey::class)
-fun ProfileScreen() {
-    val navigation = navigationHandle<ProfileKey>()
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Text("Profile: ${navigation.key.userId}", style = MaterialTheme.typography.titleLarge)
-        Text("(would live in :feature:profile)", style = MaterialTheme.typography.bodySmall)
-        Button(onClick = { navigation.close() }) { Text("Back") }
-    }
-}
-
-// :feature:settings - Settings destination
-@Composable
-@NavigationDestination(ModularSettingsKey::class)
-fun SettingsScreen() {
-    val navigation = navigationHandle<ModularSettingsKey>()
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Text("Settings: ${navigation.key.section}", style = MaterialTheme.typography.titleLarge)
-        Text("(would live in :feature:settings)", style = MaterialTheme.typography.bodySmall)
-        Button(onClick = { navigation.close() }) { Text("Back") }
-    }
-}
-
-// :feature:auth - Manually-registered destination via navigationDestination
-@NavigationDestination(LoginKey::class)
-val loginDestination: NavigationDestinationProvider<LoginKey> = navigationDestination {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Text("Login Screen", style = MaterialTheme.typography.titleLarge)
-        Text(
-            "(Registered programmatically with navigationDestination)",
-            style = MaterialTheme.typography.bodySmall,
-        )
-        Button(onClick = { navigation.close() }) { Text("Back") }
     }
 }

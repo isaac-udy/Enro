@@ -25,6 +25,11 @@ kotlin {
             api("dev.enro:enro-compat:${project.enroVersionName}")
             implementation(libs.kotlinx.serialization)
             implementation(libs.compose.lifecycle)
+            // The Modular Navigation recipe's modules. The feature modules are
+            // only here to put their generated bindings on the classpath.
+            implementation(project(":recipes:modular:navigation"))
+            implementation(project(":recipes:modular:feature-home"))
+            implementation(project(":recipes:modular:feature-profile"))
             // For the Material list-detail and supporting pane recipes.
             implementation(libs.compose.material3.adaptive)
             implementation(libs.compose.material3.adaptive.layout)

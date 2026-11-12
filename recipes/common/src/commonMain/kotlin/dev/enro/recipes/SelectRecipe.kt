@@ -320,8 +320,8 @@ private val recipeGroups: List<RecipeGroup> = listOf(
             RecipeEntry(
                 key = ModularNavigationRecipe,
                 title = "Modular Navigation",
-                description = "How keys and destinations split across feature modules. " +
-                    "Shown in one file, with comments marking the module boundaries.",
+                description = "Three Gradle modules: shared keys and two features that open " +
+                    "each other's screens without depending on each other.",
             ),
             RecipeEntry(
                 key = OpenedTimestampPluginRecipe,
