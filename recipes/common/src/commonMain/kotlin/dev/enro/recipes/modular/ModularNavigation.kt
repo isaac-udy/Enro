@@ -1,8 +1,9 @@
 /**
  * Enro Recipe: Modular Navigation
  *
- * Demonstrates how Enro handles navigation across feature modules using
- * KSP code generation, without requiring a DI framework.
+ * Shows how keys and destinations are split across feature modules, without
+ * requiring a DI framework. This recipe is a single file: comments mark where
+ * each module boundary would be.
  *
  * In a real app, the keys would live in a shared :core:navigation module while
  * destinations would live in :feature:home, :feature:profile, etc. Each module

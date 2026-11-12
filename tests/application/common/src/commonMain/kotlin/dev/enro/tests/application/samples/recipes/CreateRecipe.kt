@@ -3,7 +3,9 @@ package dev.enro.tests.application.samples.recipes
 import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
 import dev.enro.tests.application.samples.recipes.create.AddIngredients
+import dev.enro.tests.application.samples.recipes.create.AddNotes
 import dev.enro.tests.application.samples.recipes.create.AddSteps
+import dev.enro.tests.application.samples.recipes.create.AskToAddNotes
 import dev.enro.tests.application.samples.recipes.create.EnterCookingTime
 import dev.enro.tests.application.samples.recipes.create.EnterDescription
 import dev.enro.tests.application.samples.recipes.create.EnterServings
@@ -24,7 +26,8 @@ val createRecipeDestination = managedFlowDestination<CreateRecipe, Recipe>(
         val servings = open(EnterServings)
         val ingredients = open(AddIngredients)
         val instructions = open(AddSteps)
-        val notes = open(EnterDescription)
+        // Ask before opening the notes step; skipping it leaves the notes empty.
+        val notes = if (open(AskToAddNotes)) open(AddNotes) else ""
 
         Recipe(
             id = Uuid.random().toString(),

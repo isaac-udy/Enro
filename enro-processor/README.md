@@ -1,6 +1,6 @@
 # `enro-processor`
 
-The KSP / kapt code generator that turns `@NavigationDestination`,
+The KSP code generator that turns `@NavigationDestination`,
 `@NavigationComponent`, and `@NavigationPath` annotations into the glue
 the runtime consumes. Apply it as a `ksp("…")` dependency on any module
 that declares Enro destinations; it generates:

@@ -31,14 +31,17 @@ fun main() {
                     title = "Enro Recipes",
                     onCloseRequest = { navigation.close() },
                     onKeyEvent = {
-                        if (it.type == KeyEventType.KeyDown && it.key == Key.W && it.isMetaPressed) {
-                            navigation.close()
-                            true
+                        when {
+                            it.type == KeyEventType.KeyDown && it.key == Key.W && it.isMetaPressed -> {
+                                navigation.close()
+                                true
+                            }
+                            it.type == KeyEventType.KeyDown && it.key == Key.Escape -> {
+                                navigationContext.activeLeaf().getNavigationHandle().requestClose()
+                                true
+                            }
+                            else -> false
                         }
-                        if (it.type == KeyEventType.KeyDown && it.key == Key.Escape) {
-                            navigationContext.activeLeaf().getNavigationHandle().requestClose()
-                        }
-                        false
                     },
                 )
             },

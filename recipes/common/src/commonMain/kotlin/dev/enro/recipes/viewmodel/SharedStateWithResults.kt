@@ -1,9 +1,10 @@
 /**
- * Enro Recipe: Shared State (formerly Shared ViewModel)
+ * Enro Recipe: Sharing State with Results
  *
- * Demonstrates how to share state between parent and child destinations using
- * NavigationKey + Results, and via a ViewModel that exposes state to children
- * through results.
+ * Demonstrates how to share state between a parent and a child destination
+ * without sharing a ViewModel: the parent passes the current value to the
+ * child in its NavigationKey, and the child returns the edited value as a
+ * result. Only the parent has a ViewModel.
  */
 package dev.enro.recipes.viewmodel
 
@@ -43,7 +44,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.Serializable
 
 @Serializable
-object SharedViewModelRecipe : NavigationKey
+object SharedStateWithResultsRecipe : NavigationKey
 
 @Serializable
 data object ParentScreen : NavigationKey
@@ -52,11 +53,11 @@ data object ParentScreen : NavigationKey
 data class ChildScreen(val currentData: String) : NavigationKey.WithResult<String>
 
 @Composable
-@NavigationDestination(SharedViewModelRecipe::class)
-fun SharedViewModelRecipeScreen() {
-    val navigation = navigationHandle<SharedViewModelRecipe>()
+@NavigationDestination(SharedStateWithResultsRecipe::class)
+fun SharedStateWithResultsRecipeScreen() {
+    val navigation = navigationHandle<SharedStateWithResultsRecipe>()
     RecipeScaffold(
-        title = "Shared State",
+        title = "Sharing State with Results",
         navigation = navigation,
     ) { modifier ->
         val container = rememberNavigationContainer(

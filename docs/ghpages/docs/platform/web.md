@@ -1,5 +1,5 @@
 ---
-title: Web Platform Guide
+title: Web
 parent: Platform-Specific Guides
 nav_order: 4
 ---
@@ -258,7 +258,6 @@ other platforms.
 - [Installation](../getting-started/installation.md) for the multi-platform setup.
 - [Recipes web main][web-main] — full working bootstrap for the recipes app.
 
-[cmp-web]: https://github.com/JetBrains/compose-multiplatform/blob/master/web/README.md
 [web-main]: https://github.com/isaac-udy/Enro/blob/main/recipes/app/web/src/wasmJsMain/kotlin/main.kt
 [compose-html]: https://github.com/JetBrains/compose-multiplatform/tree/master/html
 [html-sample]: https://github.com/isaac-udy/Enro/tree/main/tests/html-application

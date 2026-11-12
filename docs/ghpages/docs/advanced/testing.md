@@ -197,14 +197,16 @@ fun tearDown() {
 }
 ```
 
-## Strict mode
+## The test controller
 
-When `runEnroTest { }` or `EnroTestRule` is active, attempting to perform
-"real" navigation outside a `TestNavigationHandle` will be blocked. This is
-deliberate — the test utilities are designed for **isolated** testing of a
-single destination or ViewModel. If you want full app navigation in an
-instrumented test, don't install the test controller; let the app's
-real controller drive it.
+`runEnroTest { }` and `EnroTestRule` install a new, empty `EnroController`
+for the test and remove it afterwards. No destinations or path bindings
+are registered on it. Add the ones a test needs with
+`installNavigationModule(module)` or `installPathBindings(...)`.
+
+On Android instrumented tests, where the `Application` has already installed
+Enro, `runEnroTest` and `EnroTestRule` use that controller and leave it
+installed afterwards.
 
 ## See also
 

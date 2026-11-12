@@ -137,7 +137,9 @@ container that survives both screens (e.g. a hoisted `StateFlow` in a
 parent destination, or a process-wide singleton) and have each destination's
 ViewModel observe it.
 
-For a small inline example, see the [shared ViewModel recipe][shared-recipe].
+A child destination often doesn't need the shared state at all: pass the
+current value in the child's `NavigationKey` and return the edited value as
+a result. The [sharing state with results recipe][shared-recipe] shows this.
 
 ## See also
 
@@ -145,7 +147,7 @@ For a small inline example, see the [shared ViewModel recipe][shared-recipe].
   API both ViewModels and Composables use.
 - [Results](results.md) — `registerForNavigationResult` in both forms.
 - [Basic ViewModel recipe][basic-recipe] and
-  [Shared ViewModel recipe][shared-recipe].
+  [Sharing state with results recipe][shared-recipe].
 
 [basic-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/viewmodel/BasicViewModel.kt
-[shared-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/viewmodel/SharedViewModel.kt
+[shared-recipe]: https://github.com/isaac-udy/Enro/blob/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes/viewmodel/SharedStateWithResults.kt

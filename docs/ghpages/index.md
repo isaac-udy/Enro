@@ -57,6 +57,8 @@ Compose destinations, so you can adopt Enro incrementally.
 - [Animations](docs/advanced/animations.md)
 - [Testing](docs/advanced/testing.md)
 - [Plugins](docs/advanced/plugins.md)
+- [Synthetic Destinations](docs/advanced/synthetic-destinations.md)
+- [Path Bindings](docs/advanced/path-bindings.md)
 
 ## Platform-Specific Guides
 
@@ -73,8 +75,12 @@ for the API delta and a step-by-step conversion.
 ## Recipes
 
 The [recipes module](https://github.com/isaac-udy/Enro/tree/main/recipes/common/src/commonMain/kotlin/dev/enro/recipes)
-in the source repo is a set of small, runnable examples — one per concept. The
-documentation below links into them for every working snippet.
+in the source repo is a set of small, runnable examples — one per concept. Many
+documentation pages link to the recipe for their topic.
+
+## Troubleshooting
+
+See [Troubleshooting](docs/troubleshooting.md) for error messages and their fixes.
 
 ## Applications using Enro
 

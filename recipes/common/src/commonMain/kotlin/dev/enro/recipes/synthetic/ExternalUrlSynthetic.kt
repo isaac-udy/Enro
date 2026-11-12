@@ -9,15 +9,15 @@
  * synthetic itself is treated as silently closed; no result-channel
  * callback fires for the caller.
  *
- * In a real app the side-effect body would invoke a platform-specific API:
- *  - Android: `context.findActivity().startActivity(Intent(ACTION_VIEW, Uri.parse(url)))`
- *    or Chrome Custom Tabs via androidx.browser
- *  - Desktop:  `java.awt.Desktop.getDesktop().browse(URI(url))`
+ * The side effect calls [launchExternalUrl], an `expect` function with one
+ * `actual` per platform:
+ *  - Android: `context.root().activity.startActivity(Intent(ACTION_VIEW, …))`
+ *  - Desktop: `java.awt.Desktop.getDesktop().browse(URI(url))`
+ *  - iOS:     `UIApplication.sharedApplication.openURL(…)`
  *  - Web:     `window.open(url, "_blank")`
  *
- * Cross-platform launch from common code is out of scope for the recipe
- * itself, so the side effect just records each requested URL in an
- * in-memory log that the recipe screen displays.
+ * The side effect also records each URL in an in-memory log that the recipe
+ * screen displays.
  */
 package dev.enro.recipes.synthetic
 
@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dev.enro.NavigationContext
 import dev.enro.NavigationKey
 import dev.enro.annotations.NavigationDestination
 import dev.enro.navigationHandle
@@ -47,16 +48,20 @@ object ExternalUrlSyntheticRecipe : NavigationKey
 @Serializable
 data class OpenExternalUrl(val url: String) : NavigationKey
 
-// In a real app the synthetic would call into a platform API; here we
-// keep a simple in-memory log so the recipe screen has something to show.
+// A log of opened URLs, so the recipe screen has something to show.
 private val openedUrls = mutableStateListOf<String>()
+
+/**
+ * Opens [url] in the platform's browser. [context] is the navigation context
+ * the synthetic was opened from; the Android implementation uses it to find
+ * the hosting Activity.
+ */
+internal expect fun launchExternalUrl(context: NavigationContext, url: String)
 
 @NavigationDestination(OpenExternalUrl::class)
 val openExternalUrl = syntheticDestination<OpenExternalUrl> {
     sideEffect {
-        // In a real app: context.findActivity() on Android then start the
-        // CCT intent; Desktop.browse() on desktop; window.open on web.
-        // See the file header for snippets.
+        launchExternalUrl(context, key.url)
         openedUrls.add(key.url)
         // The side effect dispatched, so the synthetic is silently closed
         // — no result-channel callback fires, the synthetic instance
@@ -82,7 +87,7 @@ fun ExternalUrlSyntheticRecipeScreen() {
             )
             Text(
                 text = "Each button below calls navigation.open(OpenExternalUrl(...)). The " +
-                    "synthetic 'opens' the URL and falls through — your Enro backstack " +
+                    "synthetic opens the URL in the browser. Your Enro backstack " +
                     "doesn't change.",
                 style = MaterialTheme.typography.bodySmall,
             )
@@ -95,7 +100,7 @@ fun ExternalUrlSyntheticRecipeScreen() {
             }
 
             Text(
-                text = "URLs the synthetic has 'opened' this session:",
+                text = "URLs the synthetic has opened this session:",
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(top = 16.dp),
             )

@@ -63,7 +63,7 @@ Fragment/Activity story working alongside new Compose destinations. See
 | `EnroTestRule` (JUnit) | Still available on Android; the KMP form is `runEnroTest { ... }`. |
 | `EnroPreview(key) { ... }` | Still available in `enro-compat`. It renders the content without a navigation handle. |
 | `navigationHandle.onContainer { }`, `onParentContainer { }`, `onActiveContainer { }` | Deprecated in `enro-compat`: the block is never run. Get the `NavigationContainer` from the navigation context and update its backstack directly. |
-| `expectInstruction { ... }` test helpers | `TestNavigationHandle<T>` with `assertOpened`, `assertClosed`, `assertCompleted`, `assertOperationExecuted`. The old helpers remain in `enro-test`'s compat layer. |
+| `expectOpenInstruction<T>()`, `expectCloseInstruction()` test helpers | `TestNavigationHandle<T>` with `assertOpened`, `assertClosed`, `assertCompleted`, `assertOperationExecuted`. The old helpers remain in `enro-test` on Android only. |
 
 ## Detailed changes
 

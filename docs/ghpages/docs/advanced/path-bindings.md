@@ -174,53 +174,64 @@ both for convenience inside destinations — see the
 KDoc. Both return `null` when no binding matches: an unrecognised path
 or a key whose type has no binding registered.
 
-Typical use:
+Typical use — handling an inbound Android deep link. The Activity keeps the
+URL in state, and the composition resolves it and opens the key on the root
+container:
 
 ```kotlin
-// Handling an inbound Android deep link.
-override fun onNewIntent(intent: Intent) {
-    val key = controller.getNavigationKeyFromPath(intent.dataString.orEmpty()) ?: return
-    rootHandle.open(key)
+class MainActivity : ComponentActivity() {
+    private var pendingDeepLink by mutableStateOf<String?>(null)
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        pendingDeepLink = intent.dataString
+        setContent {
+            val container = rememberNavigationContainer(
+                backstack = backstackOf(Home.asInstance()),
+            )
+            val context = LocalNavigationContext.current
+            LaunchedEffect(pendingDeepLink) {
+                val path = pendingDeepLink ?: return@LaunchedEffect
+                pendingDeepLink = null
+                val key = context.getNavigationKeyFromPath(path) ?: return@LaunchedEffect
+                container.updateBackstack { (it + key.asInstance()).asBackstack() }
+            }
+            NavigationDisplay(state = container)
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        pendingDeepLink = intent.dataString
+    }
 }
 ```
 
-## The path-vs-state model
+## Which destinations appear in the URL
 
-A common question: "Why doesn't my modal / tab / inner-container
-destination show up in the URL?"
+On the web, the URL bar shows the path of the **deepest active destination
+that has a path binding**. Enro walks from the root container's top
+destination down through each destination's active container, so a
+destination inside a tab or a detail pane can set the URL.
 
-Enro's web URL routing is **root-container-only** — only the active
-destination of the root navigation container is reflected in the URL
-bar. Modals, sheets, inner tabs, list/detail panes hosted inside
-other destinations are *state*, not *URL state*, and don't write to
-`location.pathname`.
+A destination with no path binding never changes the URL. The URL keeps
+the last path an annotated destination set. Dialogs, sheets and other
+destinations you don't annotate stay out of the URL this way.
 
-This is deliberate, and matches how most modern web apps behave:
+A full-page load resolves the URL to one destination on the root container.
+To cold-load a destination that lives inside a nested container, parse the
+URL yourself and seed the parent backstack, as the *Advanced Deep Link*
+recipe does.
 
-- Going to a different profile on Bluesky writes the URL
-  (`bsky.app/profile/some.handle`).
-- Switching tabs within that profile (Posts / Replies / Media /
-  Videos / Likes / Feeds) doesn't — the URL stays on the profile.
+To record only the root container in browser history, pass
+`nestedContainerHistory = false` to `InstallWebHistoryPlugin`.
 
-Path bindings declare what's URL-shaped; the runtime treats unbound
-destinations as session-local. If you have a destination that you'd
-like to be deep-linkable but it lives inside a nested container, the
-two options are:
-
-1. Promote it to root for the URL-bound case (and host the same
-   destination inside a parent for the nested case — same key, two
-   contexts).
-2. Use the synthetic-backstack pattern from the *Advanced Deep Link*
-   recipe: parse the URL yourself, derive the parent context, seed the
-   nested container's backstack manually.
-
-The web platform docs cover the URL/history wiring in detail — see
-[Web Platform Guide](../platform/web.md) for `EnroBrowserContent`,
+See [Web](../platform/web.md) for `EnroBrowserContent`,
 `InstallWebHistoryPlugin`, and `rememberInitialBackstackFromUrl`.
 
 ## See also
 
-- [Web Platform Guide](../platform/web.md) — how `@NavigationPath`
+- [Web](../platform/web.md) — how `@NavigationPath`
   drives browser URL routing.
 - [Synthetic Destinations](synthetic-destinations.md) — pairs well
   with path bindings for "URL hits → decide which screen to show".

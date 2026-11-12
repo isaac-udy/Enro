@@ -6,6 +6,11 @@
  * Note: For simplicity in this recipe app, the interceptor is created on the recipe
  * host using `interceptor` parameter on rememberNavigationContainer. In a real app
  * you would register interceptors via a NavigationModule on the controller.
+ *
+ * The Auth Gate recipe (`dev.enro.recipes.synthetic.AuthGateSynthetic`) solves the
+ * same problem with a synthetic destination. Use an interceptor when the gate should
+ * apply to destinations without their callers changing; use a synthetic when callers
+ * should open an explicit "gated" key.
  */
 package dev.enro.recipes.conditional
 

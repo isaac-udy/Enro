@@ -228,10 +228,11 @@ those modules; you do not need to register the destinations again.
 
 ## Fragment and Activity destinations
 
-Enro 3 is Compose-first, but Android Fragments and Activities are supported
-through the `enro-compat` module. A Fragment or Activity is registered the
-same way — `@NavigationDestination(KeyClass::class)` on the class — and the
-runtime takes care of bridging it. See the
+Enro 3 is Compose-first, but Android Fragments and Activities can be
+destinations too. No extra module is needed. A Fragment or Activity is
+registered the same way — `@NavigationDestination(KeyClass::class)` on the
+class — and the runtime takes care of bridging it. The `enro-compat` module
+adds the Enro 2 API for code that has not been migrated. See the
 [Android platform guide](../platform/android.md).
 
 ## See also

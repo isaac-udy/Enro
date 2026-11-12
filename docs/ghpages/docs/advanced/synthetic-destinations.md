@@ -232,6 +232,7 @@ execute mutex is held — direct `controller.execute(...)` or
 that you should be using `sideEffect { ... }` instead.
 
 ### From the side-effect scope — full access
+{: #side-effect-scope }
 
 `SyntheticSideEffectScope<K>` (the receiver of the `sideEffect` block)
 exposes `context`, `container`, `instance`, and `key`. By the time the
@@ -242,7 +243,8 @@ settled, so imperative work is safe:
 @NavigationDestination(OpenExternalUrl::class)
 val openExternalUrl = syntheticDestination<OpenExternalUrl> {
     sideEffect {
-        val activity = context.findActivity()  // Android extension
+        // findActivity() is your own helper, not an Enro API.
+        val activity = context.findActivity()
         activity.startActivity(Intent(ACTION_VIEW, Uri.parse(key.url)))
     }
 }
@@ -275,13 +277,18 @@ Two entry points cover the two common test shapes:
 
 ### Registered path — via the installed controller
 
-Use this when the synthetic is registered through a `NavigationModule` on
-your component, as it would be in production:
+Use this when the synthetic should be looked up by key, as it is in
+production. `runEnroTest` installs an empty controller, so register the
+synthetic with `installNavigationModule` first:
 
 ```kotlin
 @Test
 fun `auth gate forwards to protected screen when logged in`() = runEnroTest {
-    MyComponent.installNavigationController(this)
+    installNavigationModule(
+        createNavigationModule {
+            destination<RequireProtectedFeature>(requireProtectedFeature)
+        }
+    )
     isLoggedIn = true  // app-state setup
 
     val outcome = testSyntheticDestination(RequireProtectedFeature)

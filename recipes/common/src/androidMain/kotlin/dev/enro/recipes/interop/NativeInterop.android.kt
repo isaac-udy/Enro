@@ -15,8 +15,7 @@ actual fun PlatformInteropContent() {
                 orientation = LinearLayout.VERTICAL
                 addView(
                     TextView(context).apply {
-                        text = "This is a classic Android View embedded inside an Enro destination. " +
-                            "Fragments can be hosted the same way via enro-compat's Fragment APIs."
+                        text = "This is a classic Android View embedded inside an Enro destination."
                     },
                 )
             }

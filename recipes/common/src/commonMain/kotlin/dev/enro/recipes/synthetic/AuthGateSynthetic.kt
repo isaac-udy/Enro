@@ -8,6 +8,10 @@
  * Callers don't have to know about the gate — they just open the
  * synthetic. The synthetic decides where to actually land based on the
  * current auth state and dispatches `open(...)` accordingly.
+ *
+ * The Conditional Navigation recipe (`dev.enro.recipes.conditional`) solves the
+ * same problem with a NavigationInterceptor, which gates destinations without
+ * their callers opening a different key.
  */
 package dev.enro.recipes.synthetic
 

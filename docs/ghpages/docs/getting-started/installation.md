@@ -34,7 +34,30 @@ Enro 3.0.0 requires Kotlin 2.4, Compose Multiplatform 1.12, and on Android,
 AGP 9.1.0 or later with compileSdk 37.
 
 In a Kotlin Multiplatform project, add `enro` to your `commonMain` source set,
-and add the `enro-processor` KSP dependency for each target you build.
+and add the `enro-processor` KSP dependency for each target you build:
+
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation("dev.enro:enro:3.0.0")
+        }
+    }
+}
+
+dependencies {
+    val enroProcessor = "dev.enro:enro-processor:3.0.0"
+    add("kspCommonMainMetadata", enroProcessor)
+    add("kspAndroid", enroProcessor)
+    add("kspDesktop", enroProcessor)         // a jvm("desktop") target
+    add("kspIosArm64", enroProcessor)
+    add("kspIosSimulatorArm64", enroProcessor)
+    add("kspWasmJs", enroProcessor)
+}
+```
+
+The configuration name is `ksp` followed by the target name. Leave out the
+targets you don't build.
 
 If you have an existing Android app that uses Fragments or Activities and want
 to adopt Enro incrementally, also add the compatibility module:
@@ -143,8 +166,8 @@ fun main() {
 ```
 
 See the [Desktop platform guide](../platform/desktop.md) for the full window
-configuration story and the [recipes desktop main]
-[recipes-desktop] for a complete working example.
+configuration story and the [recipes desktop main][recipes-desktop] for a
+complete working example.
 
 ### Web (WasmJS and Kotlin/JS)
 

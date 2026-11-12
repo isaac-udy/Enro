@@ -75,7 +75,7 @@ object MyComponent : NavigationComponentConfiguration(
 ```
 
 A plugin is installed once per controller. Multiple plugins can be
-installed; their hooks fire in installation order.
+installed. The order their hooks fire in is not guaranteed.
 
 ## A worked example
 

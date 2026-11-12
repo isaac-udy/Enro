@@ -30,3 +30,6 @@ Patterns that build on the core concepts.
   to non-Enro side effects, conditional redirects, and runtime "decider"
   patterns that pick between several implementations of a single
   result-bearing contract.
+- [Path Bindings](path-bindings.md) — `@NavigationPath` and
+  `NavigationPathBinding`: map URL paths to `NavigationKey`s for deep
+  links and web URLs.

@@ -311,8 +311,9 @@ two handles in flight — one for each instance, each with its own
 `savedStateHandle`.
 
 If you've pushed your destination and then pushed something on top of it,
-your handle is still valid; the destination is composed but not visible.
-When the user navigates back, the same handle resumes.
+your handle is still valid. With the default scenes the covered destination
+leaves composition and its saved state is kept. When the user navigates
+back, the destination is composed again with the same handle and state.
 
 ## See also
 

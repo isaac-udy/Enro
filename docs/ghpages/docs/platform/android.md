@@ -7,8 +7,9 @@ nav_order: 1
 # Android
 
 Enro on Android is the same Compose-first runtime you'd use on iOS, Desktop
-or Web, plus a compatibility module — `enro-compat` — that lets you keep
-existing Fragments and Activities working while you adopt the new API.
+or Web. Fragments and Activities can be destinations without any extra
+module. A compatibility module — `enro-compat` — keeps Enro 2 call sites
+compiling while you adopt the new API.
 
 ## Installation
 
@@ -56,10 +57,11 @@ any composable in the tree.
 
 ## Migrating an existing Android app — `enro-compat`
 
-If you have an existing app with Fragments or Activities, the
-`enro-compat` module lets you adopt Enro 3 incrementally. Existing
-Fragment- and Activity-backed destinations keep working alongside new
-Composable destinations; you can migrate screens one at a time.
+If you have an existing Enro 2 app, the `enro-compat` module lets you
+adopt Enro 3 incrementally. It provides the Enro 2 API on top of Enro 3,
+so existing Fragment- and Activity-backed destinations keep working
+alongside new Composable destinations; you can migrate screens one at a
+time.
 
 ```kotlin
 dependencies {
@@ -131,8 +133,8 @@ with leaves of the navigation graph:
 4. Repeat for the next screen.
 
 You can ship a half-migrated app. Just leave the not-yet-converted
-Fragments and Activities annotated as they are; `enro-compat` keeps them
-addressable.
+Fragments and Activities annotated as they are; they stay addressable by
+their keys.
 
 ## Notes
 
@@ -144,8 +146,8 @@ addressable.
 - **Process death** is handled automatically. Your container's backstack
   is saved to `SavedStateHandle` and restored when the process is
   recreated. Test it with "Don't keep activities" in Developer Options.
-- **Multi-Activity layouts** are supported via `enro-compat` — each
-  Activity hosts its own root container.
+- **Multi-Activity layouts** are supported — each Activity hosts its own
+  root container.
 
 ## See also
 

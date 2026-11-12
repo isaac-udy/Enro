@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import dev.enro.annotations.NavigationComponent
 import dev.enro.controller.NavigationComponentConfiguration
 import dev.enro.controller.createNavigationModule
+import dev.enro.recipes.deeplink.deepLinkModule
 import dev.enro.recipes.plugins.OpenedTimestampPlugin
 import dev.enro.ui.contains
 import dev.enro.ui.decorators.navigationDestinationDecorator
@@ -17,6 +18,9 @@ import dev.enro.ui.scenes.isDirectOverlay
 object RecipesComponent : NavigationComponentConfiguration(
     module = createNavigationModule {
         plugin(OpenedTimestampPlugin())
+
+        // Path bindings for the Basic Deep Link recipe.
+        module(deepLinkModule)
 
         // Wrap every regular destination in a Material-themed surface so that
         // transitions (slide, fade, shared elements) animate over an opaque

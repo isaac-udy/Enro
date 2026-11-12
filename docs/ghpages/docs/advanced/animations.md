@@ -54,14 +54,16 @@ object MyComponent : NavigationComponentConfiguration(
     module = createNavigationModule {
         decorator {
             navigationDestinationDecorator { destination ->
-                if (destination.isDirectOverlay() /* … and not a dialog */) {
-                    destination.content()
+                val isOverlay = destination.isDirectOverlay() ||
+                    destination.metadata.contains(DialogSceneStrategy.DialogPropertiesKey)
+                if (isOverlay) {
+                    destination.Content()
                 } else {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background,
                     ) {
-                        destination.content()
+                        destination.Content()
                     }
                 }
             }
@@ -75,8 +77,8 @@ top of another destination and need to stay transparent.
 
 ## NavigationAnimations
 
-A `NavigationAnimations` is a pair of transition specs — one for forward
-navigation, one for pop:
+A `NavigationAnimations` holds the transition specs for a `NavigationDisplay`.
+The two you set most often are forward navigation and pop:
 
 ```kotlin
 NavigationDisplay(
@@ -163,12 +165,34 @@ buttons) lives in the [staggered animations recipe][staggered-recipe].
 
 ## Predictive back
 
-`NavigationDisplay` participates in Android's predictive back gesture
-automatically — when the user starts a back gesture, the popTransitionSpec
-plays in reverse, tracking the gesture progress. You don't need to
-configure anything for the default behaviour; the predictive-back
-animations the user sees are the same `popTransitionSpec` you defined
-running on a different driver.
+`NavigationDisplay` handles the predictive back gesture without any setup.
+While the user drags, the display runs
+`NavigationAnimations.predictivePopTransitionSpec`, driven by the gesture
+progress. That spec calls `popTransitionSpec` unless you set it, so a custom
+pop transition also applies to the gesture.
+
+`predictivePopTransitionSpec` receives the edge the swipe started from (a
+`NavigationEvent.SwipeEdge` value), so the transition can differ for left and
+right swipes:
+
+```kotlin
+NavigationDisplay(
+    state = container,
+    animations = NavigationAnimations.Default.copy(
+        predictivePopTransitionSpec = { swipeEdge ->
+            ContentTransform(
+                targetContentEnter = fadeIn(),
+                initialContentExit = scaleOut(targetScale = 0.9f) + fadeOut(),
+            )
+        },
+    ),
+)
+```
+
+A scene can override the spec for itself with the
+`NavigationDisplay.PredictivePopTransitionKey` scene metadata key.
+`NavigationDisplay.TransitionKey` and `NavigationDisplay.PopTransitionKey` do
+the same for the forward and pop transitions.
 
 ## Shared element animations
 

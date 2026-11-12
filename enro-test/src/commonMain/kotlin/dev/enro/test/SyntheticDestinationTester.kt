@@ -17,7 +17,7 @@ import dev.enro.ui.destinations.peekSyntheticOutcome
  * navigation controller and returns the [SyntheticOutcome] the block decided on.
  *
  * Use this when the synthetic is registered through a `NavigationModule` on the
- * controller — typical setup is `runEnroTest { MyComponent.installNavigationController(this); testSyntheticDestination(MyKey) }`.
+ * controller — typical setup is `runEnroTest { installNavigationModule(myModule); testSyntheticDestination(MyKey) }`.
  *
  * For unit-testing a synthetic's logic without installing a component, pass the
  * provider directly: see the `testSyntheticDestination(key, provider, ...)` overload.

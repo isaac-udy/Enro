@@ -2,7 +2,11 @@
  * Enro Recipe: Multiple Back Stacks
  *
  * Demonstrates managing multiple independent backstacks, one per tab, with state
- * preserved across tab switches and configuration changes.
+ * preserved across tab switches and configuration changes. Selecting the active
+ * tab again returns that tab to its root.
+ *
+ * The Tab Navigation recipe (`dev.enro.recipes.tabs`) is the minimal version of
+ * the same container setup; start there if you only need tabs.
  *
  * Uses a small multiplatform copy of NavigationContainerGroup
  * (see `dev.enro.recipes.util.rememberNavigationContainerGroup`).
@@ -32,6 +36,7 @@ import dev.enro.NavigationContainer
 import dev.enro.NavigationKey
 import dev.enro.acceptNone
 import dev.enro.annotations.NavigationDestination
+import dev.enro.asBackstack
 import dev.enro.asInstance
 import dev.enro.backstackOf
 import dev.enro.close
@@ -118,7 +123,14 @@ fun MultipleBackStacksRecipeScreen() {
                 tabs.forEach { (label, container) ->
                     NavigationBarItem(
                         selected = container == group.activeContainer,
-                        onClick = { group.setActive(container) },
+                        onClick = {
+                            if (container == group.activeContainer) {
+                                // Selecting the active tab again returns it to its root.
+                                container.updateBackstack { it.take(1).asBackstack() }
+                            } else {
+                                group.setActive(container)
+                            }
+                        },
                         icon = {},
                         label = { Text(label) },
                     )

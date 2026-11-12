@@ -5,7 +5,7 @@
  * The Nav3 equivalent ("Fragment Interop") is Android-specific; this recipe generalises
  * the idea so each platform shows how to integrate its own native UI primitive:
  *
- * - Android: an `AndroidView` hosting a classic `View` (path to Fragments via enro-compat)
+ * - Android: an `AndroidView` hosting a classic `View`
  * - Desktop: a `SwingPanel` (when available) or a plain Compose placeholder
  * - iOS / WasmJs: a Compose placeholder describing the platform's interop story
  *
@@ -39,7 +39,7 @@ import dev.enro.ui.rememberNavigationContainer
 import kotlinx.serialization.Serializable
 
 @Serializable
-object FragmentInteropRecipe : NavigationKey
+object NativeInteropRecipe : NavigationKey
 
 @Serializable
 data object InteropHome : NavigationKey
@@ -48,9 +48,9 @@ data object InteropHome : NavigationKey
 data class InteropDetail(val itemId: String) : NavigationKey
 
 @Composable
-@NavigationDestination(FragmentInteropRecipe::class)
-fun FragmentInteropRecipeScreen() {
-    val navigation = navigationHandle<FragmentInteropRecipe>()
+@NavigationDestination(NativeInteropRecipe::class)
+fun NativeInteropRecipeScreen() {
+    val navigation = navigationHandle<NativeInteropRecipe>()
     RecipeScaffold(
         title = "Native Interop",
         navigation = navigation,
