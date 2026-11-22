@@ -9,6 +9,7 @@ import dev.enro.asInstance
 import dev.enro.backstackOf
 import dev.enro.close
 import dev.enro.complete
+import dev.enro.configure
 import dev.enro.controller.createNavigationModule
 import dev.enro.open
 import dev.enro.result.open
@@ -148,6 +149,63 @@ class HtmlNavigationDisplayTests {
         awaitUntil("forward shows the detail destination") { element("#detail-1") != null }
     }
 
+    @Test
+    fun browserBackThroughAnOnCloseRequestedCallbackKeepsTheForwardEntry() = runHtmlTest {
+        installTestDestinations()
+        openGuardedWithWebHistory()
+
+        window.history.back()
+        awaitUntil("the callback closes the guarded destination") {
+            element("#detail-1") != null && element("#guarded") == null
+        }
+
+        window.history.forward()
+        awaitUntil("forward shows the guarded destination again") { element("#guarded") != null }
+    }
+
+    @Test
+    fun browserBackKeepsADestinationWhoseCallbackDoesNotClose() = runHtmlTest {
+        installTestDestinations()
+        openGuardedWithWebHistory()
+        click("#block-close")
+
+        window.history.back()
+        awaitUntil("the callback receives the close request") {
+            element("#guarded-requests")?.textContent == "requests=1"
+        }
+        awaitFrame()
+        awaitFrame()
+        assertNotNull(element("#guarded"), "A callback that does not close keeps the destination")
+
+        click("#allow-close")
+        window.history.back()
+        awaitUntil("the second back closes the guarded destination") {
+            element("#detail-1") != null && element("#guarded") == null
+        }
+        window.history.forward()
+        awaitUntil("forward shows the guarded destination again") { element("#guarded") != null }
+    }
+
+    private suspend fun HtmlTestScope.openGuardedWithWebHistory() {
+        val stateBeforeContent = window.history.state
+        setTestContent(withWebHistory = true)
+        awaitUntil("the history plugin records the initial backstack") {
+            window.history.state != stateBeforeContent
+        }
+        val initialHistoryLength = window.history.length
+        // A detail destination under the guarded one keeps the close off history's first
+        // entry, where the plugin already keeps forward entries.
+        click("#open-detail")
+        awaitUntil("browser history records the detail destination") {
+            window.history.length > initialHistoryLength
+        }
+        click("#open-guarded")
+        awaitUntil("the guarded destination is shown") { element("#guarded") != null }
+        awaitUntil("browser history records the guarded destination") {
+            window.history.length > initialHistoryLength + 1
+        }
+    }
+
     private fun HtmlTestScope.setTestContent(withWebHistory: Boolean = false) {
         setContent {
             EnroHtmlContent {
@@ -194,6 +252,33 @@ class HtmlNavigationDisplayTests {
                                 id("close-detail")
                                 onClick { navigation.close() }
                             }) { Text("Close") }
+                            Button({
+                                id("open-guarded")
+                                onClick { navigation.open(GuardedKey) }
+                            }) { Text("Guarded") }
+                        }
+                    }
+                )
+                destination<GuardedKey>(
+                    navigationDestinationContent {
+                        var allowClose by remember { mutableStateOf(true) }
+                        var requests by remember { mutableStateOf(0) }
+                        navigation.configure {
+                            onCloseRequested {
+                                requests++
+                                if (allowClose) close()
+                            }
+                        }
+                        Div({ id("guarded") }) {
+                            Div({ id("guarded-requests") }) { Text("requests=$requests") }
+                            Button({
+                                id("block-close")
+                                onClick { allowClose = false }
+                            }) { Text("Block close") }
+                            Button({
+                                id("allow-close")
+                                onClick { allowClose = true }
+                            }) { Text("Allow close") }
                         }
                     }
                 )
@@ -226,6 +311,9 @@ class HtmlNavigationDisplayTests {
 
     @Serializable
     data class DetailKey(val id: String) : NavigationKey
+
+    @Serializable
+    object GuardedKey : NavigationKey
 
     @Serializable
     object ConfirmKey : NavigationKey.WithResult<Boolean>
