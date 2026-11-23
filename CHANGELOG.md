@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Fixes
+
+* Web: a browser back on a destination with an `onCloseRequested` callback that closes the
+  destination now keeps the browser's forward entry. Previously the close was written to
+  history as a new entry, so browser forward did nothing.
+
 ## 3.0.0 (2026-11-11)
 
 First stable release of Enro 3. Enro is a Kotlin Multiplatform navigation library for Android,

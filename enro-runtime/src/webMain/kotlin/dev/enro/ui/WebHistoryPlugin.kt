@@ -62,6 +62,14 @@ internal class WebHistoryPlugin(
      */
     private var pendingTraversal: CompletableDeferred<Unit>? = null
 
+    /**
+     * The entry a browser back was headed for when [requestCloseInstead] undid it. When the
+     * `onCloseRequested` callback then closes the destination, the next backstack sync matches
+     * this entry and steps back to it, keeping the browser's forward entries as a plain browser
+     * back does. The next sync of either kind clears it.
+     */
+    private var requestedCloseTarget: ContainerNode? = null
+
     private val eventListener: (String?) -> Unit = { state ->
         val traversal = pendingTraversal
         if (traversal != null) {
@@ -179,6 +187,7 @@ internal class WebHistoryPlugin(
      * [MAX_TRAVERSAL_ATTEMPTS] times.
      */
     private suspend fun syncFromPopState(event: PopState) {
+        requestedCloseTarget = null
         // A popstate without state (address-bar edit, cross-origin navigation) is ignored:
         // the URL alone does not identify an app state.
         val rawState = event.state ?: return
@@ -215,8 +224,9 @@ internal class WebHistoryPlugin(
     /**
      * Handles a browser back that only closes a destination with an `onCloseRequested`
      * callback: the plugin undoes the back with `history.go(1)`, calls `requestClose` on the
-     * destination and returns true. Returns false when the destination has no callback, and
-     * the caller applies the popped entry.
+     * destination and returns true. When the callback closes the destination, [syncFromBackstack]
+     * keeps the forward entries (see [requestedCloseTarget]). Returns false when the destination
+     * has no callback, and the caller applies the popped entry.
      */
     private suspend fun requestCloseInstead(target: ContainerNode): Boolean {
         val closedId = closedInstanceId(createNodeFor(rootContainer, nestedContainers), target) ?: return false
@@ -226,6 +236,7 @@ internal class WebHistoryPlugin(
         val callbacks = destination.instance.metadata.get(NavigationHandleConfiguration.OnCloseCallbacks)
         if (callbacks.isEmpty()) return false
         traverse(1)
+        requestedCloseTarget = target
         destination.getNavigationHandle().requestClose()
         return true
     }
@@ -302,6 +313,8 @@ internal class WebHistoryPlugin(
         val isInit = historyStates.isEmpty() && historyIndex == -1
         val isNoOp = windowState != null && windowState == currentState
         val closeIndex = historyStates.indexOfLast { it == currentState }
+        val isRequestedBrowserBack = requestedCloseTarget == currentState
+        requestedCloseTarget = null
 
         when {
             isInit -> {
@@ -324,7 +337,9 @@ internal class WebHistoryPlugin(
                 val previousIndex = historyIndex
                 historyIndex = closeIndex
                 historyStates[historyIndex] = currentState
-                if (closeIndex == 0) {
+                if (closeIndex == 0 || isRequestedBrowserBack) {
+                    // A close at index 0, or one completing a browser back: step back onto the
+                    // entry and keep the forward entries, as a plain browser back does.
                     traverse(closeIndex - previousIndex)
                     BrowserHistory.replaceState(serializedCurrentState, computeUrl())
                 } else {
