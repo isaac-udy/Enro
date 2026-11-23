@@ -158,6 +158,7 @@ class HtmlNavigationDisplayTests {
         awaitUntil("the callback closes the guarded destination") {
             element("#detail-1") != null && element("#guarded") == null
         }
+        awaitHistoryEntryWithout("GuardedKey")
 
         window.history.forward()
         awaitUntil("forward shows the guarded destination again") { element("#guarded") != null }
@@ -177,11 +178,14 @@ class HtmlNavigationDisplayTests {
         awaitFrame()
         assertNotNull(element("#guarded"), "A callback that does not close keeps the destination")
 
+        awaitHistoryEntryWith("GuardedKey")
+
         click("#allow-close")
         window.history.back()
         awaitUntil("the second back closes the guarded destination") {
             element("#detail-1") != null && element("#guarded") == null
         }
+        awaitHistoryEntryWithout("GuardedKey")
         window.history.forward()
         awaitUntil("forward shows the guarded destination again") { element("#guarded") != null }
     }
@@ -192,19 +196,28 @@ class HtmlNavigationDisplayTests {
         awaitUntil("the history plugin records the initial backstack") {
             window.history.state != stateBeforeContent
         }
-        val initialHistoryLength = window.history.length
         // A detail destination under the guarded one keeps the close off history's first
         // entry, where the plugin already keeps forward entries.
         click("#open-detail")
-        awaitUntil("browser history records the detail destination") {
-            window.history.length > initialHistoryLength
-        }
+        awaitHistoryEntryWith("DetailKey")
         click("#open-guarded")
         awaitUntil("the guarded destination is shown") { element("#guarded") != null }
-        awaitUntil("browser history records the guarded destination") {
-            window.history.length > initialHistoryLength + 1
-        }
+        awaitHistoryEntryWith("GuardedKey")
     }
+
+    // The plugin writes browser history after the DOM changes. Every test in the run shares
+    // one browser history, so a push does not always increase history.length.
+    private suspend fun HtmlTestScope.awaitHistoryEntryWith(keyName: String) {
+        awaitUntil("the browser history entry contains $keyName") { historyState().contains(keyName) }
+        awaitFrame()
+    }
+
+    private suspend fun HtmlTestScope.awaitHistoryEntryWithout(keyName: String) {
+        awaitUntil("the browser history entry does not contain $keyName") { !historyState().contains(keyName) }
+        awaitFrame()
+    }
+
+    private fun historyState(): String = window.history.state as? String ?: ""
 
     private fun HtmlTestScope.setTestContent(withWebHistory: Boolean = false) {
         setContent {

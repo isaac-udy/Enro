@@ -49,7 +49,7 @@ class HtmlTestScope(val root: HTMLElement) {
         val start = window.performance.now()
         while (!condition()) {
             check(window.performance.now() - start < timeoutMillis) {
-                "Timed out waiting until $description. DOM: ${root.innerHTML}"
+                "Timed out waiting until $description. history.length=${window.history.length} history.state=${window.history.state} DOM: ${root.innerHTML}"
             }
             awaitFrame()
         }
